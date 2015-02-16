@@ -1,0 +1,16 @@
+#!/usr/bin/env python
+"""
+Usage:
+    restroy [--ignored-regions=STRING]
+
+Options:
+    --ignored-regions=STRING    comma-separated string of ignored regions [default: eu-west-1, eu-central-1, cn-north-1, us-gov-west-1]
+"""
+
+from docopt import docopt
+
+from restroy import Restroy
+
+arguments = docopt(__doc__)
+
+sys.exit(Restroy().search_and_destroy_unwanted_resources(arguments["--ignored-regions"]))
