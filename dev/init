@@ -1,0 +1,24 @@
+#!/bin/bash
+set -e -E -u -C -o pipefail
+
+VENV=venv
+
+die() {
+    echo $@
+    exit 1
+}
+
+which virtualenv > /dev/null || die "cannot find program 'virtualenv'; please install first"
+[[ -d src ]] || die "no src dir found, aborting!"
+
+rm -rf $VENV
+virtualenv $VENV
+
+set +u
+. $VENV/bin/activate
+set -u
+pip install pybuilder
+pyb install_dependencies
+
+ln -s $PWD/src/main/scripts/* $VENV/bin/
+ln -s $PWD/src/main/python/* $VENV/lib/python*/site-packages/
