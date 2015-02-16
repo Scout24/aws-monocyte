@@ -25,6 +25,8 @@ license = 'Proprietory'
 def set_properties(project):
     project.set_property("verbose", True)
 
+    project.depends_on("boto")
+
     project.set_property("flake8_include_test_sources", True)
     project.set_property('coverage_break_build', False)
 
