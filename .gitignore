@@ -22,3 +22,8 @@ atlassian-ide-plugin.xml
 
 ## Inspections
 inspections.xml
+
+
+
+*.pyc
+venv
