@@ -22,3 +22,7 @@ pyb install_dependencies
 
 ln -s $PWD/src/main/scripts/* $VENV/bin/
 ln -s $PWD/src/main/python/* $VENV/lib/python*/site-packages/
+
+echo
+echo "remember to 'source $VENV/bin/activate' in order to use this virtualenv"
+echo
