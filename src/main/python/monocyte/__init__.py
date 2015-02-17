@@ -19,6 +19,12 @@ class Monocyte(object):
 
         print('Blacklisted regions: [{0}]'.format(', '.join(self.blacklisted)))
 
+    def get_dumper(self, module_name):
+        default_dumper = lambda instance: print("instance found in {region.name}\n\t{id}".format(instance))
+        instance_dumpers = {
+                "boto.ec2": lambda instance: print("instance found in {region.name}\n\t{id} [{image_id}] - {instance_type}, since {launch_time}\n\tip {public_dns_name}, key {key_name}".format(**vars(instance)))
+        }
+        return instance_dumpers.get(module_name, default_dumper)
 
     def search_and_destroy_unwanted_resources(self):
         for service in self.services:
@@ -53,10 +59,11 @@ class Monocyte(object):
         connection = mod.connect_to_region(region.name)
         instances = []
 
+        dumper = self.get_dumper(mod.__name__)
         try:
             instances = connection.get_only_instances()
             for instance in instances:
-                print("instance found in {region.name}\n\t{id} [{image_id}] - {instance_type}, since {launch_time}\n\tip {public_dns_name}, key {key_name}".format(**vars(instance)))  # TODO more generic
+                dumper(instance)
         except BaseException as e:
             print(e)
             raise
