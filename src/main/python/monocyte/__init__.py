@@ -22,14 +22,14 @@ class Monocyte(object):
 
     def search_and_destroy_unwanted_resources(self):
         for service in self.services:
-            regions = self._fetch_regions_by_service(service)
+            boto_module, regions = self._fetch_regions_by_service(service)
             if not regions:
                 continue
             for region in regions:
                 if region.name in self.blacklisted:
                     #print("\tBlacklisted, thus skipped")
                     continue
-                resources_in_region = self._fetch_resources_by_region(region)
+                resources_in_region = self._fetch_resources_by_region(boto_module, region)
                 #self._destroy_resources(resources_in_region)
 
         return Monocyte.OK
@@ -39,16 +39,18 @@ class Monocyte(object):
         module_identifier = 'boto.%s' % service
 
         try:
-            __import__(module_identifier)
-            regions = eval(module_identifier + '.regions()')
-            print('Fetched regions for {0}: {1}'.format(service, (lambda x: x if regions else 0)(len(regions))))
+            boto_module = __import__(module_identifier, globals(), locals(), [service])
+            regions = boto_module.regions()
+            regions = regions if regions else []
+            print('Fetched regions for {0}: {1}'.format(service, len(regions)))
         except ImportError:
             print('Could not import ' + module_identifier)
+            raise
 
-        return regions
+        return (boto_module, regions)
 
-    def _fetch_resources_by_region(self, region):
-        connection = boto.ec2.connect_to_region(region.name)  # TODO: more generic
+    def _fetch_resources_by_region(self, mod, region):
+        connection = mod.connect_to_region(region.name)
         instances = []
 
         try:
