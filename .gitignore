@@ -27,3 +27,4 @@ inspections.xml
 
 *.pyc
 venv*
+.*.swp
