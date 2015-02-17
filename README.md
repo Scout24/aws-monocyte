@@ -1,4 +1,5 @@
 # AWS Monocyte
+[![Build Status](https://api.travis-ci.org/ImmobilienScout24/aws-monocyte.svg?branch=master)](https://travis-ci.org/ImmobilienScout24/aws-monocyte)
 
 **_Currently under costruction._**
 
