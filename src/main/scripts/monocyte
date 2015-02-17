@@ -15,4 +15,4 @@ from monocyte import Monocyte
 
 arguments = docopt(__doc__)
 
-sys.exit(Monocyte().search_and_destroy_unwanted_resources(arguments["--ignored-regions"].split(", ")))
+sys.exit(Monocyte(arguments["--ignored-regions"].split(", ")).search_and_destroy_unwanted_resources())

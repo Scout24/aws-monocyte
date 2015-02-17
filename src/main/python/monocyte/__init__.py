@@ -7,7 +7,7 @@ class Monocyte(object):
 
     OK = 0
 
-    def __init__(self):
+    def __init__(self, blacklisted=None):
 #        self.services = ['awslambda', 'beanstalk', 'cloudformation', 'cloudformation', 'cloudhsm', 'cloudsearch',
 #                         'cloudsearch2', 'cloudsearchdomain', 'cloudtrail', 'codedeploy', 'cognito.identity',
 #                         'cognito.sync', 'configservice', 'datapipeline', 'dynamodb', 'dynamodb2', 'ec2.autoscale',
@@ -15,19 +15,18 @@ class Monocyte(object):
 #                         'emr', 'glacier', 'iam', 'kinesis', 'kms', 'logs', 'opsworks', 'rds', 'rds2', 'redshift',
 #                         'route53.domains', 's3', 'sdb', 'ses', 'sns', 'sqs', 'sts', 'support', 'swf', 'vpc']
         self.services = ["ec2"]
+        self.blacklisted = blacklisted if blacklisted else ['eu-west-1', 'eu-central-1']
 
-    def search_and_destroy_unwanted_resources(self, blacklisted=None):
-        if not blacklisted:
-            blacklisted = ['eu-west-1', 'eu-central-1']
+        print('Blacklisted regions: [{0}]'.format(', '.join(self.blacklisted)))
 
-        print('Blacklisted regions: [{0}]'.format(', '.join(blacklisted)))
 
+    def search_and_destroy_unwanted_resources(self):
         for service in self.services:
             regions = self._fetch_regions_by_service(service)
             if not regions:
                 continue
             for region in regions:
-                if region.name in blacklisted:
+                if region.name in self.blacklisted:
                     #print("\tBlacklisted, thus skipped")
                     continue
                 resources_in_region = self._fetch_resources_by_region(region)
