@@ -11,9 +11,9 @@ use_plugin('copy_resources')
 
 default_task = ['analyze', 'publish']
 
-name = 'restroy'
+name = 'monocyte'
 version = '0.0.1'
-summary = 'restroy, a resource destroyer'
+summary = 'monocyte, a resource destroyer'
 description = """ """
 authors = [Author('Jan Brennenstuhl', 'jan.brennenstuhl@immobilienscout24.de'),
            Author('Arne Hilmann', 'arne.hilmann@gmail.com')]

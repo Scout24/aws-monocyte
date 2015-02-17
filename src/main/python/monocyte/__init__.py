@@ -1,7 +1,7 @@
-
 import boto
 
-class Restroy(object):
+
+class Monocyte(object):
 
     OK = 0
 
@@ -32,7 +32,7 @@ class Restroy(object):
                 resources_in_region = self._fetch_resources_by_region(region)
                 #self._destroy_resources(resources_in_region)
 
-        return Restroy.OK
+        return Monocyte.OK
 
     def _fetch_regions_by_service(self, service):
         regions = None
