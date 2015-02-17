@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import boto
 
 
@@ -18,16 +20,16 @@ class Monocyte(object):
         if not blacklisted:
             blacklisted = ['eu-west-1', 'eu-central-1']
 
-        print 'Blacklisted regions: [{0}]'.format(', '.join(blacklisted))
+        print('Blacklisted regions: [{0}]'.format(', '.join(blacklisted)))
 
         for service in self.services:
             regions = self._fetch_regions_by_service(service)
             if not regions:
                 continue
             for region in regions:
-                print "Checking %s" % region
+                print("Checking %s" % region)
                 if region.name in blacklisted:
-                    print "\tBlacklisted, thus skipped"
+                    print("\tBlacklisted, thus skipped")
                     continue
                 resources_in_region = self._fetch_resources_by_region(region)
                 #self._destroy_resources(resources_in_region)
@@ -41,24 +43,25 @@ class Monocyte(object):
         try:
             __import__(module_identifier)
             regions = eval(module_identifier + '.regions()')
-            print 'Fetched regions for {0}: {1}'.format(service, (lambda x: x if regions else 0)(len(regions)))
+            print('Fetched regions for {0}: {1}'.format(service, (lambda x: x if regions else 0)(len(regions))))
         except ImportError:
-            print 'Could not import ' + module_identifier
+            print('Could not import ' + module_identifier)
 
         return regions
 
     def _fetch_resources_by_region(self, region):
-        print "Region: %s" % region.name
+        print("Region: %s" % region.name)
 
-        connection = boto.ec2.connect_to_region(region.name)
+        connection = boto.ec2.connect_to_region(region.name)  # TODO: more generic
         instances = []
 
         try:
             instances = connection.get_only_instances()
             for instance in instances:
-                print "\t%s" % instance
-        except BaseException, e:
-            print e
+                print("\t%s" % instance)
+        except BaseException as e:
+            print(e)
+            raise
 
         return instances
 
