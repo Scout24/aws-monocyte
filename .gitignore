@@ -26,4 +26,4 @@ inspections.xml
 
 
 *.pyc
-venv
+venv*
