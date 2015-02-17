@@ -54,7 +54,7 @@ class Monocyte(object):
         try:
             instances = connection.get_only_instances()
             for instance in instances:
-                print("\t{region}  {id} [{image_id}] - {instance_type}, {key_name}, {public_dns_name}, {launch_time}".format(**vars(instance)))  # TODO more generic
+                print("instance found in {region.name}\n\t{id} [{image_id}] - {instance_type}, since {launch_time}\n\tip {public_dns_name}, key {key_name}".format(**vars(instance)))  # TODO more generic
         except BaseException as e:
             print(e)
             raise
