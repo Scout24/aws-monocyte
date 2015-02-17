@@ -18,16 +18,16 @@ class Monocyte(object):
         if not blacklisted:
             blacklisted = ['eu-west-1', 'eu-central-1']
 
-        print 'blacklisted regions: [{0}]'.format(', '.join(blacklisted))
+        print 'Blacklisted regions: [{0}]'.format(', '.join(blacklisted))
 
         for service in self.services:
             regions = self._fetch_regions_by_service(service)
             if not regions:
                 continue
             for region in regions:
-                print "checking %s" % region
+                print "Checking %s" % region
                 if region.name in blacklisted:
-                    print "\tblacklisted, thus skipped"
+                    print "\tBlacklisted, thus skipped"
                     continue
                 resources_in_region = self._fetch_resources_by_region(region)
                 #self._destroy_resources(resources_in_region)
@@ -48,12 +48,10 @@ class Monocyte(object):
         return regions
 
     def _fetch_resources_by_region(self, region):
-        # TODO implement identifying resources
-
-        print
-        print "region: %s" % region.name
+        print "Region: %s" % region.name
 
         connection = boto.ec2.connect_to_region(region.name)
+        instances = []
 
         try:
             instances = connection.get_only_instances()
@@ -62,9 +60,7 @@ class Monocyte(object):
         except BaseException, e:
             print e
 
-
-
-        return []
+        return instances
 
     def _destroy_resources(self, resources):
         # TODO implement destroying resources
