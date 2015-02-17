@@ -27,9 +27,8 @@ class Monocyte(object):
             if not regions:
                 continue
             for region in regions:
-                print("Checking %s" % region)
                 if region.name in blacklisted:
-                    print("\tBlacklisted, thus skipped")
+                    #print("\tBlacklisted, thus skipped")
                     continue
                 resources_in_region = self._fetch_resources_by_region(region)
                 #self._destroy_resources(resources_in_region)
@@ -50,15 +49,13 @@ class Monocyte(object):
         return regions
 
     def _fetch_resources_by_region(self, region):
-        print("Region: %s" % region.name)
-
         connection = boto.ec2.connect_to_region(region.name)  # TODO: more generic
         instances = []
 
         try:
             instances = connection.get_only_instances()
             for instance in instances:
-                print("\t%s" % instance)
+                print("\t{region}  {id} [{image_id}] - {instance_type}, {key_name}, {public_dns_name}, {launch_time}".format(**vars(instance)))  # TODO more generic
         except BaseException as e:
             print(e)
             raise
