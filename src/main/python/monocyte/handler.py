@@ -15,10 +15,10 @@ def is_region_ignored(region):
 
 
 def make_registrar():
-    registry = {}
+    registry = set()
 
     def registrar(cls):
-        registry[cls.SERVICE_NAME] = cls
+        registry.add(cls)
         print("registering aws service %s" % cls.SERVICE_NAME)
         return cls
 
