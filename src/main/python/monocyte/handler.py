@@ -58,7 +58,7 @@ class S3(object):
             try:
                 location = bucket.get_location()
             except:
-                location = "__unknown__"
+                location = "__error__"
             if not is_region_allowed(location):
                 print("s3 bucket found in {0} -> {1}\n\t{2}, created {3}".format(
                     location,
