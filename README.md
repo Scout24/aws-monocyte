@@ -1,7 +1,7 @@
 # AWS Monocyte
 [![Build Status](https://api.travis-ci.org/ImmobilienScout24/aws-monocyte.svg?branch=master)](https://travis-ci.org/ImmobilienScout24/aws-monocyte)
 
-**_Currently under costruction._**
+**_Currently under construction._**
 
 **Monocyte is a bot for destroying AWS resources in non-EU regions written in Python using Boto.**
 It is especially useful for companies that are bound to European privacy laws and for that reason don't want to process user data in non-EU regions.
