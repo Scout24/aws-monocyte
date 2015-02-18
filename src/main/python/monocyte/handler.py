@@ -3,6 +3,9 @@ import boto.ec2
 from boto.exception import S3ResponseError
 
 
+US_STANDARD_REGION = "us-east-1"
+
+
 def is_region_allowed(region):
     return region.lower().startswith("eu")
 
@@ -68,7 +71,7 @@ class S3(object):
                 location = "__error__"
             if not is_region_allowed(location):
                 print("s3 bucket found in {0} -> {1}\n\t{2}, created {3}".format(
-                    location,
+                    location if location else US_STANDARD_REGION,
                     "okay" if is_region_allowed(location) else "MUST BE REMOVED!",  # TODO more generic
                     bucket.name,
                     bucket.creation_date))
