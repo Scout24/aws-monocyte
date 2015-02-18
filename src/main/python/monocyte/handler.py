@@ -1,11 +1,15 @@
 import boto
 import boto.ec2
+from boto.exception import S3ResponseError
+
 
 def is_region_allowed(region):
     return region.lower().startswith("eu")
 
+
 def is_region_ignored(region):
     return region.lower() in ["cn-north-1", "us-gov-west-1"]
+
 
 def make_registrar():
     registry = {}
@@ -57,7 +61,10 @@ class S3(object):
         for bucket in connection.get_all_buckets():
             try:
                 location = bucket.get_location()
-            except:
+            except S3ResponseError as e:
+                # See https://github.com/boto/boto/issues/2741
+                if e.status == 400:
+                    continue
                 location = "__error__"
             if not is_region_allowed(location):
                 print("s3 bucket found in {0} -> {1}\n\t{2}, created {3}".format(
