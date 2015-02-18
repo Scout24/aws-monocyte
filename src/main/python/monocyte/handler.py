@@ -6,14 +6,6 @@ from boto.exception import S3ResponseError
 US_STANDARD_REGION = "us-east-1"
 
 
-def is_region_allowed(region):
-    return region.lower().startswith("eu")
-
-
-def is_region_ignored(region):
-    return region.lower() in ["cn-north-1", "us-gov-west-1"]
-
-
 def make_registrar():
     registry = set()
 
@@ -32,17 +24,19 @@ aws_handler = make_registrar()
 class EC2(object):
     SERVICE_NAME = "ec2"
 
-    def __init__(self):
+    def __init__(self, region_filter):
         regions = boto.ec2.regions() or []
-        self.regions = [region for region in regions
-                if not is_region_allowed(region.name) and not is_region_ignored(region.name)]
+        self.regions = [region for region in regions if region_filter(region.name)]
 
     def fetch_all_resources(self):
         for region in self.regions:
             connection = boto.ec2.connect_to_region(region.name)
             resources = connection.get_only_instances() or []
             for resource in resources:
-                print("ec2 instance found in {region.name} -> MUST BE REMOVED\n\t{id} [{image_id}] - {instance_type}, since {launch_time}\n\tip {public_dns_name}, key {key_name}".format(**vars(resource)))
+                yield (region.name, resource)
+
+    def to_string(self, region, resource):
+        return "ec2 instance found in {region.name}\n\t{id} [{image_id}] - {instance_type}, since {launch_time}\n\tip {public_dns_name}, key {key_name}".format(**vars(resource))
 
     def delete(self, instance):
         pass
@@ -52,22 +46,25 @@ class EC2(object):
 class S3(object):
     SERVICE_NAME = "s3"
 
+    def __init__(self, *ignored):
+        pass
+
     def fetch_all_resources(self):
         connection = boto.connect_s3()
         for bucket in connection.get_all_buckets():
             try:
-                location = bucket.get_location()
+                region = bucket.get_location()
             except S3ResponseError as e:
                 # See https://github.com/boto/boto/issues/2741
                 if e.status == 400:
+                    print("[WARN]  got an error during get_location() for %s, skipping" % bucket.name)
                     continue
-                location = "__error__"
-            if not is_region_allowed(location):
-                print("s3 bucket found in {0} -> {1}\n\t{2}, created {3}".format(
-                    location if location else US_STANDARD_REGION,
-                    "okay" if is_region_allowed(location) else "MUST BE REMOVED!",  # TODO more generic
-                    bucket.name,
-                    bucket.creation_date))
+                region = "__error__"
+            region = region if region else US_STANDARD_REGION
+            yield (region, bucket)
+
+    def to_string(self, region, resource):
+        return "s3 bucket found in {0}\n\t{1}, created {2}".format(region, resource.name, resource.creation_date)
 
     def delete(self, instance):
         pass
