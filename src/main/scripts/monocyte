@@ -7,7 +7,6 @@ Usage:
 import sys
 
 from docopt import docopt
-
 from monocyte import Monocyte
 
 arguments = docopt(__doc__)
