@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 """
 Usage:
-    monocyte [--ignored-regions=STRING]
-
-Options:
-    --ignored-regions=STRING    comma-separated string of ignored regions [default: eu-west-1, eu-central-1, cn-north-1, us-gov-west-1]
+    monocyte
 """
 
 import sys
@@ -15,4 +12,4 @@ from monocyte import Monocyte
 
 arguments = docopt(__doc__)
 
-sys.exit(Monocyte(arguments["--ignored-regions"].split(", ")).search_and_destroy_unwanted_resources())
+sys.exit(Monocyte().search_and_destroy_unwanted_resources())
