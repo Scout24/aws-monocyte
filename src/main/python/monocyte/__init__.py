@@ -2,6 +2,7 @@ from __future__ import print_function
 
 from monocyte.handler import aws_handler
 
+
 class Monocyte(object):
 
     def search_and_destroy_unwanted_resources(self):
