@@ -40,16 +40,9 @@ class EC2(object):
     def fetch_all_resources(self):
         for region in self.regions:
             connection = boto.ec2.connect_to_region(region.name)
-            resources = self.fetch_all_resources_in_region(connection) or []
+            resources = connection.get_only_instances() or []
             for resource in resources:
                 print("ec2 instance found in {region.name} -> MUST BE REMOVED\n\t{id} [{image_id}] - {instance_type}, since {launch_time}\n\tip {public_dns_name}, key {key_name}".format(**vars(resource)))
-
-    def fetch_all_resources_in_region(self, connection):
-        try:
-            return connection.get_only_instances()
-        except BaseException as e:
-            print(e)
-            print(connection)  # TODO more infos here
 
     def delete(self, instance):
         pass
