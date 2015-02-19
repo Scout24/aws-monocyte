@@ -9,6 +9,8 @@ use_plugin('python.unittest')
 
 use_plugin('copy_resources')
 
+use_plugin('python.pytddmon')
+
 default_task = ['analyze', 'publish']
 
 name = 'aws-monocyte'
