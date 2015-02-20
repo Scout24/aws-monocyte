@@ -20,6 +20,10 @@ atlassian-ide-plugin.xml
 .project
 .settings/
 
+## Sublime project files
+*.sublime-project
+*.sublime-workspace
+
 ## Inspections
 inspections.xml
 
