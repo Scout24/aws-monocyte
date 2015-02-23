@@ -5,7 +5,7 @@ from monocyte.handler import aws_handler
 
 class Monocyte(object):
 
-    REMOVE_WARNING = "WARNING: region '%s' not allowed, removal pending!"
+    REMOVE_WARNING = "WARNING: region '%s' not allowed!"
 
     def is_region_allowed(self, region):
         return region.lower().startswith("eu")
@@ -22,6 +22,7 @@ class Monocyte(object):
             handler = handler_cls(self.is_region_handled)
             for resource in handler.fetch_all_resources():
                 if not self.is_region_allowed(resource.region):
-                    print("%s\n\t%s\n" % (
+                    print("\n%s\n\t%s" % (
                         handler.to_string(resource),
                         Monocyte.REMOVE_WARNING % resource.region))
+                    handler.delete(resource)

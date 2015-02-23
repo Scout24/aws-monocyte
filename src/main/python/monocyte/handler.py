@@ -44,8 +44,20 @@ class EC2(object):
     def to_string(self, resource):
         return "ec2 instance found in {region.name}\n\t{id} [{image_id}] - {instance_type}, since {launch_time}\n\tip {public_dns_name}, key {key_name}".format(**vars(resource.wrapped))
 
-    def delete(self, resource, region=None):
-        pass
+    def delete(self, resource):
+        connection = boto.ec2.connect_to_region(resource.region)
+        if self.dry_run:
+            try:
+                return connection.terminate_instances([resource.wrapped.id], dry_run=True)
+            except boto.exception.EC2ResponseError as e:
+                if e.status == 412:  # Precondition Failed
+                    print("\tTermination {message}".format(**vars(e)))
+                    return [resource.wrapped]
+                else:
+                    raise
+# circuit breaker: activate when confident enough :o)
+#        else:
+#            return connection.terminate_instances([resource.wrapped.id], self.dry_run)
 
 
 @aws_handler
