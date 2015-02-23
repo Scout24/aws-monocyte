@@ -23,6 +23,6 @@ class Monocyte(object):
             for region, resource in handler.fetch_all_resources():
                 if not self.is_region_allowed(region):
                     print("%s\n\t%s\n" % (
-                        handler.to_string(region, resource),
+                        handler.to_string(resource, region),
                         Monocyte.REMOVE_WARNING % region))
 

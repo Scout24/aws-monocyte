@@ -35,7 +35,7 @@ class EC2(object):
             for resource in resources:
                 yield (region.name, resource)
 
-    def to_string(self, region, resource):
+    def to_string(self, resource, region=None):
         return "ec2 instance found in {region.name}\n\t{id} [{image_id}] - {instance_type}, since {launch_time}\n\tip {public_dns_name}, key {key_name}".format(**vars(resource))
 
     def delete(self, instance):
@@ -63,7 +63,7 @@ class S3(object):
             region = region if region else US_STANDARD_REGION
             yield (region, bucket)
 
-    def to_string(self, region, resource):
+    def to_string(self, resource, region=None):
         return "s3 bucket found in {0}\n\t{1}, created {2}".format(region, resource.name, resource.creation_date)
 
     def delete(self, instance):
