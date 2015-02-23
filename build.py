@@ -33,6 +33,8 @@ def set_properties(project):
     project.depends_on("docopt")
     project.depends_on("boto")
 
+    project.build_depends_on("mock")
+
     project.set_property("flake8_include_test_sources", True)
     project.set_property('coverage_break_build', False)
 
