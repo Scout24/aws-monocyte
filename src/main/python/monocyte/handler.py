@@ -1,6 +1,6 @@
 import boto
 import boto.ec2
-from boto.exception import S3ResponseError
+from boto.exception import S3ResponseError, EC2ResponseError
 
 
 US_STANDARD_REGION = "us-east-1"
@@ -48,13 +48,12 @@ class EC2(object):
         connection = boto.ec2.connect_to_region(resource.region)
         if self.dry_run:
             try:
-                return connection.terminate_instances([resource.wrapped.id], dry_run=True)
-            except boto.exception.EC2ResponseError as e:
+                connection.terminate_instances([resource.wrapped.id], dry_run=True)
+            except EC2ResponseError as e:
                 if e.status == 412:  # Precondition Failed
                     print("\tTermination {message}".format(**vars(e)))
                     return [resource.wrapped]
-                else:
-                    raise
+                raise
 # circuit breaker: activate when confident enough :o)
 #        else:
 #            return connection.terminate_instances([resource.wrapped.id], self.dry_run)
