@@ -20,9 +20,8 @@ class Monocyte(object):
         for handler_cls in aws_handler.all:
             print("\n---- checking %s resources" % handler_cls.SERVICE_NAME)
             handler = handler_cls(self.is_region_handled)
-            for region, resource in handler.fetch_all_resources():
-                if not self.is_region_allowed(region):
+            for resource in handler.fetch_all_resources():
+                if not self.is_region_allowed(resource.region):
                     print("%s\n\t%s\n" % (
-                        handler.to_string(resource, region),
-                        Monocyte.REMOVE_WARNING % region))
-
+                        handler.to_string(resource),
+                        Monocyte.REMOVE_WARNING % resource.region))

@@ -20,25 +20,31 @@ def make_registrar():
 aws_handler = make_registrar()
 
 
+class Resource(object):
+    def __init__(self, resource, region=None):
+        self.wrapped = resource
+        self.region = region
+
+
 @aws_handler
 class EC2(object):
     SERVICE_NAME = "ec2"
 
-    def __init__(self, region_filter):
-        regions = boto.ec2.regions() or []
-        self.regions = [region for region in regions if region_filter(region.name)]
+    def __init__(self, region_filter, dry_run=True):
+        self.regions = [region for region in boto.ec2.regions() if region_filter(region.name)]
+        self.dry_run = dry_run
 
     def fetch_all_resources(self):
         for region in self.regions:
             connection = boto.ec2.connect_to_region(region.name)
             resources = connection.get_only_instances() or []
             for resource in resources:
-                yield (region.name, resource)
+                yield Resource(resource, region.name)
 
-    def to_string(self, resource, region=None):
-        return "ec2 instance found in {region.name}\n\t{id} [{image_id}] - {instance_type}, since {launch_time}\n\tip {public_dns_name}, key {key_name}".format(**vars(resource))
+    def to_string(self, resource):
+        return "ec2 instance found in {region.name}\n\t{id} [{image_id}] - {instance_type}, since {launch_time}\n\tip {public_dns_name}, key {key_name}".format(**vars(resource.wrapped))
 
-    def delete(self, instance):
+    def delete(self, resource, region=None):
         pass
 
 
@@ -61,10 +67,10 @@ class S3(object):
                     continue
                 region = "__error__"
             region = region if region else US_STANDARD_REGION
-            yield (region, bucket)
+            yield Resource(bucket, region)
 
-    def to_string(self, resource, region=None):
-        return "s3 bucket found in {0}\n\t{1}, created {2}".format(region, resource.name, resource.creation_date)
+    def to_string(self, resource):
+        return "s3 bucket found in {0}\n\t{1}, created {2}".format(resource.region, resource.wrapped.name, resource.wrapped.creation_date)
 
     def delete(self, instance):
         pass

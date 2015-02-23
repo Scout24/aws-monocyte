@@ -38,7 +38,9 @@ class EC2_HandlerTest(TestCase):
         string = self.ec2_handler_filter.to_string(resources[0][1], resources[0][0])
         self.assertEquals(string, "ec2 instance found in foo\n\tid-12345 [ami-1112] - m1.small, since 01.01.2015\n\tip test.aws.rz.is, key test-ssh-key")
 
+
 class S3_HandlerTest(TestCase):
 
-    def setUp(self):
+    @patch("monocyte.handler.boto")
+    def setUp(self, boto_mock):
         pass
