@@ -42,7 +42,7 @@ class EC2(object):
                 yield Resource(resource, region.name)
 
     def to_string(self, resource):
-        return "ec2 instance found in {region.name}\n\t{id} [{image_id}] - {instance_type}, since {launch_time}\n\tip {public_dns_name}, key {key_name}".format(**vars(resource.wrapped))
+        return "ec2 instance found in {region.name}\n\t{id} [{image_id}] - {instance_type}, since {launch_time}\n\tdnsname {public_dns_name}, key {key_name}".format(**vars(resource.wrapped))
 
     def delete(self, resource):
         connection = boto.ec2.connect_to_region(resource.region)
