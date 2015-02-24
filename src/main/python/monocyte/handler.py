@@ -60,7 +60,9 @@ class EC2(object):
                     return [resource.wrapped]
                 raise
         else:
-            return connection.terminate_instances([resource.wrapped.id], dry_run=False)
+            instances = connection.terminate_instances([resource.wrapped.id], dry_run=False)
+            print("\tInitiating shutdown sequence for " + instances)
+            return instances
 
 
 @aws_handler
