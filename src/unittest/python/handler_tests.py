@@ -5,7 +5,7 @@ import boto.ec2
 import boto.exception
 
 
-class EC2_HandlerTest(TestCase):
+class EC2HandlerTest(TestCase):
 
     @patch("monocyte.handler.boto")
     def setUp(self, boto_mock):
@@ -19,40 +19,49 @@ class EC2_HandlerTest(TestCase):
 
     @patch("monocyte.handler.boto")
     def test_fetch_all_resources_filtered(self, boto_mock):
-        fake_instance = Mock(boto.ec2.instance, image_id="ami-1111")
-        boto_mock.ec2.connect_to_region.return_value.get_only_instances.return_value = [fake_instance]
-        resources = list(self.ec2_handler_filter.fetch_all_resources())
+        instance_mock = self._given_instance_mock()
+        boto_mock.ec2.connect_to_region.return_value.get_only_instances.return_value = [instance_mock]
+        only_resource = list(self.ec2_handler_filter.fetch_all_resources())[0]
 
-        self.assertEquals(resources[0].wrapped, fake_instance)
+        self.assertEquals(only_resource.wrapped, instance_mock)
 
     @patch("monocyte.handler.boto")
     def test_to_string(self, boto_mock):
-        fake_instance = Mock(boto.ec2.instance, image_id="ami-1112")
-        fake_instance.id = "id-12345"
-        fake_instance.instance_type = "m1.small"
-        fake_instance.launch_time = "01.01.2015"
-        fake_instance.public_dns_name = "test.aws.rz.is"
-        fake_instance.key_name = "test-ssh-key"
-        fake_instance.region = self.positive_fake_region
-        boto_mock.ec2.connect_to_region.return_value.get_only_instances.return_value = [fake_instance]
-        resources = list(self.ec2_handler_filter.fetch_all_resources())
-        string = self.ec2_handler_filter.to_string(resources[0])
-        self.assertEquals(string, "ec2 instance found in foo\n\tid-12345 [ami-1112] - m1.small, since 01.01.2015\n\tdnsname test.aws.rz.is, key test-ssh-key")
+        instance_mock = self._given_instance_mock()
+        boto_mock.ec2.connect_to_region.return_value.get_only_instances.return_value = [instance_mock]
+        only_resource = list(self.ec2_handler_filter.fetch_all_resources())[0]
+        resource_string = self.ec2_handler_filter.to_string(only_resource)
+
+        self.assertTrue(instance_mock.id in resource_string)
+        self.assertTrue(instance_mock.image_id in resource_string)
+        self.assertTrue(instance_mock.instance_type in resource_string)
+        self.assertTrue(instance_mock.launch_time in resource_string)
+        self.assertTrue(instance_mock.public_dns_name in resource_string)
+        self.assertTrue(instance_mock.key_name in resource_string)
+        self.assertTrue(instance_mock.region.name in resource_string)
 
     @patch("monocyte.handler.boto")
     def test_delete(self, boto_mock):
-        fake_instance = Mock(boto.ec2.instance, image_id="ami-1112")
-        fake_instance.id = "id-12345"
-        resource = handler.Resource(fake_instance, "forbidden_region")
+        instance_mock = self._given_instance_mock()
+        resource = handler.Resource(instance_mock, "forbidden_region")
         connection = boto_mock.ec2.connect_to_region.return_value
-
         connection.terminate_instances.side_effect = boto.exception.EC2ResponseError(412, 'boom')
 
-        deleted_resources = self.ec2_handler_filter.delete(resource)
-        self.assertEquals(fake_instance, deleted_resources[0])
+        deleted_resource = self.ec2_handler_filter.delete(resource)[0]
+        self.assertEquals(instance_mock, deleted_resource)
+
+    def _given_instance_mock(self):
+        instance_mock = Mock(boto.ec2.instance, image_id="ami-1112")
+        instance_mock.id = "id-12345"
+        instance_mock.instance_type = "m1.small"
+        instance_mock.launch_time = "01.01.2015"
+        instance_mock.public_dns_name = "test.aws.rz.is"
+        instance_mock.key_name = "test-ssh-key"
+        instance_mock.region = self.positive_fake_region
+        return instance_mock
 
 
-class S3_HandlerTest(TestCase):
+class S3HandlerTest(TestCase):
 
     @patch("monocyte.handler.boto")
     def setUp(self, boto_mock):
