@@ -64,7 +64,7 @@ class EC2(object):
                 raise
         else:
             instances = connection.terminate_instances([resource.wrapped.id], dry_run=False)
-            print("\tInitiating shutdown sequence for " + instances)
+            print("\tInitiating shutdown sequence for {0}".format(instances))
             return instances
 
 
@@ -96,4 +96,3 @@ class S3(object):
 
     def delete(self, instance):
         pass
-
