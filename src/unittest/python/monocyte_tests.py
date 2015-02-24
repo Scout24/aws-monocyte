@@ -1,5 +1,7 @@
 from unittest import TestCase
+from mock import Mock
 from monocyte import Monocyte
+from monocyte.handler import Resource
 
 
 class MonocyteTest(TestCase):
@@ -24,3 +26,8 @@ class MonocyteTest(TestCase):
 
         self.assertTrue(self.monocyte.is_region_handled(self.allowed_region))
         self.assertFalse(self.monocyte.is_region_handled(self.ignored_region))
+
+    def test_handle_service(self):
+        handler = Mock()
+        handler.fetch_all_resources.return_value = [Resource("foo", "some_region")]
+        self.monocyte.handle_service(handler)
