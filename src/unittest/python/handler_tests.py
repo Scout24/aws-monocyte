@@ -8,48 +8,44 @@ import boto.exception
 
 class EC2HandlerTest(TestCase):
 
-    @patch("monocyte.handler.boto")
-    def setUp(self, boto_mock):
+    def setUp(self):
+        self.boto_mock = patch("monocyte.handler.boto").start()
         self.positive_fake_region = Mock(boto.ec2.regioninfo)
         self.positive_fake_region.name = "allowed_region"
-        negative_fake_region = Mock(boto.ec2.regioninfo)
-        negative_fake_region.name = "forbbiden_region"
+        self.negative_fake_region = Mock(boto.ec2.regioninfo)
+        self.negative_fake_region.name = "forbbiden_region"
 
-        boto_mock.ec2.regions.return_value = [self.positive_fake_region, negative_fake_region]
+        self.boto_mock.ec2.regions.return_value = [self.positive_fake_region, self.negative_fake_region]
         self.ec2_handler_filter = handler.EC2(lambda region_name: region_name == self.positive_fake_region.name)
 
-    @patch("monocyte.handler.boto")
-    def test_fetch_all_resources_filtered(self, boto_mock):
-        instance_mock = self._given_instance_mock()
-        boto_mock.ec2.connect_to_region.return_value.get_only_instances.return_value = [instance_mock]
+        self.instance_mock = self._given_instance_mock()
+
+    def tearDown(self):
+        self.boto_mock.stop()
+
+    def test_fetch_all_resources_filtered(self):
         only_resource = list(self.ec2_handler_filter.fetch_all_resources())[0]
+        self.assertEquals(only_resource.wrapped, self.instance_mock)
 
-        self.assertEquals(only_resource.wrapped, instance_mock)
-
-    @patch("monocyte.handler.boto")
-    def test_to_string(self, boto_mock):
-        instance_mock = self._given_instance_mock()
-        boto_mock.ec2.connect_to_region.return_value.get_only_instances.return_value = [instance_mock]
+    def test_to_string(self):
         only_resource = list(self.ec2_handler_filter.fetch_all_resources())[0]
         resource_string = self.ec2_handler_filter.to_string(only_resource)
 
-        self.assertTrue(instance_mock.id in resource_string)
-        self.assertTrue(instance_mock.image_id in resource_string)
-        self.assertTrue(instance_mock.instance_type in resource_string)
-        self.assertTrue(instance_mock.launch_time in resource_string)
-        self.assertTrue(instance_mock.public_dns_name in resource_string)
-        self.assertTrue(instance_mock.key_name in resource_string)
-        self.assertTrue(instance_mock.region.name in resource_string)
+        self.assertTrue(self.instance_mock.id in resource_string)
+        self.assertTrue(self.instance_mock.image_id in resource_string)
+        self.assertTrue(self.instance_mock.instance_type in resource_string)
+        self.assertTrue(self.instance_mock.launch_time in resource_string)
+        self.assertTrue(self.instance_mock.public_dns_name in resource_string)
+        self.assertTrue(self.instance_mock.key_name in resource_string)
+        self.assertTrue(self.instance_mock.region.name in resource_string)
 
-    @patch("monocyte.handler.boto")
-    def test_delete(self, boto_mock):
-        instance_mock = self._given_instance_mock()
-        resource = handler.Resource(instance_mock, "forbidden_region")
-        connection = boto_mock.ec2.connect_to_region.return_value
+    def test_delete(self):
+        resource = handler.Resource(self.instance_mock, self.negative_fake_region.name)
+        connection = self.boto_mock.ec2.connect_to_region.return_value
         connection.terminate_instances.side_effect = boto.exception.EC2ResponseError(412, 'boom')
 
         deleted_resource = self.ec2_handler_filter.delete(resource)[0]
-        self.assertEquals(instance_mock, deleted_resource)
+        self.assertEquals(self.instance_mock, deleted_resource)
 
     def _given_instance_mock(self):
         instance_mock = Mock(boto.ec2.instance, image_id="ami-1112")
@@ -61,6 +57,8 @@ class EC2HandlerTest(TestCase):
         instance_mock.region = self.positive_fake_region
         instance_mock._state = boto.ec2.instance.InstanceState(16, "running")
         instance_mock.state = instance_mock._state.name
+
+        self.boto_mock.ec2.connect_to_region.return_value.get_only_instances.return_value = [instance_mock]
         return instance_mock
 
 
@@ -68,56 +66,48 @@ class S3HandlerTest(TestCase):
 
     def setUp(self):
         self.s3_handler = handler.S3()
+        self.boto_mock = patch("monocyte.handler.boto").start()
+        self.bucket_mock = self._given_bucket_mock()
 
-    @patch("monocyte.handler.boto")
-    def test_fetch_all_resources(self, boto_mock):
-        bucket_mock = self._given_bucket_mock()
-        boto_mock.connect_s3.return_value.get_all_buckets.return_value = [bucket_mock]
+    def tearDown(self):
+        self.boto_mock.stop()
+
+    def test_fetch_all_resources(self):
         only_resource = list(self.s3_handler.fetch_all_resources())[0]
-        self.assertEquals(only_resource.wrapped, bucket_mock)
+        self.assertEquals(only_resource.wrapped, self.bucket_mock)
 
-    @patch("monocyte.handler.boto")
     @patch("monocyte.handler.print", create=True)
-    def test_fetch_all_resources_400_exception(self, print_mock, boto_mock):
-        bucket_mock = self._given_bucket_mock()
-        bucket_mock.get_location.side_effect = boto.exception.S3ResponseError(400, 'boom')
-        boto_mock.connect_s3.return_value.get_all_buckets.return_value = [bucket_mock]
+    def test_fetch_all_resources_400_exception(self, print_mock):
+        self.bucket_mock.get_location.side_effect = boto.exception.S3ResponseError(400, 'boom')
         list(self.s3_handler.fetch_all_resources())
 
         print_mock.assert_called_with('[WARN]  got an error during get_location() for test_bucket, skipping')
 
-    @patch("monocyte.handler.boto")
-    def test_fetch_all_resources_not_400_exception(self, boto_mock):
-        bucket_mock = self._given_bucket_mock()
-        bucket_mock.get_location.side_effect = boto.exception.S3ResponseError(999, 'boom')
-        boto_mock.connect_s3.return_value.get_all_buckets.return_value = [bucket_mock]
+    def test_fetch_all_resources_not_400_exception(self):
+        self.bucket_mock.get_location.side_effect = boto.exception.S3ResponseError(999, 'boom')
         only_resource = list(self.s3_handler.fetch_all_resources())[0]
 
         self.assertEquals(only_resource.region, '__error__')
 
-    @patch("monocyte.handler.boto")
-    def test_fetch_all_resources_set_default_region(self, boto_mock):
-        bucket_mock = self._given_bucket_mock()
-        bucket_mock.get_location.return_value = ""
-        boto_mock.connect_s3.return_value.get_all_buckets.return_value = [bucket_mock]
+    def test_fetch_all_resources_set_default_region(self):
+        self.bucket_mock.get_location.return_value = ""
         only_resource = list(self.s3_handler.fetch_all_resources())[0]
 
         self.assertEquals(only_resource.region, handler.US_STANDARD_REGION)
 
-    @patch("monocyte.handler.boto")
-    def test_to_string(self, boto_mock):
-        bucket_mock = self._given_bucket_mock()
-        boto_mock.connect_s3.return_value.get_all_buckets.return_value = [bucket_mock]
+    def test_to_string(self):
         only_resource = list(self.s3_handler.fetch_all_resources())[0]
         resource_string = self.s3_handler.to_string(only_resource)
 
         self.assertTrue(only_resource.region in resource_string)
-        self.assertTrue(bucket_mock.name in resource_string)
-        self.assertTrue(bucket_mock.creation_date in resource_string)
+        self.assertTrue(self.bucket_mock.name in resource_string)
+        self.assertTrue(self.bucket_mock.creation_date in resource_string)
 
     def _given_bucket_mock(self):
         bucket_mock = Mock(boto.s3.bucket.Bucket)
         bucket_mock.get_location.return_value = "my-stupid-region"
         bucket_mock.name = "test_bucket"
         bucket_mock.creation_date = "01.01.2015"
+
+        self.boto_mock.connect_s3.return_value.get_all_buckets.return_value = [bucket_mock]
         return bucket_mock
