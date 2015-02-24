@@ -10,9 +10,9 @@ class EC2HandlerTest(TestCase):
     @patch("monocyte.handler.boto")
     def setUp(self, boto_mock):
         self.positive_fake_region = Mock(boto.ec2.regioninfo)
-        self.positive_fake_region.name = "foo"
+        self.positive_fake_region.name = "allowed_region"
         negative_fake_region = Mock(boto.ec2.regioninfo)
-        negative_fake_region.name = "bar"
+        negative_fake_region.name = "forbbiden_region"
 
         boto_mock.ec2.regions.return_value = [self.positive_fake_region, negative_fake_region]
         self.ec2_handler_filter = handler.EC2(lambda region_name: region_name == self.positive_fake_region.name)
@@ -55,7 +55,7 @@ class EC2HandlerTest(TestCase):
         instance_mock.id = "id-12345"
         instance_mock.instance_type = "m1.small"
         instance_mock.launch_time = "01.01.2015"
-        instance_mock.public_dns_name = "test.aws.rz.is"
+        instance_mock.public_dns_name = "test.aws.com"
         instance_mock.key_name = "test-ssh-key"
         instance_mock.region = self.positive_fake_region
         return instance_mock
