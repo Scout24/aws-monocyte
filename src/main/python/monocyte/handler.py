@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import boto
 import boto.ec2
 from boto.exception import S3ResponseError, EC2ResponseError
