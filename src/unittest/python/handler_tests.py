@@ -2,6 +2,7 @@ from unittest import TestCase
 from monocyte import handler
 from mock import patch, Mock
 import boto.ec2
+import boto.s3.bucket
 import boto.exception
 
 
@@ -65,6 +66,44 @@ class EC2HandlerTest(TestCase):
 
 class S3HandlerTest(TestCase):
 
+    def setUp(self):
+        self.s3_handler = handler.S3()
+
     @patch("monocyte.handler.boto")
-    def setUp(self, boto_mock):
-        pass
+    def test_fetch_all_resources(self, boto_mock):
+        bucket_mock = self._given_bucket_mock()
+        boto_mock.connect_s3.return_value.get_all_buckets.return_value = [bucket_mock]
+        only_resource = list(self.s3_handler.fetch_all_resources())[0]
+        self.assertEquals(only_resource.wrapped, bucket_mock)
+
+    @patch("monocyte.handler.boto")
+    @patch("monocyte.handler.print", create=True)
+    def test_fetch_all_resources_400_exception(self, print_mock, boto_mock):
+        bucket_mock = self._given_bucket_mock()
+        bucket_mock.get_location.side_effect = boto.exception.S3ResponseError(400, 'boom')
+        boto_mock.connect_s3.return_value.get_all_buckets.return_value = [bucket_mock]
+        list(self.s3_handler.fetch_all_resources())
+        print_mock.assert_called_with('[WARN]  got an error during get_location() for test_bucket, skipping')
+
+    @patch("monocyte.handler.boto")
+    def test_fetch_all_resources_not_400_exception(self, boto_mock):
+        bucket_mock = self._given_bucket_mock()
+        bucket_mock.get_location.side_effect = boto.exception.S3ResponseError(999, 'boom')
+        boto_mock.connect_s3.return_value.get_all_buckets.return_value = [bucket_mock]
+        only_resource = list(self.s3_handler.fetch_all_resources())[0]
+
+        self.assertEquals(only_resource.region, '__error__')
+
+    @patch("monocyte.handler.boto")
+    def test_fetch_all_resources_set_default_region(self, boto_mock):
+        bucket_mock = self._given_bucket_mock()
+        bucket_mock.get_location.return_value = ""
+        boto_mock.connect_s3.return_value.get_all_buckets.return_value = [bucket_mock]
+        only_resource = list(self.s3_handler.fetch_all_resources())[0]
+        self.assertEquals(only_resource.region, handler.US_STANDARD_REGION)
+
+    def _given_bucket_mock(self):
+        bucket_mock = Mock(boto.s3.bucket.Bucket)
+        bucket_mock.get_location.return_value = "my-stupid-region"
+        bucket_mock.name = "test_bucket"
+        return bucket_mock
