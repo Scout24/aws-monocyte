@@ -30,6 +30,8 @@ class Resource(object):
 class EC2(object):
     SERVICE_NAME = "ec2"
 
+    VALID_TARGET_STATES = ["terminated", "shutting-down"]
+
     def __init__(self, region_filter, dry_run=True):
         self.regions = [region for region in boto.ec2.regions() if region_filter(region.name)]
         self.dry_run = dry_run
@@ -42,9 +44,12 @@ class EC2(object):
                 yield Resource(resource, region.name)
 
     def to_string(self, resource):
-        return "ec2 instance found in {region.name}\n\t{id} [{image_id}] - {instance_type}, since {launch_time}\n\tdnsname {public_dns_name}, key {key_name}".format(**vars(resource.wrapped))
+        return "ec2 instance found in {region.name}\n\t{id} [{image_id}] - {instance_type}, since {launch_time}\n\tdnsname {public_dns_name}, key {key_name}, state {_state}".format(**vars(resource.wrapped))
 
     def delete(self, resource):
+        if resource.wrapped.state in EC2.VALID_TARGET_STATES:
+            print("\tstate '{}' is a valid target state ({}), skipping".format(resource.wrapped.state, ", ".join(EC2.VALID_TARGET_STATES)))
+            return []
         connection = boto.ec2.connect_to_region(resource.region)
         if self.dry_run:
             try:

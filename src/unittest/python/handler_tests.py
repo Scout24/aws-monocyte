@@ -58,6 +58,8 @@ class EC2HandlerTest(TestCase):
         instance_mock.public_dns_name = "test.aws.com"
         instance_mock.key_name = "test-ssh-key"
         instance_mock.region = self.positive_fake_region
+        instance_mock._state = boto.ec2.instance.InstanceState(16, "running")
+        instance_mock.state = instance_mock._state.name
         return instance_mock
 
 
