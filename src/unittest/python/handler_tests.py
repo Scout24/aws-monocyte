@@ -83,6 +83,7 @@ class S3HandlerTest(TestCase):
         bucket_mock.get_location.side_effect = boto.exception.S3ResponseError(400, 'boom')
         boto_mock.connect_s3.return_value.get_all_buckets.return_value = [bucket_mock]
         list(self.s3_handler.fetch_all_resources())
+
         print_mock.assert_called_with('[WARN]  got an error during get_location() for test_bucket, skipping')
 
     @patch("monocyte.handler.boto")
@@ -100,10 +101,23 @@ class S3HandlerTest(TestCase):
         bucket_mock.get_location.return_value = ""
         boto_mock.connect_s3.return_value.get_all_buckets.return_value = [bucket_mock]
         only_resource = list(self.s3_handler.fetch_all_resources())[0]
+
         self.assertEquals(only_resource.region, handler.US_STANDARD_REGION)
+
+    @patch("monocyte.handler.boto")
+    def test_to_string(self, boto_mock):
+        bucket_mock = self._given_bucket_mock()
+        boto_mock.connect_s3.return_value.get_all_buckets.return_value = [bucket_mock]
+        only_resource = list(self.s3_handler.fetch_all_resources())[0]
+        resource_string = self.s3_handler.to_string(only_resource)
+
+        self.assertTrue(only_resource.region in resource_string)
+        self.assertTrue(bucket_mock.name in resource_string)
+        self.assertTrue(bucket_mock.creation_date in resource_string)
 
     def _given_bucket_mock(self):
         bucket_mock = Mock(boto.s3.bucket.Bucket)
         bucket_mock.get_location.return_value = "my-stupid-region"
         bucket_mock.name = "test_bucket"
+        bucket_mock.creation_date = "01.01.2015"
         return bucket_mock
