@@ -54,9 +54,8 @@ class EC2(object):
                     print("\tTermination {message}".format(**vars(e)))
                     return [resource.wrapped]
                 raise
-# circuit breaker: activate when confident enough :o)
-#        else:
-#            return connection.terminate_instances([resource.wrapped.id], self.dry_run)
+        else:
+            return connection.terminate_instances([resource.wrapped.id], dry_run=False)
 
 
 @aws_handler
