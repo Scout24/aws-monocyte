@@ -7,12 +7,16 @@ options:
     --dry-run=bool valid values "True" or "False" [default: True]
 """
 
+from __future__ import print_function
 import sys
 
 from docopt import docopt
+
 from monocyte import Monocyte
 
 arguments = docopt(__doc__)
-
 dry_run = (arguments["--dry-run"] != "False")
+
+print("monocyte - search and destroy unwanted aws resources relentlessly\n")
+
 sys.exit(Monocyte().search_and_destroy_unwanted_resources(dry_run))

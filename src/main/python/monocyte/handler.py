@@ -11,7 +11,7 @@ def make_registrar():
 
     def registrar(cls):
         registry.add(cls)
-        print("registering aws service %s" % cls.SERVICE_NAME)
+        #print("registering aws service %s" % cls.SERVICE_NAME)
         return cls
 
     registrar.all = registry
