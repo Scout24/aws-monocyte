@@ -30,9 +30,12 @@ class Monocyte(object):
         for handler_cls in aws_handler.all:
             print("\n---- checking %s resources" % handler_cls.SERVICE_NAME)
             specific_handler = handler_cls(self.is_region_handled, dry_run)
-            for resource in specific_handler.fetch_all_resources():
-                if not self.is_region_allowed(resource.region):
-                    print("\n%s\n\t%s" % (
-                        specific_handler.to_string(resource),
-                        REMOVE_WARNING % resource.region))
-                    specific_handler.delete(resource)
+            self.handle_service(specific_handler)
+
+    def handle_service(self, specific_handler):
+        for resource in specific_handler.fetch_all_resources():
+            if not self.is_region_allowed(resource.region):
+                print("\n%s\n\t%s" % (
+                    specific_handler.to_string(resource),
+                    REMOVE_WARNING % resource.region))
+                specific_handler.delete(resource)
