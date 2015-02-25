@@ -87,7 +87,7 @@ class S3(object):
             except S3ResponseError as e:
                 # See https://github.com/boto/boto/issues/2741
                 if e.status == 400:
-                    print("\twarning: got an error during get_location() for %s, skipping" % bucket.name)
+                    print("\twarning: get_location() crashed for %s, skipping" % bucket.name)
                     continue
                 region = "__error__"
             region = region if region else US_STANDARD_REGION
