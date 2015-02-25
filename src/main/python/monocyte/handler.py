@@ -109,7 +109,6 @@ class S3(object):
                         print("\t... (skip remaining {} keys)".format(nr_keys - S3.NR_KEYS_TO_SHOW))
                         break
                     print("\tkey '{}'".format(key.name))
-        else:
-            raise NotImplementedError("really deleting s3 buckets not yet implemented")
-            for key in resource.wrapped.list():
-                pass
+            return
+        for key in resource.wrapped.list():
+            pass

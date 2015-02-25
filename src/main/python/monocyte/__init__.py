@@ -3,7 +3,7 @@ from __future__ import print_function
 from monocyte.handler import aws_handler
 
 REMOVE_WARNING = "WARNING: region '%s' not allowed!"
-IGNORED_REGIONS = ["cn-north-1", "us-gov-west-1", "us-east-1"]
+IGNORED_REGIONS = ["cn-north-1", "us-gov-west-1", "us-east-1", "us-west-2"]
 ALLOWED_REGIONS_STARTS_WITH = "eu"
 
 
