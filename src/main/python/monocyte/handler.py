@@ -75,7 +75,8 @@ class S3(object):
     SERVICE_NAME = "s3"
     NR_KEYS_TO_SHOW = 4
 
-    def __init__(self, dry_run=True, *ignored):
+    def __init__(self, region_filter, dry_run=True):
+        self.region_filter = region_filter
         self.dry_run = dry_run
 
     def fetch_all_resources(self):
@@ -86,11 +87,12 @@ class S3(object):
             except S3ResponseError as e:
                 # See https://github.com/boto/boto/issues/2741
                 if e.status == 400:
-                    print("[WARN]  got an error during get_location() for %s, skipping" % bucket.name)
+                    print("\twarning: got an error during get_location() for %s, skipping" % bucket.name)
                     continue
                 region = "__error__"
             region = region if region else US_STANDARD_REGION
-            yield Resource(bucket, region)
+            if self.region_filter(region):
+                yield Resource(bucket, region)
 
     def to_string(self, resource):
         return "s3 bucket found in {0}\n\t{1}, created {2}".format(resource.region,

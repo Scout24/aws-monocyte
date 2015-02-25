@@ -71,7 +71,7 @@ class EC2HandlerTest(TestCase):
 class S3HandlerTest(TestCase):
 
     def setUp(self):
-        self.s3_handler = handler.S3()
+        self.s3_handler = handler.S3(lambda region_name: True)
         self.boto_patcher = patch("monocyte.handler.boto")
         self.boto_mock = self.boto_patcher.start()
         self.bucket_mock = self._given_bucket_mock()
@@ -88,7 +88,7 @@ class S3HandlerTest(TestCase):
         self.bucket_mock.get_location.side_effect = boto.exception.S3ResponseError(400, 'boom')
         list(self.s3_handler.fetch_all_resources())
 
-        print_mock.assert_called_with('[WARN]  got an error during get_location() for test_bucket, skipping')
+        print_mock.assert_called_with('\twarning: got an error during get_location() for test_bucket, skipping')
 
     def test_fetch_all_resources_not_400_exception(self):
         self.bucket_mock.get_location.side_effect = boto.exception.S3ResponseError(999, 'boom')
