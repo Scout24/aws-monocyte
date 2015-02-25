@@ -113,4 +113,3 @@ class S3(object):
             raise NotImplementedError("really deleting s3 buckets not yet implemented")
             for key in resource.wrapped.list():
                 pass
-
