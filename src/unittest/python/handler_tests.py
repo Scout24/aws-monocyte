@@ -40,13 +40,18 @@ class EC2HandlerTest(TestCase):
         self.assertTrue(self.instance_mock.key_name in resource_string)
         self.assertTrue(self.instance_mock.region.name in resource_string)
 
-    def test_delete(self):
+    @patch("monocyte.handler.print", create=True)
+    def test_delete(self, print_mock):
         resource = handler.Resource(self.instance_mock, self.negative_fake_region.name)
         connection = self.boto_mock.ec2.connect_to_region.return_value
-        connection.terminate_instances.side_effect = boto.exception.EC2ResponseError(412, 'boom')
+
+        e = boto.exception.EC2ResponseError(412, 'boom')
+        e.message = "test"
+        connection.terminate_instances.side_effect = e
 
         deleted_resource = self.ec2_handler_filter.delete(resource)[0]
         self.assertEquals(self.instance_mock, deleted_resource)
+        print_mock.assert_called_with("\tTermination test")
 
     def _given_instance_mock(self):
         instance_mock = Mock(boto.ec2.instance, image_id="ami-1112")
