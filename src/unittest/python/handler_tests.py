@@ -9,7 +9,8 @@ import boto.exception
 class EC2HandlerTest(TestCase):
 
     def setUp(self):
-        self.boto_mock = patch("monocyte.handler.boto").start()
+        self.boto_patcher = patch("monocyte.handler.boto")
+        self.boto_mock = self.boto_patcher.start()
         self.positive_fake_region = Mock(boto.ec2.regioninfo)
         self.positive_fake_region.name = "allowed_region"
         self.negative_fake_region = Mock(boto.ec2.regioninfo)
@@ -21,7 +22,7 @@ class EC2HandlerTest(TestCase):
         self.instance_mock = self._given_instance_mock()
 
     def tearDown(self):
-        self.boto_mock.stop()
+        self.boto_patcher.stop()
 
     def test_fetch_all_resources_filtered(self):
         only_resource = list(self.ec2_handler_filter.fetch_all_resources())[0]
@@ -66,11 +67,12 @@ class S3HandlerTest(TestCase):
 
     def setUp(self):
         self.s3_handler = handler.S3()
-        self.boto_mock = patch("monocyte.handler.boto").start()
+        self.boto_patcher = patch("monocyte.handler.boto")
+        self.boto_mock = self.boto_patcher.start()
         self.bucket_mock = self._given_bucket_mock()
 
     def tearDown(self):
-        self.boto_mock.stop()
+        self.boto_patcher.stop()
 
     def test_fetch_all_resources(self):
         only_resource = list(self.s3_handler.fetch_all_resources())[0]
