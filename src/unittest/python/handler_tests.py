@@ -71,10 +71,10 @@ class EC2HandlerTest(TestCase):
 class S3HandlerTest(TestCase):
 
     def setUp(self):
-        self.s3_handler = handler.S3(lambda region_name: True)
         self.boto_patcher = patch("monocyte.handler.boto")
         self.boto_mock = self.boto_patcher.start()
         self.bucket_mock = self._given_bucket_mock()
+        self.s3_handler = handler.S3(lambda region_name: True)
 
     def tearDown(self):
         self.boto_patcher.stop()
