@@ -29,5 +29,5 @@ class MonocyteTest(TestCase):
 
     def test_handle_service(self):
         handler = Mock()
-        handler.fetch_all_resources.return_value = [Resource("foo", "some_region")]
+        handler.fetch_unwanted_resources.return_value = [Resource("foo", "some_region")]
         self.monocyte.handle_service(handler)

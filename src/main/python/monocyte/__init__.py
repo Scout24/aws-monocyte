@@ -33,7 +33,7 @@ class Monocyte(object):
             self.handle_service(specific_handler)
 
     def handle_service(self, specific_handler):
-        for resource in specific_handler.fetch_all_resources():
+        for resource in specific_handler.fetch_unwanted_resources():
             if not self.is_region_allowed(resource.region):
                 print("\n%s\n\t%s" % (
                     specific_handler.to_string(resource),

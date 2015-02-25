@@ -38,7 +38,7 @@ class EC2(object):
         self.regions = [region for region in boto.ec2.regions() if region_filter(region.name)]
         self.dry_run = dry_run
 
-    def fetch_all_resources(self):
+    def fetch_unwanted_resources(self):
         for region in self.regions:
             connection = boto.ec2.connect_to_region(region.name)
             resources = connection.get_only_instances() or []
@@ -79,7 +79,7 @@ class S3(object):
         self.region_filter = region_filter
         self.dry_run = dry_run
 
-    def fetch_all_resources(self):
+    def fetch_unwanted_resources(self):
         connection = boto.connect_s3()
         for bucket in connection.get_all_buckets():
             try:
@@ -111,3 +111,6 @@ class S3(object):
                     print("\tkey '{}'".format(key.name))
         else:
             raise NotImplementedError("really deleting s3 buckets not yet implemented")
+            for key in resource.wrapped.list():
+                pass
+
