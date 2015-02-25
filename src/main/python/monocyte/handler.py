@@ -73,9 +73,10 @@ class EC2(object):
 @aws_handler
 class S3(object):
     SERVICE_NAME = "s3"
+    NR_KEYS_TO_SHOW = 4
 
-    def __init__(self, *ignored):
-        pass
+    def __init__(self, dry_run=True, *ignored):
+        self.dry_run = dry_run
 
     def fetch_all_resources(self):
         connection = boto.connect_s3()
@@ -96,5 +97,15 @@ class S3(object):
                                                                    resource.wrapped.name,
                                                                    resource.wrapped.creation_date)
 
-    def delete(self, instance):
-        pass
+    def delete(self, resource):
+        if self.dry_run:
+            nr_keys = len(resource.wrapped.get_all_keys())
+            print("\t{} entries would be removed:".format(nr_keys))
+            if nr_keys:
+                for nr, key in enumerate(resource.wrapped.list()):
+                    if nr >= S3.NR_KEYS_TO_SHOW:
+                        print("\t... (skip remaining {} keys)".format(nr_keys - S3.NR_KEYS_TO_SHOW))
+                        break
+                    print("\tkey '{}'".format(key.name))
+        else:
+            raise NotImplementedError("really deleting s3 buckets not yet implemented")
