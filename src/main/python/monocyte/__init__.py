@@ -1,5 +1,7 @@
 from __future__ import print_function
 
+import sys
+
 from monocyte.handler import aws_handler
 
 REMOVE_WARNING = "WARNING: region '%s' not allowed!"
@@ -21,10 +23,17 @@ class Monocyte(object):
     def search_and_destroy_unwanted_resources(self, dry_run=True):
         if dry_run:
             print(" DRY RUN " * 8)
+            print()
 
         specific_handlers = [handler_cls(self.is_region_handled, dry_run) for handler_cls in aws_handler.all]
-        print("       registered handlers: {}".format(
-                " ".join([handler.name for handler in specific_handlers])))
+        for handler in specific_handlers:
+            if not hasattr(handler, "order"):
+                handler.order = sys.maxint
+
+        specific_handlers = sorted(specific_handlers, key=lambda handler: handler.order)
+        print("     order of aws handlers: {}".format(
+                " -> ".join([handler.name for handler in specific_handlers])))
+
         print("allowed regions start with: {}".format(ALLOWED_REGIONS_STARTS_WITH))
         print("           ignored regions: {}".format(" ".join(IGNORED_REGIONS)))
 

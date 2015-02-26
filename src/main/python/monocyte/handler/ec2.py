@@ -14,6 +14,7 @@ class Handler(object):
         self.regions = [region for region in boto.ec2.regions() if region_filter(region.name)]
         self.dry_run = dry_run
         self.name = __name__.rsplit(".", 1)[1]
+        self.order = 2
 
     def fetch_unwanted_resources(self):
         for region in self.regions:
