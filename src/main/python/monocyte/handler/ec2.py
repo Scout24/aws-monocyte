@@ -68,4 +68,17 @@ class Volume(object):
                "{id} {status}, since {create_time}".format(**vars(resource.wrapped))
 
     def delete(self, resource):
-        pass
+        connection = boto.ec2.connect_to_region(resource.region)
+        print(vars(resource.wrapped))
+        if self.dry_run:
+            try:
+                connection.delete_volume(resource.wrapped.id, dry_run=True)
+            except EC2ResponseError as e:
+                if e.status == 412:  # Precondition Failed
+                    print("\tTermination {message}".format(**vars(e)))
+                    return [resource.wrapped]
+                raise
+        else:
+            print("\tInitiating deletion of EBS volume {0}".format(resource.wrapped.id))
+            connection.delete_volume(resource.wrapped.id, dry_run=False)
+
