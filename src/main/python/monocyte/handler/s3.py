@@ -7,6 +7,7 @@ from monocyte.handler import Resource, aws_handler
 
 US_STANDARD_REGION = "us-east-1"
 
+
 @aws_handler
 class Handler(object):
     SERVICE_NAME = "s3"

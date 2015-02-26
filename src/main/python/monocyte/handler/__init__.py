@@ -1,4 +1,6 @@
 from __future__ import print_function
+import os
+
 
 def make_registrar():
     registry = set()
@@ -19,7 +21,6 @@ class Resource(object):
         self.wrapped = resource
         self.region = region
 
-import os
 for module in os.listdir(os.path.dirname(__file__)):
     if module == '__init__.py' or module[-3:] != '.py':
         continue
