@@ -10,8 +10,11 @@ US_STANDARD_REGION = "us-east-1"
 
 @aws_handler
 class Handler(object):
-    SERVICE_NAME = "s3"
     NR_KEYS_TO_SHOW = 4
+
+    @classmethod
+    def name(cls):
+        return __name__.rsplit(".", 1)[1]
 
     def __init__(self, region_filter, dry_run=True):
         self.region_filter = region_filter

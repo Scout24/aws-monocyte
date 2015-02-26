@@ -8,9 +8,11 @@ from monocyte.handler import Resource, aws_handler
 
 @aws_handler
 class Handler(object):
-    SERVICE_NAME = "ec2"
-
     VALID_TARGET_STATES = ["terminated", "shutting-down"]
+
+    @classmethod
+    def name(cls):
+        return __name__.rsplit(".", 1)[1]
 
     def __init__(self, region_filter, dry_run=True):
         self.regions = [region for region in boto.ec2.regions() if region_filter(region.name)]

@@ -22,13 +22,13 @@ class Monocyte(object):
         if dry_run:
             print(" DRY RUN " * 8)
 
-        registered_handlers = [handler_cls.SERVICE_NAME for handler_cls in aws_handler.all]
+        registered_handlers = [handler_cls.name() for handler_cls in aws_handler.all]
         print("       registered handlers: {}".format(" ".join(registered_handlers)))
         print("allowed regions start with: {}".format(ALLOWED_REGIONS_STARTS_WITH))
         print("           ignored regions: {}".format(" ".join(IGNORED_REGIONS)))
 
         for handler_cls in aws_handler.all:
-            print("\n---- checking %s resources" % handler_cls.SERVICE_NAME)
+            print("\n---- checking %s resources" % handler_cls.name())
             specific_handler = handler_cls(self.is_region_handled, dry_run)
             self.handle_service(specific_handler)
 
