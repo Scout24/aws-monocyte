@@ -15,7 +15,7 @@ class EC2HandlerTest(TestCase):
         self.positive_fake_region = Mock(boto.ec2.regioninfo.EC2RegionInfo)
         self.positive_fake_region.name = "allowed_region"
         self.negative_fake_region = Mock(boto.ec2.regioninfo.EC2RegionInfo)
-        self.negative_fake_region.name = "forbbiden_region"
+        self.negative_fake_region.name = "forbidden_region"
 
         self.boto_mock.ec2.regions.return_value = [self.positive_fake_region, self.negative_fake_region]
         self.ec2_handler_filter = ec2.Instance(lambda region_name: region_name == self.positive_fake_region.name)
