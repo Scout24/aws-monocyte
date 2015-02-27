@@ -87,3 +87,7 @@ coverage.xml
 
 # PyBuilder
 target/
+
+bootstrap.py
+
+venv*
