@@ -3,11 +3,11 @@ from __future__ import print_function
 import boto
 import boto.cloudformation
 
-from monocyte.handler import Resource, aws_handler
+from monocyte.handler import Resource, Handler, aws_handler
 
 
 @aws_handler
-class Handler(object):
+class Handler(Handler):
 
     VALID_TARGET_STATES = ["DELETE_COMPLETE", "DELETE_IN_PROGRESS"]
 
@@ -15,7 +15,6 @@ class Handler(object):
         self.regions = [region for region in boto.cloudformation.regions() if region_filter(region.name)]
         self.dry_run = dry_run
         self.name = "cloudformation"
-        self.order = 1
 
     def fetch_unwanted_resources(self):
         for region in self.regions:

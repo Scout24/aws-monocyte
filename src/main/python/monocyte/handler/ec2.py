@@ -3,11 +3,11 @@ from __future__ import print_function
 import boto
 import boto.ec2
 from boto.exception import EC2ResponseError
-from monocyte.handler import Resource, aws_handler
+from monocyte.handler import Resource, Handler, aws_handler
 
 
 @aws_handler
-class Instance(object):
+class Instance(Handler):
     VALID_TARGET_STATES = ["terminated", "shutting-down"]
 
     def __init__(self, region_filter, dry_run=True):
@@ -49,7 +49,7 @@ class Instance(object):
 
 
 @aws_handler
-class Volume(object):
+class Volume(Handler):
     def __init__(self, region_filter, dry_run=True):
         self.regions = [region for region in boto.ec2.regions() if region_filter(region.name)]
         self.dry_run = dry_run

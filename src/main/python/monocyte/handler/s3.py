@@ -3,13 +3,13 @@ from __future__ import print_function
 import boto
 import boto.ec2
 from boto.exception import S3ResponseError
-from monocyte.handler import Resource, aws_handler
+from monocyte.handler import Resource, Handler, aws_handler
 
 US_STANDARD_REGION = "us-east-1"
 
 
 @aws_handler
-class Handler(object):
+class Handler(Handler):
     NR_KEYS_TO_SHOW = 4
 
     def __init__(self, region_filter, dry_run=True):

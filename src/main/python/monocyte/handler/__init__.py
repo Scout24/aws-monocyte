@@ -22,6 +22,18 @@ class Resource(object):
         self.wrapped = resource
         self.region = region
 
+
+class Handler(object):
+    def fetch_unwanted_resources(self):
+        raise NotImplementedError("Should have implemented this")
+
+    def to_string(self, resource):
+        raise NotImplementedError("Should have implemented this")
+
+    def delete(self, resource):
+        raise NotImplementedError("Should have implemented this")
+
+
 module = None
 for module in os.listdir(os.path.dirname(__file__)):
     if module == '__init__.py' or module[-3:] != '.py':
