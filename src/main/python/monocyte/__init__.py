@@ -25,20 +25,20 @@ class Monocyte(object):
             print()
 
         specific_handlers = [handler_cls(self.is_region_handled, dry_run) for handler_cls in aws_handler.all]
-        for handler in specific_handlers:
-            if not hasattr(handler, "order"):
-                handler.order = sys.maxsize
+        for specific_handler in specific_handlers:
+            if not hasattr(specific_handler, "order"):
+                specific_handler.order = sys.maxsize
 
-        specific_handlers = sorted(specific_handlers, key=lambda handler: handler.order)
+        specific_handlers = sorted(specific_handlers, key=lambda handler_item: handler_item.order)
         print("     order of aws handlers: {}".format(
-            " -> ".join([handler.name for handler in specific_handlers])))
+            " -> ".join([specific_handler.name for specific_handler in specific_handlers])))
 
         print("allowed regions start with: {}".format(ALLOWED_REGIONS_STARTS_WITH))
         print("           ignored regions: {}".format(" ".join(IGNORED_REGIONS)))
 
-        for handler in specific_handlers:
-            print("\n---- checking %s resources" % handler.name)
-            self.handle_service(handler)
+        for specific_handler in specific_handlers:
+            print("\n---- checking %s resources" % specific_handler.name)
+            self.handle_service(specific_handler)
 
     def handle_service(self, specific_handler):
         for resource in specific_handler.fetch_unwanted_resources():
