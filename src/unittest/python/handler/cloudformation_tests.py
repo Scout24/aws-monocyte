@@ -3,6 +3,7 @@ import boto.cloudformation.stack
 
 from unittest import TestCase
 from mock import patch, Mock
+
 from monocyte.handler import cloudformation
 
 
@@ -27,10 +28,23 @@ class CloudFormationTest(TestCase):
         only_resource = list(self.cloudformation_handler_filter.fetch_unwanted_resources())[0]
         self.assertEquals(only_resource.wrapped, self.stack_mock)
 
+    def test_to_string(self):
+        only_resource = list(self.cloudformation_handler_filter.fetch_unwanted_resources())[0]
+        resource_string = self.cloudformation_handler_filter.to_string(only_resource)
+
+        self.assertTrue(self.stack_mock.stack_status in resource_string)
+        self.assertTrue(self.stack_mock.creation_time in resource_string)
+        self.assertTrue(self.stack_mock.region in resource_string)
+
+    def test_delete(self):
+
+
     def _given_stack_mock(self):
         stack_mock = Mock(boto.cloudformation.stack.Stack, stack_name="test-stack")
         stack_mock.stack_id = "id-12345"
         stack_mock.stack_status = "CREATE_COMPLETE"
+        stack_mock.creation_time = "01.01.2015"
+        stack_mock.region = self.positive_fake_region.name
 
         self.boto_mock.cloudformation.connect_to_region.return_value.valid_states = ('CREATE_COMPLETE',
                                                                                      'DELETE_COMPLETE')
