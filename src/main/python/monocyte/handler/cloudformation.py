@@ -20,10 +20,11 @@ class Handler(object):
     def fetch_unwanted_resources(self):
         for region in self.regions:
             connection = boto.cloudformation.connect_to_region(region.name)
-            resources = connection.list_stacks() or []
+            unwanted_states = set(connection.valid_states)
+            unwanted_states.remove("DELETE_COMPLETE")
+            resources = connection.list_stacks(stack_status_filters=list(unwanted_states)) or []
             for resource in resources:
                 yield Resource(resource, region.name)
-
 
     def to_string(self, resource):
         return "CloudFormation Stack found in {region} \n\t".format(**vars(resource)) + \

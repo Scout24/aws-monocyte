@@ -81,4 +81,3 @@ class Volume(object):
         else:
             print("\tInitiating deletion of EBS volume {0}".format(resource.wrapped.id))
             connection.delete_volume(resource.wrapped.id, dry_run=False)
-
