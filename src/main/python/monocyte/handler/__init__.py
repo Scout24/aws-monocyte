@@ -22,6 +22,7 @@ class Resource(object):
         self.wrapped = resource
         self.region = region
 
+module = None
 for module in os.listdir(os.path.dirname(__file__)):
     if module == '__init__.py' or module[-3:] != '.py':
         continue
