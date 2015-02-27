@@ -28,7 +28,7 @@ class Monocyte(object):
         specific_handlers = [handler_cls(self.is_region_handled, dry_run) for handler_cls in aws_handler.all]
         for handler in specific_handlers:
             if not hasattr(handler, "order"):
-                handler.order = sys.maxint
+                handler.order = sys.maxsize
 
         specific_handlers = sorted(specific_handlers, key=lambda handler: handler.order)
         print("     order of aws handlers: {}".format(
