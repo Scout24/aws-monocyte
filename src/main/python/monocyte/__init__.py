@@ -10,7 +10,6 @@ ALLOWED_REGIONS_STARTS_WITH = "eu"
 
 
 class Monocyte(object):
-
     def is_region_allowed(self, region):
         return region.lower().startswith(ALLOWED_REGIONS_STARTS_WITH)
 
@@ -32,7 +31,7 @@ class Monocyte(object):
 
         specific_handlers = sorted(specific_handlers, key=lambda handler: handler.order)
         print("     order of aws handlers: {}".format(
-                " -> ".join([handler.name for handler in specific_handlers])))
+            " -> ".join([handler.name for handler in specific_handlers])))
 
         print("allowed regions start with: {}".format(ALLOWED_REGIONS_STARTS_WITH))
         print("           ignored regions: {}".format(" ".join(IGNORED_REGIONS)))
