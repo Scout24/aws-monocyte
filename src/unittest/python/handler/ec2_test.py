@@ -1,5 +1,7 @@
 import boto.ec2
 import boto.exception
+import boto.ec2.regioninfo
+import boto.ec2.instance
 from unittest import TestCase
 from mock import patch, Mock
 from monocyte.handler import ec2
@@ -10,13 +12,13 @@ class EC2HandlerTest(TestCase):
 
     def setUp(self):
         self.boto_mock = patch("monocyte.handler.ec2.boto").start()
-        self.positive_fake_region = Mock(boto.ec2.regioninfo)
+        self.positive_fake_region = Mock(boto.ec2.regioninfo.EC2RegionInfo)
         self.positive_fake_region.name = "allowed_region"
-        self.negative_fake_region = Mock(boto.ec2.regioninfo)
+        self.negative_fake_region = Mock(boto.ec2.regioninfo.EC2RegionInfo)
         self.negative_fake_region.name = "forbbiden_region"
 
         self.boto_mock.ec2.regions.return_value = [self.positive_fake_region, self.negative_fake_region]
-        self.ec2_handler_filter = ec2.Handler(lambda region_name: region_name == self.positive_fake_region.name)
+        self.ec2_handler_filter = ec2.Instance(lambda region_name: region_name == self.positive_fake_region.name)
 
         self.instance_mock = self._given_instance_mock()
 
