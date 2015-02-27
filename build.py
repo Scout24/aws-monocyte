@@ -18,7 +18,8 @@ version = '0.0.1'
 summary = 'A Python-bot for destroying AWS resources in non-Europe regions.'
 description = """
     Monocyte is a bot for destroying AWS resources in non-EU regions written in Python using Boto.
-    It is especially useful for companies that are bound to European privacy laws and for that reason don't want to process user data in non-EU regions.
+    It is especially useful for companies that are bound to European privacy laws
+    and for that reason don't want to process user data in non-EU regions.
     """
 authors = [Author('Jan Brennenstuhl', 'jan@brennenstuhl.me'),
            Author('Arne Hilmann', 'arne.hilmann@gmail.com')]
