@@ -37,7 +37,7 @@ class CloudFormationTest(TestCase):
         self.assertTrue(self.stack_mock.region in resource_string)
 
     def test_delete(self):
-
+        pass
 
     def _given_stack_mock(self):
         stack_mock = Mock(boto.cloudformation.stack.Stack, stack_name="test-stack")
