@@ -17,20 +17,18 @@ from __future__ import print_function
 
 import boto
 from boto.exception import S3ResponseError
-from monocyte.handler import Resource, Handler, aws_handler
+from monocyte.handler import Resource, Handler
 
 US_STANDARD_REGION = "us-east-1"
 
 
-@aws_handler
-class Handler(Handler):
+class Bucket(Handler):
     NR_KEYS_TO_SHOW = 4
 
     def __init__(self, region_filter, dry_run=True):
         self.region_filter = region_filter
         self.dry_run = dry_run
         self.name = __name__.rsplit(".", 1)[1]
-        self.order = 99
         self.connection = boto.connect_s3()
 
     def fetch_unwanted_resources(self):
@@ -58,8 +56,8 @@ class Handler(Handler):
             print("\t{} entries would be removed:".format(nr_keys))
             if nr_keys:
                 for nr, key in enumerate(resource.wrapped.list()):
-                    if nr >= Handler.NR_KEYS_TO_SHOW:
-                        print("\t... (skip remaining {} keys)".format(nr_keys - Handler.NR_KEYS_TO_SHOW))
+                    if nr >= Bucket.NR_KEYS_TO_SHOW:
+                        print("\t... (skip remaining {} keys)".format(nr_keys - Bucket.NR_KEYS_TO_SHOW))
                         break
                     print("\tkey '{}'".format(key.name))
             return

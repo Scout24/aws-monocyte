@@ -18,11 +18,10 @@ from __future__ import print_function
 import boto
 import boto.cloudformation
 
-from monocyte.handler import Resource, Handler, aws_handler
+from monocyte.handler import Resource, Handler
 
 
-@aws_handler
-class Handler(Handler):
+class Stack(Handler):
 
     VALID_TARGET_STATES = ["DELETE_COMPLETE", "DELETE_IN_PROGRESS"]
 
@@ -30,7 +29,6 @@ class Handler(Handler):
         self.regions = [region for region in boto.cloudformation.regions() if region_filter(region.name)]
         self.dry_run = dry_run
         self.name = "cloudformation"
-        self.order = 0
 
     def fetch_unwanted_resources(self):
         for region in self.regions:
@@ -47,9 +45,9 @@ class Handler(Handler):
                "\n\tstate {stack_status}".format(**vars(resource.wrapped))
 
     def delete(self, resource):
-        if resource.wrapped.stack_status in Handler.VALID_TARGET_STATES:
+        if resource.wrapped.stack_status in Stack.VALID_TARGET_STATES:
             print("\tstate '{}' is a valid target state ({}), skipping".format(
-                resource.wrapped.stack_status, ", ".join(Handler.VALID_TARGET_STATES)))
+                resource.wrapped.stack_status, ", ".join(Stack.VALID_TARGET_STATES)))
             return
         if self.dry_run:
             print("\tStack would be removed")

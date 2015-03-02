@@ -15,11 +15,12 @@
 # limitations under the License.
 
 """
-Usage:
-    monocyte [--dry-run=bool]
+usage:
+    monocyte [options]
 
 options:
     --dry-run=bool valid values "True" or "False" [default: True]
+    --use-handlers=HANDLER1,HANDLER2,...    aws handlers to use (order might be important) [default: cloudformation.Stack, ec2.Instance, ec2.Volume, rds2.Instance, s3.Bucket]
 """
 
 from __future__ import print_function
@@ -31,7 +32,8 @@ from monocyte import Monocyte
 
 arguments = docopt(__doc__)
 dry_run = (arguments["--dry-run"] != "False")
+handlers = [h.strip() for h in arguments["--use-handlers"].split(",")]
 
 print("monocyte - search and destroy unwanted aws resources relentlessly\n")
 
-sys.exit(Monocyte().search_and_destroy_unwanted_resources(dry_run))
+sys.exit(Monocyte().search_and_destroy_unwanted_resources(handlers, dry_run))

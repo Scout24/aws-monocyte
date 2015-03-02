@@ -21,12 +21,12 @@ from mock import patch, Mock
 from monocyte.handler import s3
 
 
-class S3HandlerTest(TestCase):
+class S3BucketTest(TestCase):
 
     def setUp(self):
         self.boto_mock = patch("monocyte.handler.s3.boto").start()
         self.bucket_mock = self._given_bucket_mock()
-        self.s3_handler = s3.Handler(lambda region_name: True)
+        self.s3_handler = s3.Bucket(lambda region_name: True)
 
     def tearDown(self):
         patch.stopall()

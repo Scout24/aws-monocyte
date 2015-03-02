@@ -18,10 +18,9 @@ from __future__ import print_function
 import boto
 import boto.ec2
 from boto.exception import EC2ResponseError
-from monocyte.handler import Resource, Handler, aws_handler
+from monocyte.handler import Resource, Handler
 
 
-@aws_handler
 class Instance(Handler):
     VALID_TARGET_STATES = ["terminated", "shutting-down"]
 
@@ -29,7 +28,6 @@ class Instance(Handler):
         self.regions = [region for region in boto.ec2.regions() if region_filter(region.name)]
         self.dry_run = dry_run
         self.name = "ec2.instance"
-        self.order = 2
 
     def fetch_unwanted_resources(self):
         for region in self.regions:
@@ -63,13 +61,11 @@ class Instance(Handler):
             return instances
 
 
-@aws_handler
 class Volume(Handler):
     def __init__(self, region_filter, dry_run=True):
         self.regions = [region for region in boto.ec2.regions() if region_filter(region.name)]
         self.dry_run = dry_run
         self.name = "ec2.volume"
-        self.order = 3
 
     def fetch_unwanted_resources(self):
         for region in self.regions:
