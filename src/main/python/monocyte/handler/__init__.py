@@ -23,8 +23,16 @@ class Resource(object):
         self.wrapped = resource
         self.region = region
 
+HANDLER_PREFIX = "monocyte.handler."
+
 
 class Handler(object):
+
+    @property
+    def name(self):
+        full_name = "%s.%s" % (self.__class__.__module__, self.__class__.__name__)
+        return full_name.replace(HANDLER_PREFIX, "")
+
     def fetch_unwanted_resources(self):
         raise NotImplementedError("Should have implemented this")
 
@@ -39,5 +47,5 @@ module = None
 for module in os.listdir(os.path.dirname(__file__)):
     if module == '__init__.py' or module[-3:] != '.py':
         continue
-    __import__("monocyte.handler." + module[:-3], locals(), globals())
+    __import__(HANDLER_PREFIX + module[:-3], locals(), globals())
 del module

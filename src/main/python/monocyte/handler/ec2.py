@@ -27,7 +27,6 @@ class Instance(Handler):
     def __init__(self, region_filter, dry_run=True):
         self.regions = [region for region in boto.ec2.regions() if region_filter(region.name)]
         self.dry_run = dry_run
-        self.name = "ec2.instance"
 
     def fetch_unwanted_resources(self):
         for region in self.regions:
@@ -65,7 +64,6 @@ class Volume(Handler):
     def __init__(self, region_filter, dry_run=True):
         self.regions = [region for region in boto.ec2.regions() if region_filter(region.name)]
         self.dry_run = dry_run
-        self.name = "ec2.volume"
 
     def fetch_unwanted_resources(self):
         for region in self.regions:

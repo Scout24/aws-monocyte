@@ -28,7 +28,6 @@ class Bucket(Handler):
     def __init__(self, region_filter, dry_run=True):
         self.region_filter = region_filter
         self.dry_run = dry_run
-        self.name = __name__.rsplit(".", 1)[1]
         self.connection = boto.connect_s3()
 
     def fetch_unwanted_resources(self):

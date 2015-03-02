@@ -28,7 +28,6 @@ class Stack(Handler):
     def __init__(self, region_filter, dry_run=True):
         self.regions = [region for region in boto.cloudformation.regions() if region_filter(region.name)]
         self.dry_run = dry_run
-        self.name = "cloudformation"
 
     def fetch_unwanted_resources(self):
         for region in self.regions:
