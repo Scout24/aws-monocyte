@@ -23,8 +23,8 @@ description = """
     """
 authors = [Author('Jan Brennenstuhl', 'jan@brennenstuhl.me'),
            Author('Arne Hilmann', 'arne.hilmann@gmail.com')]
-url = ''
-license = 'GNU GPL v3.0'
+url = 'https://github.com/ImmobilienScout24/aws-monocyte'
+license = 'Apache License 2.0'
 
 
 @init

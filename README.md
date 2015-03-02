@@ -10,6 +10,8 @@ It is especially useful for companies that are bound to European privacy laws an
 The name [Monocyte](https://en.wikipedia.org/wiki/Monocyte) is related to a type of white blood cells that are part of a humans innate immune system, the first line of defense being responsible for searching and destroying alien organisms to prevent unwanted infections.
 
 ## Prerequisites
-- [boto SDK](http://docs.pythonboto.org/en/latest/getting_started.html)
-- [AWS credentials for boto](http://docs.pythonboto.org/en/latest/boto_config_tut.html#credentials)
+- [Boto SDK](http://docs.pythonboto.org/en/latest/getting_started.html)
+- [AWS Credentials for Boto](http://docs.pythonboto.org/en/latest/boto_config_tut.html#credentials)
 
+## Licensing 
+Monocyte is licensed under [Apache License, Version 2.0](https://github.com/ImmobilienScout24/aws-monocyte/blob/master/LICENSE.txt).
