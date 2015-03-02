@@ -30,6 +30,7 @@ class Handler(Handler):
         self.region_filter = region_filter
         self.dry_run = dry_run
         self.name = __name__.rsplit(".", 1)[1]
+        self.order = 99
         self.connection = boto.connect_s3()
 
     def fetch_unwanted_resources(self):

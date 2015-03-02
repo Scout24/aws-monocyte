@@ -30,6 +30,7 @@ class Handler(Handler):
         self.regions = [region for region in boto.cloudformation.regions() if region_filter(region.name)]
         self.dry_run = dry_run
         self.name = "cloudformation"
+        self.order = 0
 
     def fetch_unwanted_resources(self):
         for region in self.regions:

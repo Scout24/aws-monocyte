@@ -27,6 +27,7 @@ class Instance(Handler):
         self.regions = [region for region in boto.rds2.regions() if region_filter(region.name)]
         self.dry_run = dry_run
         self.name = "rds2.instance"
+        self.order = 6
 
     def fetch_unwanted_resources(self):
         for region in self.regions:
