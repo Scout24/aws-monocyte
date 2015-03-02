@@ -38,6 +38,12 @@ class Instance(Handler):
                "{DBInstanceIdentifier}, status {DBInstanceStatus}".format(**resource.wrapped)
 
     def delete(self, resource):
-        # delete_db_instance
-        # delete_db_snapshot
-        pass
+        if self.dry_run:
+            print("\t... would be deleted")
+            return
+        if resource.wrapped["DBInstanceStatus"] == "deleting":
+            print("\tdeletion already in progress")
+            return
+        print("\tInitiating deletion sequence")
+        connection = boto.rds2.connect_to_region(resource.region)
+        connection.delete_db_instance(resource.wrapped["DBInstanceIdentifier"], skip_final_snapshot=True)
