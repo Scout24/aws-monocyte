@@ -136,6 +136,16 @@ class RDSSnapshotTest(TestCase):
         only_resource = list(self.rds_snapshot.fetch_unwanted_resources())[0]
         self.assertEquals(only_resource.wrapped, self.snapshot_mock)
 
+    def test_to_string(self):
+        self.boto_mock.rds2.connect_to_region.return_value.describe_db_snapshots.return_value = \
+            self._given_db_snapshot_response()
+
+        only_resource = list(self.rds_snapshot.fetch_unwanted_resources())[0]
+        resource_string = self.rds_snapshot.to_string(only_resource)
+
+        self.assertTrue(self.snapshot_mock["DBSnapshotIdentifier"] in resource_string)
+        self.assertTrue(self.snapshot_mock["Status"] in resource_string)
+
     def _given_db_snapshot_response(self):
         return {
             "DescribeDBSnapshotsResponse": {
