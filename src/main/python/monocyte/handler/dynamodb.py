@@ -15,7 +15,7 @@
 
 from __future__ import print_function
 
-import sys
+import datetime
 
 import boto
 import boto.dynamodb2
@@ -37,9 +37,12 @@ class Table(Handler):
                 yield Resource(resource["Table"], region.name)
 
     def to_string(self, resource):
-        return "DynamoDB Table found in {region}".format(**vars(resource)) + \
-               "\n\t{TableName}, since {CreationDateTime}" \
-               "\n\tstate {TableStatus}".format(**resource.wrapped)
+        table = resource.wrapped
+        return "DynamoDB Table found in {}".format(resource.region) + \
+               "\n\t{}, since {}, state {}".format(
+                       table["TableName"],
+                       datetime.datetime.fromtimestamp(table["CreationDateTime"]).strftime('%Y-%m-%d %H:%M:%S.%f'),
+                       table["TableStatus"])
 
     def delete(self, resource):
         if self.dry_run:
