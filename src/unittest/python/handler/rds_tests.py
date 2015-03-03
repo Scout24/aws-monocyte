@@ -54,11 +54,37 @@ class RDSHandlerTest(TestCase):
 
     @patch("monocyte.handler.rds2.print", create=True)
     def test_skip_deletion_in_dry_run(self, print_mock):
+        self.rds_instance.dry_run = True
         resource = Resource(self.instance_mock, self.negative_fake_region.name)
 
         deleted_resource = self.rds_instance.delete(resource)
-        print_mock.assert_called_with("\t... would be deleted")
+        print_mock.assert_called_with("\tDry Run: Would be deleted otherwise.")
         self.assertEquals(None, deleted_resource)
+
+    @patch("monocyte.handler.rds2.print", create=True)
+    def test_skip_deletion_if_already_deleted(self, print_mock):
+        self.rds_instance.dry_run = False
+        self.instance_mock["DBInstanceStatus"] = "deleting"
+
+        resource = Resource(self.instance_mock, self.negative_fake_region.name)
+
+        deleted_resource = self.rds_instance.delete(resource)
+        print_mock.assert_called_with("\tDeletion already in progress. Skipping.")
+        self.assertEquals(None, deleted_resource)
+
+    @patch("monocyte.handler.rds2.print", create=True)
+    def test_does_delete_if_not_dry_run(self, print_mock):
+        self.rds_instance.dry_run = False
+
+        resource = Resource(self.instance_mock, self.negative_fake_region.name)
+
+        self.boto_mock.rds2.connect_to_region.return_value.delete_db_instance.return_value = \
+            self._given_delete_db_instance_response()
+
+        deleted_resource = self.rds_instance.delete(resource)
+        print_mock.assert_called_with("\tInitiating deletion sequence.")
+        self.assertEquals(self.instance_mock["DBInstanceIdentifier"], deleted_resource["DBInstanceIdentifier"])
+        self.assertEquals("deleting", deleted_resource["DBInstanceStatus"])
 
     def _given_db_instances_response(self):
         return {
@@ -70,8 +96,19 @@ class RDSHandlerTest(TestCase):
         }
 
     def _given_instance_mock(self):
-        instance_mock = {
+        return {
             "DBInstanceIdentifier": "myInstanceIdentifier",
             "DBInstanceStatus": "myStatus"
         }
-        return instance_mock
+
+    def _given_delete_db_instance_response(self):
+        return {
+            "DeleteDBInstanceResponse": {
+                "DeleteDBInstanceResult": {
+                    "DBInstance": {
+                        "DBInstanceStatus": "deleting",
+                        "DBInstanceIdentifier": self.instance_mock["DBInstanceIdentifier"]
+                    }
+                }
+            }
+        }
