@@ -46,4 +46,4 @@ class Instance(Handler):
             return
         print("\tInitiating deletion sequence")
         connection = boto.rds2.connect_to_region(resource.region)
-        connection.delete_db_instance(resource.wrapped["DBInstanceIdentifier"], skip_final_snapshot=True)
+        return connection.delete_db_instance(resource.wrapped["DBInstanceIdentifier"], skip_final_snapshot=True)
