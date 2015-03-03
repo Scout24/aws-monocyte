@@ -1,20 +1,32 @@
+# Monocyte - An AWS Resource Destroyer
+# Copyright 2015 Immobilien Scout GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from __future__ import print_function
 
 import boto
 import boto.ec2
 from boto.exception import EC2ResponseError
-from monocyte.handler import Resource, Handler, aws_handler
+from monocyte.handler import Resource, Handler
 
 
-@aws_handler
 class Instance(Handler):
     VALID_TARGET_STATES = ["terminated", "shutting-down"]
 
     def __init__(self, region_filter, dry_run=True):
         self.regions = [region for region in boto.ec2.regions() if region_filter(region.name)]
         self.dry_run = dry_run
-        self.name = "ec2.instance"
-        self.order = 2
 
     def fetch_unwanted_resources(self):
         for region in self.regions:
@@ -48,13 +60,10 @@ class Instance(Handler):
             return instances
 
 
-@aws_handler
 class Volume(Handler):
     def __init__(self, region_filter, dry_run=True):
         self.regions = [region for region in boto.ec2.regions() if region_filter(region.name)]
         self.dry_run = dry_run
-        self.name = "ec2.volume"
-        self.order = 3
 
     def fetch_unwanted_resources(self):
         for region in self.regions:

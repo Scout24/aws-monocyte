@@ -1,3 +1,18 @@
+# Monocyte - An AWS Resource Destroyer
+# Copyright 2015 Immobilien Scout GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import boto.s3
 import boto.s3.bucket
 import boto.exception
@@ -6,12 +21,12 @@ from mock import patch, Mock
 from monocyte.handler import s3
 
 
-class S3HandlerTest(TestCase):
+class S3BucketTest(TestCase):
 
     def setUp(self):
         self.boto_mock = patch("monocyte.handler.s3.boto").start()
         self.bucket_mock = self._given_bucket_mock()
-        self.s3_handler = s3.Handler(lambda region_name: True)
+        self.s3_handler = s3.Bucket(lambda region_name: True)
 
     def tearDown(self):
         patch.stopall()
