@@ -19,6 +19,12 @@ import boto
 import boto.rds2
 from monocyte.handler import Resource, Handler
 
+SKIPPING_STATEMENT = "\tDeletion already in progress. Skipping."
+DELETION_STATEMENT = "\tInitiating deletion sequence."
+DRY_RUN_STATEMENT = "\tDRY RUN: Would be deleted otherwise."
+
+DELETING_STATUS = "deleting"
+
 
 class Instance(Handler):
 
@@ -38,12 +44,12 @@ class Instance(Handler):
 
     def delete(self, resource):
         if self.dry_run:
-            print("\tDry Run: Would be deleted otherwise.")
+            print(DRY_RUN_STATEMENT)
             return
-        if resource.wrapped["DBInstanceStatus"] == "deleting":
-            print("\tDeletion already in progress. Skipping.")
+        if resource.wrapped["DBInstanceStatus"] == DELETING_STATUS:
+            print(SKIPPING_STATEMENT)
             return
-        print("\tInitiating deletion sequence.")
+        print(DELETION_STATEMENT)
         connection = boto.rds2.connect_to_region(resource.region)
         response = connection.delete_db_instance(resource.wrapped["DBInstanceIdentifier"], skip_final_snapshot=True)
         return response["DeleteDBInstanceResponse"]["DeleteDBInstanceResult"]["DBInstance"]
@@ -66,4 +72,16 @@ class Snapshot(Handler):
                "{DBSnapshotIdentifier}, status {Status}".format(**resource.wrapped)
 
     def delete(self, resource):
-        pass
+        if self.dry_run:
+            print(DRY_RUN_STATEMENT)
+            return
+        if resource.wrapped["Status"] == DELETING_STATUS:
+            print(SKIPPING_STATEMENT)
+            return
+        if resource.wrapped["SnapshotType"] == "automated":
+            print("\tNot a manually created Snapshot. Skipping.")
+            return
+        print(DELETION_STATEMENT)
+        connection = boto.rds2.connect_to_region(resource.region)
+        response = connection.delete_db_snapshot(resource.wrapped["DBSnapshotIdentifier"])
+        return response
