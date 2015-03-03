@@ -34,7 +34,7 @@ class Instance(Handler):
                 yield Resource(resource, region.name)
 
     def to_string(self, resource):
-        return "Database found in {region} \n\t".format(**vars(resource)) + \
+        return "Database Instance found in {region} \n\t".format(**vars(resource)) + \
                "{DBInstanceIdentifier}, status {DBInstanceStatus}".format(**resource.wrapped)
 
     def delete(self, resource):
@@ -48,3 +48,24 @@ class Instance(Handler):
         connection = boto.rds2.connect_to_region(resource.region)
         response = connection.delete_db_instance(resource.wrapped["DBInstanceIdentifier"], skip_final_snapshot=True)
         return response["DeleteDBInstanceResponse"]["DeleteDBInstanceResult"]["DBInstance"]
+
+
+class Snapshot(Handler):
+
+    def __init__(self, region_filter, dry_run=True):
+        self.regions = [region for region in boto.rds2.regions() if region_filter(region.name)]
+        self.dry_run = dry_run
+
+    def fetch_unwanted_resources(self):
+        for region in self.regions:
+            connection = boto.rds2.connect_to_region(region.name)
+            resources = connection.describe_db_snapshots() or []
+            for resource in resources["DescribeDBSnapshotsResponse"]["DescribeDBSnapshotsResult"]["DBSnapshots"]:
+                yield Resource(resource, region.name)
+
+    def to_string(self, resource):
+        return "Database Snapshot found in {region} \n\t".format(**vars(resource)) + \
+               "{DBSnapshotIdentifier}, status {Status}".format(**resource.wrapped)
+
+    def delete(self, resource):
+        pass
