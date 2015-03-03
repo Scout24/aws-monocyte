@@ -146,6 +146,15 @@ class RDSSnapshotTest(TestCase):
         self.assertTrue(self.snapshot_mock["DBSnapshotIdentifier"] in resource_string)
         self.assertTrue(self.snapshot_mock["Status"] in resource_string)
 
+    @patch("monocyte.handler.rds2.print", create=True)
+    def test_skip_deletion_in_dry_run(self, print_mock):
+        self.rds_snapshot.dry_run = True
+        resource = Resource(self.snapshot_mock, self.negative_fake_region.name)
+
+        deleted_resource = self.rds_snapshot.delete(resource)
+        print_mock.assert_called_with(rds2.DRY_RUN_STATEMENT)
+        self.assertEquals(None, deleted_resource)
+
     def _given_db_snapshot_response(self):
         return {
             "DescribeDBSnapshotsResponse": {
