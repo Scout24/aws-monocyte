@@ -1,0 +1,53 @@
+# Monocyte - Search and Destroy unwanted AWS Resources relentlessly.
+# Copyright 2015 Immobilien Scout GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from __future__ import print_function
+
+import sys
+
+import boto
+import boto.dynamodb2
+
+from monocyte.handler import Resource, Handler
+
+
+class Table(Handler):
+
+    def fetch_regions(self):
+        return boto.dynamodb2.regions()
+
+    def fetch_unwanted_resources(self):
+        for region in self.regions:
+            connection = boto.dynamodb2.connect_to_region(region.name)
+            names = connection.list_tables(limit=100) or {}  # TODO what happens with more than 100 tables per region?
+            for name in names.get("TableNames"):
+                resource = connection.describe_table(name)
+                yield Resource(resource["Table"], region.name)
+
+    def to_string(self, resource):
+        return "DynamoDB Table found in {region}".format(**vars(resource)) + \
+               "\n\t{TableName}, since {CreationDateTime}" \
+               "\n\tstate {TableStatus}".format(**resource.wrapped)
+
+    def delete(self, resource):
+        if self.dry_run:
+            print("\tTable would be removed")
+            return
+        connection = boto.dynamodb2.connect_to_region(resource.region)
+        print("\tInitiating deletion sequence")
+        try:
+            connection.delete_table(resource.wrapped["TableName"])
+        except boto.dynamodb2.exceptions.ResourceInUseException as e:
+            print("\t{}".format(e))
