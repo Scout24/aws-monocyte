@@ -44,6 +44,7 @@ class Instance(Handler):
         if resource.wrapped["DBInstanceStatus"] == "deleting":
             print("\tDeletion already in progress. Skipping.")
             return
-        print("\tInitiating deletion sequence")
+        print("\tInitiating deletion sequence.")
         connection = boto.rds2.connect_to_region(resource.region)
-        return connection.delete_db_instance(resource.wrapped["DBInstanceIdentifier"], skip_final_snapshot=True)
+        response = connection.delete_db_instance(resource.wrapped["DBInstanceIdentifier"], skip_final_snapshot=True)
+        return response["DeleteDBInstanceResponse"]["DeleteDBInstanceResult"]["DBInstance"]

@@ -72,6 +72,20 @@ class RDSHandlerTest(TestCase):
         print_mock.assert_called_with("\tDeletion already in progress. Skipping.")
         self.assertEquals(None, deleted_resource)
 
+    @patch("monocyte.handler.rds2.print", create=True)
+    def test_does_delete_if_not_dry_run(self, print_mock):
+        self.rds_instance.dry_run = False
+
+        resource = Resource(self.instance_mock, self.negative_fake_region.name)
+
+        self.boto_mock.rds2.connect_to_region.return_value.delete_db_instance.return_value = \
+            self._given_delete_db_instance_response()
+
+        deleted_resource = self.rds_instance.delete(resource)
+        print_mock.assert_called_with("\tInitiating deletion sequence.")
+        self.assertEquals(self.instance_mock["DBInstanceIdentifier"], deleted_resource["DBInstanceIdentifier"])
+        self.assertEquals("deleting", deleted_resource["DBInstanceStatus"])
+
     def _given_db_instances_response(self):
         return {
             'DescribeDBInstancesResponse': {
@@ -82,8 +96,19 @@ class RDSHandlerTest(TestCase):
         }
 
     def _given_instance_mock(self):
-        instance_mock = {
+        return {
             "DBInstanceIdentifier": "myInstanceIdentifier",
             "DBInstanceStatus": "myStatus"
         }
-        return instance_mock
+
+    def _given_delete_db_instance_response(self):
+        return {
+            "DeleteDBInstanceResponse": {
+                "DeleteDBInstanceResult": {
+                    "DBInstance": {
+                        "DBInstanceStatus": "deleting",
+                        "DBInstanceIdentifier": self.instance_mock["DBInstanceIdentifier"]
+                    }
+                }
+            }
+        }
