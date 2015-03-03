@@ -58,7 +58,7 @@ class RDSHandlerTest(TestCase):
         resource = Resource(self.instance_mock, self.negative_fake_region.name)
 
         deleted_resource = self.rds_instance.delete(resource)
-        print_mock.assert_called_with(rds2.DELETION_STATEMENT)
+        print_mock.assert_called_with(rds2.DRY_RUN_STATEMENT)
         self.assertEquals(None, deleted_resource)
 
     @patch("monocyte.handler.rds2.print", create=True)
