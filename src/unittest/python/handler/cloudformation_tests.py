@@ -32,7 +32,8 @@ class CloudFormationTest(TestCase):
         self.negative_fake_region.name = "forbbiden_region"
         self.boto_mock.cloudformation.regions.return_value = [self.positive_fake_region, self.negative_fake_region]
 
-        self.cloudformation_handler_filter = cloudformation.Stack(lambda region_name: region_name == self.positive_fake_region.name)
+        self.cloudformation_handler_filter = cloudformation.Stack(
+            lambda region_name: region_name == self.positive_fake_region.name)
 
         self.stack_mock = self._given_stack_mock()
 
