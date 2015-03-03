@@ -45,9 +45,17 @@ class Monocyte(object):
         print("allowed regions start with: {}".format(ALLOWED_REGIONS_STARTS_WITH))
         print("           ignored regions: {}".format(" ".join(IGNORED_REGIONS)))
 
+        self.problematic_resources = []
         for specific_handler in specific_handlers:
             print("\n---- checking %s resources" % specific_handler.name)
             self.handle_service(specific_handler)
+
+        if self.problematic_resources:
+            print("\nproblems encountered while deleting the following resources:")
+            for resource, handler, exception in self.problematic_resources:
+                print("{:10s} {}".format(resource.region, handler.name))
+            return 1
+        return 0
 
     def handle_service(self, specific_handler):
         for resource in specific_handler.fetch_unwanted_resources():
@@ -55,7 +63,11 @@ class Monocyte(object):
                 print("\n%s\n\t%s" % (
                     specific_handler.to_string(resource),
                     REMOVE_WARNING % resource.region))
-                specific_handler.delete(resource)
+                try:
+                    specific_handler.delete(resource)
+                except BaseException as e:
+                    print("\t{}".format(e))
+                    self.problematic_resources.append((resource, specific_handler, e))
 
 
 def fetch_all_handlers():
