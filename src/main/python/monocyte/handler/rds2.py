@@ -51,9 +51,8 @@ class Instance(Handler):
 
 class Snapshot(Handler):
 
-    def __init__(self, region_filter, dry_run=True):
-        self.regions = [region for region in boto.rds2.regions() if region_filter(region.name)]
-        self.dry_run = dry_run
+    def fetch_regions(self):
+        return boto.rds2.regions()
 
     def fetch_unwanted_resources(self):
         for region in self.regions:
