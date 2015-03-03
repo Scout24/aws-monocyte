@@ -1,4 +1,4 @@
-# Monocyte - An AWS Resource Destroyer
+# Monocyte - Monocyte - Search and Destroy unwanted AWS Resources relentlessly.
 # Copyright 2015 Immobilien Scout GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");

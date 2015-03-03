@@ -15,7 +15,7 @@ default_task = ['analyze', 'publish']
 
 name = 'aws-monocyte'
 version = '0.0.1'
-summary = 'A Python-bot for destroying AWS resources in non-Europe regions.'
+summary = 'Monocyte - Search and Destroy unwanted AWS Resources relentlessly.'
 description = """
     Monocyte is a bot for destroying AWS resources in non-EU regions written in Python using Boto.
     It is especially useful for companies that are bound to European privacy laws

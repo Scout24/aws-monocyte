@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Monocyte - An AWS Resource Destroyer
+# Monocyte - Search and Destroy unwanted AWS Resources relentlessly.
 # Copyright 2015 Immobilien Scout GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,6 +35,6 @@ arguments = docopt(__doc__)
 dry_run = (arguments["--dry-run"] != "False")
 handlers = [h.strip() for h in arguments["--use-handlers"].split(",")]
 
-print("monocyte - search and destroy unwanted aws resources relentlessly\n")
+print("Monocyte - Search and Destroy unwanted AWS Resources relentlessly.\n")
 
 sys.exit(Monocyte().search_and_destroy_unwanted_resources(handlers, dry_run))
