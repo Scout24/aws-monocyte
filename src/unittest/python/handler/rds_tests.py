@@ -42,6 +42,16 @@ class RDSHandlerTest(TestCase):
         only_resource = list(self.rds_instance.fetch_unwanted_resources())[0]
         self.assertEquals(only_resource.wrapped, self.instance_mock)
 
+    def test_to_string(self):
+        self.boto_mock.rds2.connect_to_region.return_value.describe_db_instances.return_value = \
+            self._given_db_instances_response()
+
+        only_resource = list(self.rds_instance.fetch_unwanted_resources())[0]
+        resource_string = self.rds_instance.to_string(only_resource)
+
+        self.assertTrue(self.instance_mock["DBInstanceIdentifier"] in resource_string)
+        self.assertTrue(self.instance_mock["DBInstanceStatus"] in resource_string)
+
     def _given_db_instances_response(self):
         return {
             'DescribeDBInstancesResponse': {
