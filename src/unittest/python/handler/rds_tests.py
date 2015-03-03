@@ -17,7 +17,7 @@ import boto.rds2
 import boto.regioninfo
 from unittest import TestCase
 from mock import patch, Mock
-from monocyte.handler import rds2
+from monocyte.handler import rds2, Resource
 
 
 class RDSHandlerTest(TestCase):
@@ -51,6 +51,14 @@ class RDSHandlerTest(TestCase):
 
         self.assertTrue(self.instance_mock["DBInstanceIdentifier"] in resource_string)
         self.assertTrue(self.instance_mock["DBInstanceStatus"] in resource_string)
+
+    @patch("monocyte.handler.rds2.print", create=True)
+    def test_skip_deletion_in_dry_run(self, print_mock):
+        resource = Resource(self.instance_mock, self.negative_fake_region.name)
+
+        deleted_resource = self.rds_instance.delete(resource)
+        print_mock.assert_called_with("\t... would be deleted")
+        self.assertEquals(None, deleted_resource)
 
     def _given_db_instances_response(self):
         return {
