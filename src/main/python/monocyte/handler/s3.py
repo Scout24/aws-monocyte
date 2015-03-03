@@ -54,7 +54,7 @@ class Bucket(Handler):
             if nr_keys:
                 for nr, key in enumerate(resource.wrapped.list()):
                     if nr >= Bucket.NR_KEYS_TO_SHOW:
-                        print("\t... (skip remaining {} keys)".format(nr_keys - Bucket.NR_KEYS_TO_SHOW))
+                        print("\t... ({} keys omitted)".format(nr_keys - Bucket.NR_KEYS_TO_SHOW))
                         break
                     print("\tkey '{}'".format(key.name))
             return
