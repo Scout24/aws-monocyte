@@ -39,10 +39,10 @@ class Instance(Handler):
 
     def delete(self, resource):
         if self.dry_run:
-            print("\t... would be deleted")
+            print("\tDry Run: Would be deleted otherwise.")
             return
         if resource.wrapped["DBInstanceStatus"] == "deleting":
-            print("\tdeletion already in progress")
+            print("\tDeletion already in progress. Skipping.")
             return
         print("\tInitiating deletion sequence")
         connection = boto.rds2.connect_to_region(resource.region)
