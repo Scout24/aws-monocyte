@@ -21,7 +21,7 @@ usage:
 options:
     --dry-run=bool valid values "True" or "False" [default: True]
     --use-handlers=HANDLER1,HANDLER2,...    aws handlers to use (order might be important)
-        [default: cloudformation.Stack, ec2.Instance, ec2.Volume, rds2.Instance, rds2.Snapshot, s3.Bucket]
+        [default: cloudformation.Stack, ec2.Instance, ec2.Volume, rds2.Instance, rds2.Snapshot, dynamodb.Table, s3.Bucket]
 """
 
 from __future__ import print_function
