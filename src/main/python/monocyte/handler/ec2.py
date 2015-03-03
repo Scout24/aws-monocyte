@@ -77,7 +77,7 @@ class Volume(Handler):
 
     def delete(self, resource):
         connection = boto.ec2.connect_to_region(resource.region)
-        print(vars(resource.wrapped))
+
         if self.dry_run:
             try:
                 connection.delete_volume(resource.wrapped.id, dry_run=True)
