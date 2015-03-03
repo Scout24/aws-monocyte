@@ -25,9 +25,8 @@ class Stack(Handler):
 
     VALID_TARGET_STATES = ["DELETE_COMPLETE", "DELETE_IN_PROGRESS"]
 
-    def __init__(self, region_filter, dry_run=True):
-        self.regions = [region for region in boto.cloudformation.regions() if region_filter(region.name)]
-        self.dry_run = dry_run
+    def fetch_regions(self):
+        return boto.cloudformation.regions()
 
     def fetch_unwanted_resources(self):
         for region in self.regions:

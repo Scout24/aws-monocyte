@@ -28,10 +28,18 @@ HANDLER_PREFIX = "monocyte.handler."
 
 class Handler(object):
 
+    def __init__(self, region_filter, dry_run=True):
+        self.region_filter = region_filter
+        self.regions = [region for region in self.fetch_regions() if self.region_filter(region.name)]
+        self.dry_run = dry_run
+
     @property
     def name(self):
         full_name = "%s.%s" % (self.__class__.__module__, self.__class__.__name__)
         return full_name.replace(HANDLER_PREFIX, "")
+
+    def fetch_regions(self):
+        raise NotImplementedError("Should have implemented this")
 
     def fetch_unwanted_resources(self):
         raise NotImplementedError("Should have implemented this")

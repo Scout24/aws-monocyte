@@ -25,13 +25,11 @@ US_STANDARD_REGION = "us-east-1"
 class Bucket(Handler):
     NR_KEYS_TO_SHOW = 4
 
-    def __init__(self, region_filter, dry_run=True):
-        self.region_filter = region_filter
-        self.dry_run = dry_run
-        self.connection = boto.connect_s3()
+    def fetch_regions(self):
+        return []
 
     def fetch_unwanted_resources(self):
-        for bucket in self.connection.get_all_buckets():
+        for bucket in boto.connect_s3().get_all_buckets():
             try:
                 region = bucket.get_location()
             except S3ResponseError as e:
@@ -62,5 +60,5 @@ class Bucket(Handler):
             return
         delete_keys_result = resource.wrapped.delete_keys(resource.wrapped.list())
         print("\tInitiating deletion sequence")
-        delete_bucket_result = self.connection.delete_bucket(resource.wrapped.name)
+        delete_bucket_result = boto.connect_s3().delete_bucket(resource.wrapped.name)
         return delete_keys_result, delete_bucket_result
