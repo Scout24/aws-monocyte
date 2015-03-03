@@ -58,18 +58,18 @@ class RDSHandlerTest(TestCase):
         resource = Resource(self.instance_mock, self.negative_fake_region.name)
 
         deleted_resource = self.rds_instance.delete(resource)
-        print_mock.assert_called_with("\tDry Run: Would be deleted otherwise.")
+        print_mock.assert_called_with(rds2.DELETION_STATEMENT)
         self.assertEquals(None, deleted_resource)
 
     @patch("monocyte.handler.rds2.print", create=True)
     def test_skip_deletion_if_already_deleted(self, print_mock):
         self.rds_instance.dry_run = False
-        self.instance_mock["DBInstanceStatus"] = "deleting"
+        self.instance_mock["DBInstanceStatus"] = rds2.DELETING_STATUS
 
         resource = Resource(self.instance_mock, self.negative_fake_region.name)
 
         deleted_resource = self.rds_instance.delete(resource)
-        print_mock.assert_called_with("\tDeletion already in progress. Skipping.")
+        print_mock.assert_called_with(rds2.SKIPPING_STATEMENT)
         self.assertEquals(None, deleted_resource)
 
     @patch("monocyte.handler.rds2.print", create=True)
