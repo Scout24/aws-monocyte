@@ -30,7 +30,7 @@ class Monocyte(object):
         return region.lower() in IGNORED_REGIONS
 
     def is_region_handled(self, region):
-        return self.is_region_allowed(region) or not self.is_region_ignored(region)
+        return not self.is_region_allowed(region) and not self.is_region_ignored(region)
 
     def search_and_destroy_unwanted_resources(self, handler_names, dry_run=True):
         if dry_run:
