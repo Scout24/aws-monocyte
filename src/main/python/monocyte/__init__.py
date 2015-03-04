@@ -23,6 +23,10 @@ ALLOWED_REGIONS_STARTS_WITH = "eu"
 
 
 class Monocyte(object):
+
+    def __init__(self):
+        self.problematic_resources = []
+
     def is_region_allowed(self, region):
         return region.lower().startswith(ALLOWED_REGIONS_STARTS_WITH)
 
@@ -44,7 +48,6 @@ class Monocyte(object):
         print("allowed regions start with: {0}".format(ALLOWED_REGIONS_STARTS_WITH))
         print("           ignored regions: {0}".format(" ".join(IGNORED_REGIONS)))
 
-        self.problematic_resources = []
         for specific_handler in specific_handlers:
             print("\n---- checking %s resources" % specific_handler.name)
             self.handle_service(specific_handler)
