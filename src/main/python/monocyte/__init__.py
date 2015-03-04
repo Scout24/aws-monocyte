@@ -40,9 +40,9 @@ class Monocyte(object):
         handler_classes = fetch_all_handler_classes()
         specific_handlers = self.instanciate_handlers(handler_classes, handler_names, dry_run)
 
-        print("              aws handlers: {}".format(" -> ".join(handler_names)))
-        print("allowed regions start with: {}".format(ALLOWED_REGIONS_STARTS_WITH))
-        print("           ignored regions: {}".format(" ".join(IGNORED_REGIONS)))
+        print("              aws handlers: {0}".format(" -> ".join(handler_names)))
+        print("allowed regions start with: {0}".format(ALLOWED_REGIONS_STARTS_WITH))
+        print("           ignored regions: {0}".format(" ".join(IGNORED_REGIONS)))
 
         self.problematic_resources = []
         for specific_handler in specific_handlers:
@@ -52,7 +52,7 @@ class Monocyte(object):
         if self.problematic_resources:
             print("\nproblems encountered while deleting the following resources:")
             for resource, handler, exception in self.problematic_resources:
-                print("{:10s} {}".format(resource.region, handler.name))
+                print("{0:10s} {1}".format(resource.region, handler.name))
             return 1
         return 0
 
@@ -65,7 +65,7 @@ class Monocyte(object):
                 try:
                     specific_handler.delete(resource)
                 except BaseException as e:
-                    print("\t{}".format(e))
+                    print("\t{0}".format(e))
                     self.problematic_resources.append((resource, specific_handler, e))
 
     def instanciate_handlers(self, handler_classes, handler_names, dry_run):
