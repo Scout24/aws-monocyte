@@ -5,7 +5,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-# http://www.apache.org/licenses/LICENSE-2.0
+#    http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,7 +20,12 @@ from unittest import TestCase
 from mock import patch, Mock
 
 from monocyte.handler import cloudformation
+from monocyte.handler import Resource
 
+
+DELETION_STATEMENT = "\tInitiating deletion sequence"
+DRY_RUN_STATEMENT = "\tStack would be removed"
+VALID_TARGET_STATE_STATEMENT = "\tstate 'DELETE_COMPLETE' is a valid target state (DELETE_COMPLETE, DELETE_IN_PROGRESS), skipping"
 
 class CloudFormationTest(TestCase):
 
@@ -52,8 +57,30 @@ class CloudFormationTest(TestCase):
         self.assertTrue(self.stack_mock.creation_time in resource_string)
         self.assertTrue(self.stack_mock.region in resource_string)
 
-    def test_delete(self):
-        pass
+    @patch("monocyte.handler.cloudformation.print", create=True)
+    def test_skip_deletion_in_dry_run(self, print_mock):
+        resource = Resource(self.stack_mock, self.negative_fake_region.name)
+        self.cloudformation_handler_filter.dry_run = True
+        self.cloudformation_handler_filter.delete(resource)
+        print_mock.assert_called_with(DRY_RUN_STATEMENT)
+        self.assertFalse(self.boto_mock.cloudformation.connect_to_region.return_value.delete_stack.called)
+
+    @patch("monocyte.handler.cloudformation.print", create=True)
+    def test_does_delete_if_not_dry_run(self, print_mock):
+        resource = Resource(self.stack_mock, self.negative_fake_region.name)
+        self.cloudformation_handler_filter.dry_run = False
+        self.cloudformation_handler_filter.delete(resource)
+        print_mock.assert_called_with(DELETION_STATEMENT)
+        self.assertTrue(self.boto_mock.cloudformation.connect_to_region.return_value.delete_stack.called)
+
+    @patch("monocyte.handler.cloudformation.print", create=True)
+    def test_skip_deletion_if_already_deleted(self, print_mock):
+        self.stack_mock.stack_status = "DELETE_COMPLETE"
+        resource = Resource(self.stack_mock, self.negative_fake_region.name)
+        self.cloudformation_handler_filter.dry_run = False
+        self.cloudformation_handler_filter.delete(resource)
+        print_mock.assert_called_with(VALID_TARGET_STATE_STATEMENT)
+        self.assertFalse(self.boto_mock.cloudformation.connect_to_region.return_value.delete_stack.called)
 
     def _given_stack_mock(self):
         stack_mock = Mock(boto.cloudformation.stack.Stack, stack_name="test-stack")
