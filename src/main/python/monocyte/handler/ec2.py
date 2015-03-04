@@ -41,7 +41,7 @@ class Instance(Handler):
 
     def delete(self, resource):
         if resource.wrapped.state in Instance.VALID_TARGET_STATES:
-            print("\tstate '{}' is a valid target state ({}), skipping".format(
+            print("\tstate '{0}' is a valid target state ({1}), skipping".format(
                 resource.wrapped.state, ", ".join(Instance.VALID_TARGET_STATES)))
             return []
         connection = boto.ec2.connect_to_region(resource.region)

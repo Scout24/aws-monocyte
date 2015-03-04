@@ -44,7 +44,7 @@ class Stack(Handler):
 
     def delete(self, resource):
         if resource.wrapped.stack_status in Stack.VALID_TARGET_STATES:
-            print("\tstate '{}' is a valid target state ({}), skipping".format(
+            print("\tstate '{0}' is a valid target state ({1}), skipping".format(
                 resource.wrapped.stack_status, ", ".join(Stack.VALID_TARGET_STATES)))
             return
         if self.dry_run:

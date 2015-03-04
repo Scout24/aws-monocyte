@@ -50,13 +50,13 @@ class Bucket(Handler):
     def delete(self, resource):
         if self.dry_run:
             nr_keys = len(resource.wrapped.get_all_keys())
-            print("\t{} entries would be removed:".format(nr_keys))
+            print("\t{0} entries would be removed:".format(nr_keys))
             if nr_keys:
                 for nr, key in enumerate(resource.wrapped.list()):
                     if nr >= Bucket.NR_KEYS_TO_SHOW:
-                        print("\t... ({} keys omitted)".format(nr_keys - Bucket.NR_KEYS_TO_SHOW))
+                        print("\t... ({0} keys omitted)".format(nr_keys - Bucket.NR_KEYS_TO_SHOW))
                         break
-                    print("\tkey '{}'".format(key.name))
+                    print("\tkey '{0}'".format(key.name))
             return
         delete_keys_result = resource.wrapped.delete_keys(resource.wrapped.list())
         print("\tInitiating deletion sequence")

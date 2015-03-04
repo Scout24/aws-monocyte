@@ -38,8 +38,8 @@ class Table(Handler):
 
     def to_string(self, resource):
         table = resource.wrapped
-        return "DynamoDB Table found in {}".format(resource.region) + \
-               "\n\t{}, since {}, state {}".format(
+        return "DynamoDB Table found in {0}".format(resource.region) + \
+               "\n\t{0}, since {1}, state {2}".format(
                        table["TableName"],
                        datetime.datetime.fromtimestamp(table["CreationDateTime"]).strftime('%Y-%m-%d %H:%M:%S.%f'),
                        table["TableStatus"])
@@ -53,4 +53,4 @@ class Table(Handler):
         try:
             connection.delete_table(resource.wrapped["TableName"])
         except boto.dynamodb2.exceptions.ResourceInUseException as e:
-            print("\t{}".format(e))
+            print("\t{0}".format(e))
