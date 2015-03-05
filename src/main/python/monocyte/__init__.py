@@ -42,7 +42,7 @@ class Monocyte(object):
             print()
 
         handler_classes = fetch_all_handler_classes()
-        specific_handlers = self.instanciate_handlers(handler_classes, handler_names, dry_run)
+        specific_handlers = self.instantiate_handlers(handler_classes, handler_names, dry_run)
 
         print("              aws handlers: {0}".format(" -> ".join(handler_names)))
         print("allowed regions start with: {0}".format(ALLOWED_REGIONS_STARTS_WITH))
@@ -71,7 +71,7 @@ class Monocyte(object):
                     print("\t{0}".format(e))
                     self.problematic_resources.append((resource, specific_handler, e))
 
-    def instanciate_handlers(self, handler_classes, handler_names, dry_run):
+    def instantiate_handlers(self, handler_classes, handler_names, dry_run):
         return [handler_classes["monocyte.handler." + handler_name](self.is_region_handled, dry_run)
                 for handler_name in handler_names]
 
