@@ -55,15 +55,13 @@ class MonocyteTest(TestCase):
             self.assertTrue(cls.startswith("monocyte"))
             self.assertTrue("andler" in cls)
 
-    @patch("monocyte.print", create=True)
     @patch("monocyte.fetch_all_handler_classes", create=True)
-    def test_search_and_destroy_unwanted_resources_dry_run(self, fetch_mock, print_mock):
+    def test_search_and_destroy_unwanted_resources_dry_run(self, fetch_mock):
         fetch_mock.return_value = {"monocyte.handler.dummy": DummyHandler}
         self.monocyte.search_and_destroy_unwanted_resources(["dummy"])
 
-    @patch("monocyte.print", create=True)
     @patch("monocyte.fetch_all_handler_classes", create=True)
-    def test_search_and_destroy_unwanted_resources(self, fetch_mock, print_mock):
+    def test_search_and_destroy_unwanted_resources(self, fetch_mock):
         fetch_mock.return_value = {"monocyte.handler.dummy": DummyHandler}
         self.monocyte.search_and_destroy_unwanted_resources(["dummy"], dry_run=False)
 
