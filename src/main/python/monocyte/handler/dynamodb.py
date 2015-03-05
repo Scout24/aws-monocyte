@@ -24,7 +24,6 @@ from monocyte.handler import Resource, Handler
 
 
 class Table(Handler):
-
     def fetch_regions(self):
         return boto.dynamodb2.regions()
 
@@ -40,9 +39,9 @@ class Table(Handler):
         table = resource.wrapped
         return "DynamoDB Table found in {0}".format(resource.region) + \
                "\n\t{0}, since {1}, state {2}".format(
-                       table["TableName"],
-                       datetime.datetime.fromtimestamp(table["CreationDateTime"]).strftime('%Y-%m-%d %H:%M:%S.%f'),
-                       table["TableStatus"])
+                   table["TableName"],
+                   datetime.datetime.fromtimestamp(table["CreationDateTime"]).strftime('%Y-%m-%d %H:%M:%S.%f'),
+                   table["TableStatus"])
 
     def delete(self, resource):
         if self.dry_run:
