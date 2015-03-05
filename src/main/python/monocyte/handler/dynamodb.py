@@ -19,6 +19,7 @@ import datetime
 
 import boto
 import boto.dynamodb2
+import boto.dynamodb2.exceptions
 
 from monocyte.handler import Resource, Handler
 
