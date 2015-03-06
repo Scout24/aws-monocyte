@@ -46,11 +46,11 @@ class Table(Handler):
 
     def delete(self, resource):
         if self.dry_run:
-            print("\tTable would be removed")
+            self.logger.info("\tTable would be removed")
             return
         connection = boto.dynamodb2.connect_to_region(resource.region)
-        print("\tInitiating deletion sequence")
+        self.logger.info("\tInitiating deletion sequence")
         try:
             connection.delete_table(resource.wrapped["TableName"])
         except boto.dynamodb2.exceptions.ResourceInUseException as e:
-            print("\t{0}".format(e))
+            self.logger.info("\t{0}".format(e))
