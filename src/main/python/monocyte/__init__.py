@@ -52,7 +52,7 @@ class Monocyte(object):
             self.logger.info("\n")
 
         handler_classes = fetch_all_handler_classes()
-        specific_handlers = self.instanciate_handlers(handler_classes, handler_names, dry_run, self.logger)
+        specific_handlers = self.instantiate_handlers(handler_classes, handler_names, dry_run)
 
         self.logger.info("              aws handlers: {0}".format(" -> ".join(handler_names)))
         self.logger.info("allowed regions start with: {0}".format(ALLOWED_REGIONS_STARTS_WITH))
