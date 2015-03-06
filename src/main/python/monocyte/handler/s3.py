@@ -50,7 +50,8 @@ class Bucket(Handler):
         if self.dry_run:
             nr_keys = len(resource.wrapped.get_all_keys())
             self.logger.info("\t{0} entries would be removed:".format(nr_keys))
-            self.logger.warn("s3 bucket {0} would be removed because its available in unwanted region {1}".format(resource.wrapped.name, resource.region))
+            self.logger.warn("s3 bucket {0} would be removed because its available in unwanted region {1}".format(
+                    resource.wrapped.name, resource.region))
             if nr_keys:
                 for nr, key in enumerate(resource.wrapped.list()):
                     if nr >= Bucket.NR_KEYS_TO_SHOW:
@@ -60,7 +61,8 @@ class Bucket(Handler):
             return
         delete_keys_result = resource.wrapped.delete_keys(resource.wrapped.list())
         self.logger.info("\tInitiating deletion sequence")
-        self.logger.warn("s3 bucket {0} gets removed because its available in unwanted region {1}".format(resource.wrapped.name, resource.region))
+        self.logger.warn("s3 bucket {0} gets removed because its available in unwanted region {1}".format(
+                resource.wrapped.name, resource.region))
 
         delete_bucket_result = boto.connect_s3().delete_bucket(resource.wrapped.name)
         return delete_keys_result, delete_bucket_result

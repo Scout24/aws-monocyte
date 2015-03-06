@@ -47,7 +47,10 @@ class Monocyte(object):
     def search_and_destroy_unwanted_resources(self, handler_names, dry_run=True):
         stream_name = "dryrun" if dry_run else "removed"
 
-        cloudwatch_handler = monocyte.loghandler.CloudWatchHandler("eu-central-1", "monocyte", stream_name, logging.INFO)
+        cloudwatch_handler = monocyte.loghandler.CloudWatchHandler("eu-central-1",
+                                                                   "monocyte",
+                                                                   stream_name,
+                                                                   logging.INFO)
         self.logger.addHandler(cloudwatch_handler)
 
         self.logger.info("Monocyte - Search and Destroy unwanted AWS Resources relentlessly.\n")
