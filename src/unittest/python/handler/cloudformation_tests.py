@@ -25,7 +25,9 @@ from monocyte.handler import Resource
 
 DELETION_STATEMENT = "\tInitiating deletion sequence"
 DRY_RUN_STATEMENT = "\tStack would be removed"
-VALID_TARGET_STATE_STATEMENT = "\tstate 'DELETE_COMPLETE' is a valid target state (DELETE_COMPLETE, DELETE_IN_PROGRESS), skipping"
+VALID_TARGET_STATE_STATEMENT = "\tstate 'DELETE_COMPLETE' is a valid target state " \
+                               "(DELETE_COMPLETE, DELETE_IN_PROGRESS), skipping"
+
 
 
 class CloudFormationTest(TestCase):
