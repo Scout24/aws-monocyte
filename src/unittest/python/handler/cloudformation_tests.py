@@ -27,6 +27,7 @@ DELETION_STATEMENT = "\tInitiating deletion sequence"
 DRY_RUN_STATEMENT = "\tStack would be removed"
 VALID_TARGET_STATE_STATEMENT = "\tstate 'DELETE_COMPLETE' is a valid target state (DELETE_COMPLETE, DELETE_IN_PROGRESS), skipping"
 
+
 class CloudFormationTest(TestCase):
 
     def setUp(self):
@@ -36,7 +37,7 @@ class CloudFormationTest(TestCase):
         self.negative_fake_region = Mock(boto.cloudformation.regions)
         self.negative_fake_region.name = "forbbiden_region"
         self.boto_mock.cloudformation.regions.return_value = [self.positive_fake_region, self.negative_fake_region]
-
+        self.logger_mock = patch("monocyte.handler.logging").start()
         self.cloudformation_handler_filter = cloudformation.Stack(
             lambda region_name: region_name == self.positive_fake_region.name)
 
@@ -57,29 +58,26 @@ class CloudFormationTest(TestCase):
         self.assertTrue(self.stack_mock.creation_time in resource_string)
         self.assertTrue(self.stack_mock.region in resource_string)
 
-    @patch("monocyte.handler.cloudformation.print", create=True)
-    def test_skip_deletion_in_dry_run(self, print_mock):
+    def test_skip_deletion_in_dry_run(self):
         resource = Resource(self.stack_mock, self.negative_fake_region.name)
         self.cloudformation_handler_filter.dry_run = True
         self.cloudformation_handler_filter.delete(resource)
-        print_mock.assert_called_with(DRY_RUN_STATEMENT)
+        self.logger_mock.getLogger.return_value.info.assert_called_with(DRY_RUN_STATEMENT)
         self.assertFalse(self.boto_mock.cloudformation.connect_to_region.return_value.delete_stack.called)
 
-    @patch("monocyte.handler.cloudformation.print", create=True)
-    def test_does_delete_if_not_dry_run(self, print_mock):
+    def test_does_delete_if_not_dry_run(self):
         resource = Resource(self.stack_mock, self.negative_fake_region.name)
         self.cloudformation_handler_filter.dry_run = False
         self.cloudformation_handler_filter.delete(resource)
-        print_mock.assert_called_with(DELETION_STATEMENT)
+        self.logger_mock.getLogger.return_value.info.assert_called_with(DELETION_STATEMENT)
         self.assertTrue(self.boto_mock.cloudformation.connect_to_region.return_value.delete_stack.called)
 
-    @patch("monocyte.handler.cloudformation.print", create=True)
-    def test_skip_deletion_if_already_deleted(self, print_mock):
+    def test_skip_deletion_if_already_deleted(self):
         self.stack_mock.stack_status = "DELETE_COMPLETE"
         resource = Resource(self.stack_mock, self.negative_fake_region.name)
         self.cloudformation_handler_filter.dry_run = False
         self.cloudformation_handler_filter.delete(resource)
-        print_mock.assert_called_with(VALID_TARGET_STATE_STATEMENT)
+        self.logger_mock.getLogger.return_value.info.assert_called_with(VALID_TARGET_STATE_STATEMENT)
         self.assertFalse(self.boto_mock.cloudformation.connect_to_region.return_value.delete_stack.called)
 
     def _given_stack_mock(self):

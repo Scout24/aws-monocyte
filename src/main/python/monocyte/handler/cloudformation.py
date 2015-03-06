@@ -44,12 +44,12 @@ class Stack(Handler):
 
     def delete(self, resource):
         if resource.wrapped.stack_status in Stack.VALID_TARGET_STATES:
-            print("\tstate '{0}' is a valid target state ({1}), skipping".format(
+            self.logger.info("\tstate '{0}' is a valid target state ({1}), skipping".format(
                 resource.wrapped.stack_status, ", ".join(Stack.VALID_TARGET_STATES)))
             return
         if self.dry_run:
-            print("\tStack would be removed")
+            self.logger.info("\tStack would be removed")
             return
-        print("\tInitiating deletion sequence")
+        self.logger.info("\tInitiating deletion sequence")
         connection = boto.cloudformation.connect_to_region(resource.region)
         connection.delete_stack(resource.wrapped.stack_id)
