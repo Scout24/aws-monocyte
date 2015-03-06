@@ -17,13 +17,14 @@ import boto.ec2
 import boto.exception
 import boto.ec2.regioninfo
 import boto.ec2.instance
+import boto.ec2.volume
 from unittest import TestCase
 from mock import patch, Mock
 from monocyte.handler import ec2
 from monocyte.handler import Resource
 
 
-class EC2HandlerTest(TestCase):
+class EC2InstanceHandlerTest(TestCase):
 
     def setUp(self):
         self.boto_mock = patch("monocyte.handler.ec2.boto").start()
@@ -83,3 +84,57 @@ class EC2HandlerTest(TestCase):
 
         self.boto_mock.ec2.connect_to_region.return_value.get_only_instances.return_value = [instance_mock]
         return instance_mock
+
+
+class EC2VolumeHandlerTest(TestCase):
+
+    def setUp(self):
+        self.boto_mock = patch("monocyte.handler.ec2.boto").start()
+        self.positive_fake_region = Mock(boto.ec2.regioninfo.EC2RegionInfo)
+        self.positive_fake_region.name = "allowed_region"
+        self.negative_fake_region = Mock(boto.ec2.regioninfo.EC2RegionInfo)
+        self.negative_fake_region.name = "forbidden_region"
+
+        self.boto_mock.ec2.regions.return_value = [self.positive_fake_region, self.negative_fake_region]
+        self.logger_mock = patch("monocyte.handler.logging").start()
+        self.ec2_handler_filter = ec2.Volume(lambda region_name: region_name == self.positive_fake_region.name)
+
+        self.volume_mock = self._given_volume_mock()
+
+    def tearDown(self):
+        patch.stopall()
+
+    def test_fetch_unwanted_resources_filtered(self):
+        only_resource = list(self.ec2_handler_filter.fetch_unwanted_resources())[0]
+        self.assertEquals(only_resource.wrapped, self.volume_mock)
+
+    def test_to_string(self):
+        only_resource = list(self.ec2_handler_filter.fetch_unwanted_resources())[0]
+        resource_string = self.ec2_handler_filter.to_string(only_resource)
+
+        self.assertTrue(self.volume_mock.id in resource_string)
+        self.assertTrue(self.volume_mock.create_time in resource_string)
+        self.assertTrue(self.volume_mock.region.name in resource_string)
+
+    def test_delete(self):
+        resource = Resource(self.volume_mock, self.negative_fake_region.name)
+        connection = self.boto_mock.ec2.connect_to_region.return_value
+
+        e = boto.exception.EC2ResponseError(412, 'boom')
+        e.message = "test"
+        connection.delete_volume.side_effect = e
+
+        deleted_resource = self.ec2_handler_filter.delete(resource)[0]
+
+        self.assertEquals(self.volume_mock, deleted_resource)
+        self.logger_mock.getLogger.return_value.info.assert_called_with("\tTermination test")
+
+    def _given_volume_mock(self):
+        volume_mock = Mock(boto.ec2.volume)
+        volume_mock.id = "vol-12345"
+        volume_mock.create_time = "01.01.2015"
+        volume_mock.region = self.positive_fake_region
+        volume_mock.status = "OK"
+
+        self.boto_mock.ec2.connect_to_region.return_value.get_all_volumes.return_value = [volume_mock]
+        return volume_mock
