@@ -14,9 +14,8 @@ class CloudWatchHandler(logging.StreamHandler):
         self.region = region
         self.log_group_name = log_group_name
         self.log_stream_name = log_stream_name
-        self.connection = boto.logs.connect_to_region(region)
+        self.connection = None
         self.sequence_token = None
-        self.create_group_and_stream(log_group_name, log_stream_name)
 
     def create_group_and_stream(self, log_group_name, log_stream_name):
         try:
@@ -28,7 +27,14 @@ class CloudWatchHandler(logging.StreamHandler):
         except ResourceAlreadyExistsException:
             pass
 
+    def _lazy_connect(self):
+        if self.connection:
+            return
+        self.connection = boto.logs.connect_to_region(self.region)
+        self.create_group_and_stream(self.log_group_name, self.log_stream_name)
+
     def _put_message(self, message, timestamp):
+        self._lazy_connect()
         event = {"message": message, "timestamp": timestamp}
         result = self.connection.put_log_events(
                 self.log_group_name,

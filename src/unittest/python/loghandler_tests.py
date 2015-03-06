@@ -28,14 +28,14 @@ class CloudWatchHandlerTest(unittest.TestCase):
         cloudwatch_handler = CloudWatchHandler("eu-central-1", "monocyte", "test")
         self.logger.addHandler(cloudwatch_handler)
 
-        self.connection.create_log_group.assert_called_with("monocyte")
-        self.connection.create_log_stream.assert_called_with("monocyte", "test")
-
         self.logger.debug("aha")
         self.logger.info("aha")
         self.assertFalse(self.connection.put_log_events.called)
 
         self.logger.warn("aha")
+
+        self.connection.create_log_group.assert_called_with("monocyte")
+        self.connection.create_log_stream.assert_called_with("monocyte", "test")
         call_args = self.connection.put_log_events.call_args[0]
         self.assertEqual("monocyte", call_args[0])
         self.assertEqual("test", call_args[1])
