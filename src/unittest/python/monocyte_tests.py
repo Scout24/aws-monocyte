@@ -18,10 +18,13 @@ from mock import Mock, patch
 from monocyte import Monocyte, fetch_all_handler_classes
 from monocyte.handler import Resource, Handler
 
+REGION_NOT_ALLOWED = "\ntest handler\n\tWARNING: region 'test_region' not allowed!"
+
 
 class MonocyteTest(TestCase):
 
     def setUp(self):
+        self.logger_mock = patch("monocyte.logging").start()
         self.monocyte = Monocyte()
         self.allowed_region = "EU"
         self.not_allowed_region = "US"
@@ -39,14 +42,13 @@ class MonocyteTest(TestCase):
         self.assertFalse(self.monocyte.is_region_handled(self.allowed_region))
         self.assertFalse(self.monocyte.is_region_handled(self.ignored_region))
 
-    @patch("monocyte.print", create=True)
-    def test_handle_service(self, print_mock):
+    def test_handle_service(self):
         handler = Mock()
         handler.fetch_unwanted_resources.return_value = [Resource("foo", "test_region")]
         handler.to_string.return_value = "test handler"
         self.monocyte.handle_service(handler)
 
-        print_mock.assert_called_with("\ntest handler\n\tWARNING: region 'test_region' not allowed!")
+        self.logger_mock.getLogger.return_value.info.assert_called_with(REGION_NOT_ALLOWED)
 
     def test_fetch_all_handler_classes(self):
         classes = fetch_all_handler_classes()
@@ -55,15 +57,13 @@ class MonocyteTest(TestCase):
             self.assertTrue(cls.startswith("monocyte"))
             self.assertTrue("andler" in cls)
 
-    @patch("monocyte.print", create=True)
     @patch("monocyte.fetch_all_handler_classes", create=True)
-    def test_search_and_destroy_unwanted_resources_dry_run(self, fetch_mock, print_mock):
+    def test_search_and_destroy_unwanted_resources_dry_run(self, fetch_mock):
         fetch_mock.return_value = {"monocyte.handler.dummy": DummyHandler}
         self.monocyte.search_and_destroy_unwanted_resources(["dummy"])
 
-    @patch("monocyte.print", create=True)
     @patch("monocyte.fetch_all_handler_classes", create=True)
-    def test_search_and_destroy_unwanted_resources(self, fetch_mock, print_mock):
+    def test_search_and_destroy_unwanted_resources(self, fetch_mock):
         fetch_mock.return_value = {"monocyte.handler.dummy": DummyHandler}
         self.monocyte.search_and_destroy_unwanted_resources(["dummy"], dry_run=False)
 
