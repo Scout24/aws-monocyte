@@ -11,6 +11,19 @@ It is especially useful for companies that are bound to European privacy laws an
 
 The name [Monocyte](https://en.wikipedia.org/wiki/Monocyte) is related to a type of white blood cells that are part of a humans innate immune system, the first line of defense being responsible for searching and destroying alien organisms to prevent unwanted infections.
 
+## Background
+With Ireland and Frankfurt being available as AWS regions nowadays, Amazon (more or less) extinguished 
+EU and especially German legal concerns regarding storage and processing of privacy-related data.
+However, for European companies it remains difficult to prevent (accidental) usage of services outside the EU, 
+as there is still no standardized way to restrict AWS-accounts rights on this region-level.
+
+Especially in open, DevOps-inspired company cultures like ours this becomes a major issue. 
+On the one hand we want our teams to work with AWS and manage their own accounts most widely autonomous. 
+On the other hand we are bound to EU and German privacy laws and for that reason want to search and destroy 
+unwanted AWS resources relentlessly.
+
+For that reason, we started implementing our own basic AWS immune system layer: Monocyte.
+
 ## Prerequisites
 - [Boto SDK](http://docs.pythonboto.org/en/latest/getting_started.html)
 - [AWS Credentials for Boto](http://docs.pythonboto.org/en/latest/boto_config_tut.html#credentials)
