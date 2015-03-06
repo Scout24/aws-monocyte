@@ -16,6 +16,7 @@
 from __future__ import print_function, absolute_import
 
 import os
+import logging
 
 
 class Resource(object):
@@ -28,10 +29,12 @@ HANDLER_PREFIX = "monocyte.handler."
 
 class Handler(object):
 
-    def __init__(self, region_filter, dry_run=True):
+    def __init__(self, region_filter, dry_run=True, logger=None):
         self.region_filter = region_filter
         self.regions = [region for region in self.fetch_regions() if self.region_filter(region.name)]
         self.dry_run = dry_run
+
+        self.logger = logger or logging.getLogger(__name__)
 
     @property
     def name(self):
