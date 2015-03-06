@@ -18,16 +18,22 @@ import boto.s3.bucket
 import boto.exception
 from unittest import TestCase
 from mock import patch, Mock
-from monocyte.handler import s3
+from monocyte.handler import s3, Resource
 
 LOCATATION_CRASHED = "\twarning: get_location() crashed for test_bucket, skipping"
-
+WOULD_BE_REMOVED = "\t0 entries would be removed:"
+KEYS_OMITTED = "\t... (2 keys omitted)"
+KEY = "\tkey 'test.txt'"
+INITIATING_DELITION = "\tInitiating deletion sequence"
 
 class S3BucketTest(TestCase):
 
     def setUp(self):
         self.boto_mock = patch("monocyte.handler.s3.boto").start()
         self.bucket_mock = self._given_bucket_mock()
+        self.key_mock = self._given_key_mock()
+        self.negative_fake_region = Mock(boto.regioninfo.RegionInfo)
+        self.negative_fake_region.name = "forbidden_region"
         self.logger_mock = patch("monocyte.handler.logging").start()
         self.s3_handler = s3.Bucket(lambda region_name: True)
 
@@ -64,11 +70,55 @@ class S3BucketTest(TestCase):
         self.assertTrue(self.bucket_mock.name in resource_string)
         self.assertTrue(self.bucket_mock.creation_date in resource_string)
 
+    def test_skip_deletion_in_dry_run_without_keys(self):
+        self.s3_handler.dry_run = True
+        self.bucket_mock.get_all_keys.return_value = []
+        resource = Resource(self.bucket_mock, self.negative_fake_region.name)
+        self.s3_handler.delete(resource)
+        self.logger_mock.getLogger.return_value.info.assert_called_with(WOULD_BE_REMOVED)
+
+    def test_skip_deletion_in_dry_run_with_keys(self):
+        self.s3_handler.dry_run = True
+        self.bucket_mock.get_all_keys.return_value = [self.key_mock]
+        self.bucket_mock.list.return_value = [self.key_mock]
+        resource = Resource(self.bucket_mock, self.negative_fake_region.name)
+        self.s3_handler.delete(resource)
+        self.logger_mock.getLogger.return_value.info.assert_called_with(KEY)
+
+    def test_skip_deletion_in_dry_run_with_keys_omitted(self):
+        self.s3_handler.dry_run = True
+        self.bucket_mock.get_all_keys.return_value = [self.key_mock] * 6
+        self.bucket_mock.list.return_value = [self.key_mock] * 6
+        resource = Resource(self.bucket_mock, self.negative_fake_region.name)
+        self.s3_handler.delete(resource)
+        self.logger_mock.getLogger.return_value.info.assert_called_with(KEYS_OMITTED)
+
+    def test_does_delete_if_not_dry_run(self):
+        self.s3_handler.dry_run = False
+        resource = Resource(self.bucket_mock, self.negative_fake_region.name)
+
+        self.bucket_mock.delete_keys.return_value = [self.key_mock]
+        self.boto_mock.connect_s3().delete_bucket.return_value = [self.bucket_mock]
+        deleted_key, deleted_bucket = self.s3_handler.delete(resource)
+
+        self.assertEquals([self.bucket_mock], deleted_bucket)
+        self.assertEquals([self.key_mock], deleted_key)
+
+        self.logger_mock.getLogger.return_value.info.assert_called_with(INITIATING_DELITION)
+
     def _given_bucket_mock(self):
         bucket_mock = Mock(boto.s3.bucket.Bucket)
-        bucket_mock.get_location.return_value = "my-stupid-region"
+        bucket_mock.get_location.return_value = "my-region"
         bucket_mock.name = "test_bucket"
         bucket_mock.creation_date = "01.01.2015"
 
         self.boto_mock.connect_s3.return_value.get_all_buckets.return_value = [bucket_mock]
         return bucket_mock
+
+    def _given_key_mock(self):
+        key_mock = Mock(boto.s3.key.Key)
+        key_mock.name = "test.txt"
+
+        self.boto_mock.connect_s3.return_value.get_all_keys.return_value = [key_mock]
+        return key_mock
+
