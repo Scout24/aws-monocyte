@@ -21,6 +21,9 @@ class CloudWatchHandlerTest(unittest.TestCase):
         # console_handler.setFormatter(logging.Formatter('%(levelname)-8s %(message)s'))
         # self.logger.addHandler(console_handler)
 
+    def myAssertIn(self, a, b):
+        self.assertTrue(a in b)
+
     def test_cloudwatch_logging(self):
         cloudwatch_handler = CloudWatchHandler("eu-central-1", "monocyte", "test")
         self.logger.addHandler(cloudwatch_handler)
@@ -37,10 +40,10 @@ class CloudWatchHandlerTest(unittest.TestCase):
         self.assertEqual("monocyte", call_args[0])
         self.assertEqual("test", call_args[1])
         log_event = call_args[2][0]
-        self.assertIn("timestamp", log_event)
-        self.assertIn("message", log_event)
-        self.assertIn("WARNING", log_event["message"])
-        self.assertIn("aha", log_event["message"])
+        self.myAssertIn("timestamp", log_event)
+        self.myAssertIn("message", log_event)
+        self.myAssertIn("WARNING", log_event["message"])
+        self.myAssertIn("aha", log_event["message"])
 
     def test_log_group_already_exists(self):
         e = boto.logs.exceptions.ResourceAlreadyExistsException(400, "binschonda")
