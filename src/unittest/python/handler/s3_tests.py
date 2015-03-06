@@ -26,6 +26,7 @@ KEYS_OMITTED = "\t... (2 keys omitted)"
 KEY = "\tkey 'test.txt'"
 INITIATING_DELITION = "\tInitiating deletion sequence"
 
+
 class S3BucketTest(TestCase):
 
     def setUp(self):
@@ -121,4 +122,3 @@ class S3BucketTest(TestCase):
 
         self.boto_mock.connect_s3.return_value.get_all_keys.return_value = [key_mock]
         return key_mock
-
