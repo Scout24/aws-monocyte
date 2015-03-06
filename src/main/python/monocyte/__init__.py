@@ -17,6 +17,7 @@
 import logging
 
 import monocyte.handler
+import monocyte.loghandler
 
 REMOVE_WARNING = "WARNING: region '%s' not allowed!"
 IGNORED_REGIONS = ["cn-north-1", "us-gov-west-1", "us-east-1", "us-west-2"]
@@ -44,6 +45,13 @@ class Monocyte(object):
         return not self.is_region_allowed(region) and not self.is_region_ignored(region)
 
     def search_and_destroy_unwanted_resources(self, handler_names, dry_run=True):
+        stream_name = "dryrun" if dry_run else "removed"
+
+        cloudwatch_handler = monocyte.loghandler.CloudWatchHandler("eu-central-1",
+                                                                   "monocyte",
+                                                                   stream_name,
+                                                                   logging.INFO)
+        self.logger.addHandler(cloudwatch_handler)
 
         self.logger.info("Monocyte - Search and Destroy unwanted AWS Resources relentlessly.\n")
 
