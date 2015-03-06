@@ -81,7 +81,7 @@ class Monocyte(object):
                     self.logger.exception("\t{0}".format(e))
                     self.problematic_resources.append((resource, specific_handler, e))
 
-    def instanciate_handlers(self, handler_classes, handler_names, dry_run):
+    def instantiate_handlers(self, handler_classes, handler_names, dry_run):
         return [handler_classes["monocyte.handler." + handler_name](self.is_region_handled, dry_run)
                 for handler_name in handler_names]
 
