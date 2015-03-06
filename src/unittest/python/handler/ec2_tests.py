@@ -33,6 +33,7 @@ class EC2HandlerTest(TestCase):
         self.negative_fake_region.name = "forbidden_region"
 
         self.boto_mock.ec2.regions.return_value = [self.positive_fake_region, self.negative_fake_region]
+        self.logger_mock = patch("monocyte.handler.logging").start()
         self.ec2_handler_filter = ec2.Instance(lambda region_name: region_name == self.positive_fake_region.name)
 
         self.instance_mock = self._given_instance_mock()
@@ -56,8 +57,7 @@ class EC2HandlerTest(TestCase):
         self.assertTrue(self.instance_mock.key_name in resource_string)
         self.assertTrue(self.instance_mock.region.name in resource_string)
 
-    @patch("monocyte.handler.ec2.print", create=True)
-    def test_delete(self, print_mock):
+    def test_delete(self):
         resource = Resource(self.instance_mock, self.negative_fake_region.name)
         connection = self.boto_mock.ec2.connect_to_region.return_value
 
@@ -66,8 +66,9 @@ class EC2HandlerTest(TestCase):
         connection.terminate_instances.side_effect = e
 
         deleted_resource = self.ec2_handler_filter.delete(resource)[0]
+
         self.assertEquals(self.instance_mock, deleted_resource)
-        print_mock.assert_called_with("\tTermination test")
+        self.logger_mock.getLogger.return_value.info.assert_called_with("\tTermination test")
 
     def _given_instance_mock(self):
         instance_mock = Mock(boto.ec2.instance, image_id="ami-1112")

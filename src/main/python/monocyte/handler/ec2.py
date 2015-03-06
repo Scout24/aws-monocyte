@@ -41,7 +41,7 @@ class Instance(Handler):
 
     def delete(self, resource):
         if resource.wrapped.state in Instance.VALID_TARGET_STATES:
-            print("\tstate '{0}' is a valid target state ({1}), skipping".format(
+            self.logger.info("\tstate '{0}' is a valid target state ({1}), skipping".format(
                 resource.wrapped.state, ", ".join(Instance.VALID_TARGET_STATES)))
             return []
         connection = boto.ec2.connect_to_region(resource.region)
@@ -50,12 +50,12 @@ class Instance(Handler):
                 connection.terminate_instances([resource.wrapped.id], dry_run=True)
             except EC2ResponseError as e:
                 if e.status == 412:  # Precondition Failed
-                    print("\tTermination {message}".format(**vars(e)))
+                    self.logger.info("\tTermination {message}".format(**vars(e)))
                     return [resource.wrapped]
                 raise
         else:
             instances = connection.terminate_instances([resource.wrapped.id], dry_run=False)
-            print("\tInitiating shutdown sequence for {0}".format(instances))
+            self.logger.info("\tInitiating shutdown sequence for {0}".format(instances))
             return instances
 
 
@@ -83,9 +83,9 @@ class Volume(Handler):
                 connection.delete_volume(resource.wrapped.id, dry_run=True)
             except EC2ResponseError as e:
                 if e.status == 412:  # Precondition Failed
-                    print("\tTermination {message}".format(**vars(e)))
+                    self.logger.info("\tTermination {message}".format(**vars(e)))
                     return [resource.wrapped]
                 raise
         else:
-            print("\tInitiating deletion of EBS volume {0}".format(resource.wrapped.id))
+            self.logger.info("\tInitiating deletion of EBS volume {0}".format(resource.wrapped.id))
             connection.delete_volume(resource.wrapped.id, dry_run=False)
