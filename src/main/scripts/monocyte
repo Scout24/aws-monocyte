@@ -24,7 +24,7 @@ options:
         [default: cloudformation.Stack, ec2.Instance, ec2.Volume, rds2.Instance, rds2.Snapshot, dynamodb.Table, s3.Bucket]
 """
 
-from __future__ import print_function
+
 import sys
 
 from docopt import docopt
