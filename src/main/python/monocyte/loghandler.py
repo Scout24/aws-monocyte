@@ -10,7 +10,7 @@ from boto.logs.exceptions import (DataAlreadyAcceptedException,
 class CloudWatchHandler(logging.StreamHandler):
 
     def __init__(self, region, log_group_name, log_stream_name, level=logging.INFO):
-        super(CloudWatchHandler, self).__init__(level)
+        logging.StreamHandler.__init__(self)
         self.region = region
         self.log_group_name = log_group_name
         self.log_stream_name = log_stream_name
