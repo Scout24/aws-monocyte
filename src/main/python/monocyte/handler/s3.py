@@ -35,7 +35,7 @@ class Bucket(Handler):
             except S3ResponseError as e:
                 # See https://github.com/boto/boto/issues/2741
                 if e.status == 400:
-                    print("\twarning: get_location() crashed for %s, skipping" % bucket.name)
+                    self.logger.info("\twarning: get_location() crashed for %s, skipping" % bucket.name)
                     continue
                 region = "__error__"
             region = region if region else US_STANDARD_REGION
@@ -50,15 +50,15 @@ class Bucket(Handler):
     def delete(self, resource):
         if self.dry_run:
             nr_keys = len(resource.wrapped.get_all_keys())
-            print("\t{0} entries would be removed:".format(nr_keys))
+            self.logger.info("\t{0} entries would be removed:".format(nr_keys))
             if nr_keys:
                 for nr, key in enumerate(resource.wrapped.list()):
                     if nr >= Bucket.NR_KEYS_TO_SHOW:
-                        print("\t... ({0} keys omitted)".format(nr_keys - Bucket.NR_KEYS_TO_SHOW))
+                        self.logger.info("\t... ({0} keys omitted)".format(nr_keys - Bucket.NR_KEYS_TO_SHOW))
                         break
-                    print("\tkey '{0}'".format(key.name))
+                    self.logger.info("\tkey '{0}'".format(key.name))
             return
         delete_keys_result = resource.wrapped.delete_keys(resource.wrapped.list())
-        print("\tInitiating deletion sequence")
+        self.logger.info("\tInitiating deletion sequence")
         delete_bucket_result = boto.connect_s3().delete_bucket(resource.wrapped.name)
         return delete_keys_result, delete_bucket_result

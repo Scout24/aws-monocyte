@@ -20,12 +20,15 @@ from unittest import TestCase
 from mock import patch, Mock
 from monocyte.handler import s3
 
+LOCATATION_CRASHED = "\twarning: get_location() crashed for test_bucket, skipping"
+
 
 class S3BucketTest(TestCase):
 
     def setUp(self):
         self.boto_mock = patch("monocyte.handler.s3.boto").start()
         self.bucket_mock = self._given_bucket_mock()
+        self.logger_mock = patch("monocyte.handler.logging").start()
         self.s3_handler = s3.Bucket(lambda region_name: True)
 
     def tearDown(self):
@@ -35,12 +38,11 @@ class S3BucketTest(TestCase):
         only_resource = list(self.s3_handler.fetch_unwanted_resources())[0]
         self.assertEquals(only_resource.wrapped, self.bucket_mock)
 
-    @patch("monocyte.handler.s3.print", create=True)
-    def test_fetch_unwanted_resources_400_exception(self, print_mock):
+    def test_fetch_unwanted_resources_400_exception(self):
         self.bucket_mock.get_location.side_effect = boto.exception.S3ResponseError(400, 'boom')
         list(self.s3_handler.fetch_unwanted_resources())
 
-        print_mock.assert_called_with('\twarning: get_location() crashed for test_bucket, skipping')
+        self.logger_mock.getLogger.return_value.info.assert_called_with(LOCATATION_CRASHED)
 
     def test_fetch_unwanted_resources_not_400_exception(self):
         self.bucket_mock.get_location.side_effect = boto.exception.S3ResponseError(999, 'boom')
