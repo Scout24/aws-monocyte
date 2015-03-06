@@ -29,7 +29,6 @@ VALID_TARGET_STATE_STATEMENT = "\tstate 'DELETE_COMPLETE' is a valid target stat
                                "(DELETE_COMPLETE, DELETE_IN_PROGRESS), skipping"
 
 
-
 class CloudFormationTest(TestCase):
 
     def setUp(self):
