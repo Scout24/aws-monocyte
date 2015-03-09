@@ -15,7 +15,9 @@
 
 import boto.s3
 import boto.s3.bucket
+import boto.s3.key
 import boto.exception
+import boto.regioninfo
 from unittest import TestCase
 from mock import patch, Mock
 from monocyte.handler import s3, Resource

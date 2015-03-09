@@ -8,7 +8,6 @@ from boto.logs.exceptions import (DataAlreadyAcceptedException,
 
 
 class CloudWatchHandler(logging.StreamHandler):
-
     def __init__(self, region, log_group_name, log_stream_name, level=logging.INFO):
         logging.StreamHandler.__init__(self)
         self.region = region
@@ -37,10 +36,10 @@ class CloudWatchHandler(logging.StreamHandler):
         self._lazy_connect()
         event = {"message": message, "timestamp": timestamp}
         result = self.connection.put_log_events(
-                self.log_group_name,
-                self.log_stream_name,
-                [event],
-                self.sequence_token)
+            self.log_group_name,
+            self.log_stream_name,
+            [event],
+            self.sequence_token)
         self.sequence_token = result.get("nextSequenceToken", None)
 
     def put_message(self, message, timestamp):

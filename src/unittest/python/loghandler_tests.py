@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 import logging
-
-from mock import patch
-import unittest
-
 import boto
-
+import boto.logs.exceptions
+import unittest
+from mock import patch
 from monocyte.loghandler import CloudWatchHandler
 
 
