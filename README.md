@@ -9,20 +9,20 @@
 Monocyte is a bot for destroying AWS resources in non-EU regions written in Python using Boto.
 It is especially useful for companies that are bound to European privacy laws and for that reason don't want to process user data in non-EU regions.
 
-The name [Monocyte](https://en.wikipedia.org/wiki/Monocyte) is related to a type of white blood cells that are part of a humans innate immune system, the first line of defense being responsible for searching and destroying alien organisms to prevent unwanted infections.
+The name [Monocyte](https://en.wikipedia.org/wiki/Monocyte) is related to a type of white blood cells that are part of a human's innate immune system, the first line of defense being responsible for searching and destroying alien organisms to prevent unwanted infections.
 
 ## Background
 With Ireland and Frankfurt being available as AWS regions nowadays, Amazon (more or less) extinguished 
 EU and especially German legal concerns regarding storage and processing of privacy-related data.
 However, for European companies it remains difficult to prevent (accidental) usage of services outside the EU, 
-as there is still no standardized way to restrict AWS-accounts rights on this region-level.
+as there is still no standardized way to restrict AWS-account rights on this region-level.
 
 Especially in open, DevOps-inspired company cultures like ours this becomes a major issue. 
-On the one hand we want our teams to work with AWS and manage their own accounts most widely autonomous. 
+On the one hand we want our teams to work with AWS and manage their own accounts mostly autonomously.
 On the other hand we are bound to EU and German privacy laws and for that reason want to search and destroy 
 unwanted AWS resources relentlessly.
 
-For that reason, we started implementing our own basic AWS immune system layer: Monocyte.
+Therefore, we started implementing our own basic AWS immune system layer: Monocyte.
 
 ## Prerequisites
 - [Boto SDK](http://docs.pythonboto.org/en/latest/getting_started.html)

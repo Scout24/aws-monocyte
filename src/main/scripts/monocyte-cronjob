@@ -9,7 +9,7 @@ die(){
 
 LOG_DIR=/var/log/monocyte
 
-[[ -d $LOG_DIR ]] || die "can not find log dir $LOG_DIR"
+[[ -d $LOG_DIR ]] || die "cannot find log dir $LOG_DIR"
 
 LOGFILE=${LOG_DIR}/monocyte.$(date +%Y-%m-%dT%H:%M:%S).log
 
