@@ -49,7 +49,8 @@ class Monocyte(object):
 
         cloudwatch_handler = monocyte.loghandler.CloudWatchHandler("eu-central-1",
                                                                    "monocyte",
-                                                                   stream_name)
+                                                                   stream_name,
+                                                                   logging.INFO)
         self.logger.addHandler(cloudwatch_handler)
 
         self.logger.info("Monocyte - Search and Destroy unwanted AWS Resources relentlessly.\n")

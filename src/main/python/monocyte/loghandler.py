@@ -8,13 +8,14 @@ from boto.logs.exceptions import (DataAlreadyAcceptedException,
 
 
 class CloudWatchHandler(logging.StreamHandler):
-    def __init__(self, region, log_group_name, log_stream_name):
+    def __init__(self, region, log_group_name, log_stream_name, level=logging.INFO):
         logging.StreamHandler.__init__(self)
         self.region = region
         self.log_group_name = log_group_name
         self.log_stream_name = log_stream_name
         self.connection = None
         self.sequence_token = None
+        self.level = self.setLevel(level)
 
     def create_group_and_stream(self, log_group_name, log_stream_name):
         try:
