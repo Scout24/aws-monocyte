@@ -25,6 +25,7 @@ class MonocyteTest(TestCase):
 
     def setUp(self):
         self.logger_mock = patch("monocyte.logging").start()
+        self.logger_mock.INFO = 20
         self.monocyte = Monocyte()
         self.allowed_region = "EU"
         self.not_allowed_region = "US"
