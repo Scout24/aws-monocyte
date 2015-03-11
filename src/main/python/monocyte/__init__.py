@@ -86,7 +86,7 @@ class Monocyte(object):
                     REMOVE_WARNING % resource.region))
                 try:
                     specific_handler.delete(resource)
-                except BaseException as exc:
+                except Exception as exc:
                     self.logger.exception("\t{0}".format(exc))
                     self.problematic_resources.append((resource, specific_handler, exc))
 
