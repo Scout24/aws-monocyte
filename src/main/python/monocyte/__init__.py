@@ -85,12 +85,13 @@ class Monocyte(object):
                     REMOVE_WARNING % resource.region))
                 try:
                     specific_handler.delete(resource)
-                except BaseException as e:
-                    self.logger.exception("\t{0}".format(e))
-                    self.problematic_resources.append((resource, specific_handler, e))
+                except BaseException as exc:
+                    self.logger.exception("\t{0}".format(exc))
+                    self.problematic_resources.append((resource, specific_handler, exc))
 
     def instantiate_handlers(self, handler_classes, handler_names, dry_run):
-        return [handler_classes["monocyte.handler." + handler_name](self.is_region_handled, dry_run)
+        return [handler_classes["monocyte.handler." + handler_name](
+                self.is_region_handled, dry_run=dry_run)
                 for handler_name in handler_names]
 
 

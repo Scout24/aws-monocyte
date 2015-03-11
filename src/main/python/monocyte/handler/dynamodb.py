@@ -51,5 +51,5 @@ class Table(Handler):
         self.logger.info("\tInitiating deletion sequence")
         try:
             connection.delete_table(resource.wrapped["TableName"])
-        except boto.dynamodb2.exceptions.ResourceInUseException as e:
-            self.logger.info("\t{0}".format(e))
+        except boto.dynamodb2.exceptions.ResourceInUseException as exc:
+            self.logger.info("\t{0}".format(exc))

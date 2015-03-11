@@ -47,9 +47,9 @@ class Instance(Handler):
         if self.dry_run:
             try:
                 connection.terminate_instances([resource.wrapped.id], dry_run=True)
-            except EC2ResponseError as e:
-                if e.status == 412:  # Precondition Failed
-                    self.logger.info("\tTermination {message}".format(**vars(e)))
+            except EC2ResponseError as exc:
+                if exc.status == 412:  # Precondition Failed
+                    self.logger.info("\tTermination {message}".format(**vars(exc)))
                     return [resource.wrapped]
                 raise
         else:
@@ -80,9 +80,9 @@ class Volume(Handler):
         if self.dry_run:
             try:
                 connection.delete_volume(resource.wrapped.id, dry_run=True)
-            except EC2ResponseError as e:
-                if e.status == 412:  # Precondition Failed
-                    self.logger.info("\tTermination {message}".format(**vars(e)))
+            except EC2ResponseError as exc:
+                if exc.status == 412:  # Precondition Failed
+                    self.logger.info("\tTermination {message}".format(**vars(exc)))
                     return [resource.wrapped]
                 raise
         else:

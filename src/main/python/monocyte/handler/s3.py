@@ -31,10 +31,12 @@ class Bucket(Handler):
         for bucket in boto.connect_s3().get_all_buckets():
             try:
                 region = bucket.get_location()
-            except S3ResponseError as e:
+            except S3ResponseError as exc:
                 # See https://github.com/boto/boto/issues/2741
-                if e.status == 400:
-                    self.logger.info("\twarning: get_location() crashed for %s, skipping" % bucket.name)
+                if exc.status == 400:
+                    self.logger.info(
+                        "\twarning: get_location() crashed for %s, skipping" %
+                        bucket.name)
                     continue
                 region = "__error__"
             region = region if region else US_STANDARD_REGION
@@ -42,27 +44,30 @@ class Bucket(Handler):
                 yield Resource(bucket, region)
 
     def to_string(self, resource):
-        return "s3 bucket found in {0}\n\t{1}, created {2}".format(resource.region,
-                                                                   resource.wrapped.name,
-                                                                   resource.wrapped.creation_date)
+        return "s3 bucket found in {0}\n\t{1}, created {2}".format(
+            resource.region, resource.wrapped.name,
+            resource.wrapped.creation_date)
 
     def delete(self, resource):
         if self.dry_run:
             nr_keys = len(resource.wrapped.get_all_keys())
             self.logger.info("\t{0} entries would be removed:".format(nr_keys))
-            self.logger.warn("s3 bucket {0} would be removed because its available in unwanted region {1}".format(
-                    resource.wrapped.name, resource.region))
+            self.logger.warn(
+                "s3 bucket {0} would be removed because it's available in "
+                "unwanted region {1}".format(resource.wrapped.name, resource.region))
             if nr_keys:
                 for nr, key in enumerate(resource.wrapped.list()):
                     if nr >= Bucket.NR_KEYS_TO_SHOW:
-                        self.logger.info("\t... ({0} keys omitted)".format(nr_keys - Bucket.NR_KEYS_TO_SHOW))
+                        self.logger.info("\t... ({0} keys omitted)".format(
+                            nr_keys - Bucket.NR_KEYS_TO_SHOW))
                         break
                     self.logger.info("\tkey '{0}'".format(key.name))
             return
         delete_keys_result = resource.wrapped.delete_keys(resource.wrapped.list())
         self.logger.info("\tInitiating deletion sequence")
-        self.logger.warn("s3 bucket {0} gets removed because its available in unwanted region {1}".format(
-                resource.wrapped.name, resource.region))
+        self.logger.warn(
+            "s3 bucket {0} gets removed because it's available in unwanted "
+            "region {1}".format(resource.wrapped.name, resource.region))
 
         delete_bucket_result = boto.connect_s3().delete_bucket(resource.wrapped.name)
         return delete_keys_result, delete_bucket_result

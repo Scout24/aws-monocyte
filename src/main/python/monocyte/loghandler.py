@@ -45,10 +45,10 @@ class CloudWatchHandler(logging.StreamHandler):
     def put_message(self, message, timestamp):
         try:
             self._put_message(message, timestamp)
-        except (DataAlreadyAcceptedException, InvalidSequenceTokenException) as e:
-            if e.status != 400:
+        except (DataAlreadyAcceptedException, InvalidSequenceTokenException) as exc:
+            if exc.status != 400:
                 raise
-            next_sequence_token = e.body.get("expectedSequenceToken", None)
+            next_sequence_token = exc.body.get("expectedSequenceToken", None)
             if next_sequence_token:
                 self.sequence_token = next_sequence_token
                 self._put_message(message, timestamp)
