@@ -97,13 +97,16 @@ class Monocyte(object):
 
 
 def fetch_all_handler_classes():
+    # WARNING: This fetches really all direct and indirect subclasses of
+    #       monocyte.handler.Handler, not just those that are defined in
+    #       the ./handler/ directory.
     subclasses = {}
     work = [monocyte.handler.Handler]
     while work:
         parent = work.pop()
         for child in parent.__subclasses__():
-            if child not in subclasses:
-                class_name = "%s.%s" % (child.__module__, child.__name__)
+            class_name = "%s.%s" % (child.__module__, child.__name__)
+            if class_name not in subclasses:
                 subclasses[class_name] = child
                 work.append(child)
     return subclasses
