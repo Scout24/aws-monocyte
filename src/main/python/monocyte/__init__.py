@@ -21,7 +21,7 @@ import monocyte.loghandler
 
 REMOVE_WARNING = "WARNING: region '%s' not allowed!"
 IGNORED_REGIONS = ["cn-north-1", "us-gov-west-1", "us-east-1", "us-west-2"]
-ALLOWED_REGIONS_STARTS_WITH = "eu"
+ALLOWED_REGIONS_START_WITH = ["eu"]
 
 
 class Monocyte(object):
@@ -36,7 +36,11 @@ class Monocyte(object):
         self.problematic_resources = []
 
     def is_region_allowed(self, region):
-        return region.lower().startswith(ALLOWED_REGIONS_STARTS_WITH)
+        region = region.lower()
+        for allowed_prefix in ALLOWED_REGIONS_START_WITH:
+            if region.startswith(allowed_prefix):
+                return True
+        return False
 
     def is_region_ignored(self, region):
         return region.lower() in IGNORED_REGIONS
@@ -63,7 +67,7 @@ class Monocyte(object):
         specific_handlers = self.instantiate_handlers(handler_classes, handler_names, dry_run)
 
         self.logger.info("              aws handlers: {0}".format(" -> ".join(handler_names)))
-        self.logger.info("allowed regions start with: {0}".format(ALLOWED_REGIONS_STARTS_WITH))
+        self.logger.info("allowed regions start with: {0}".format(ALLOWED_REGIONS_START_WITH))
         self.logger.info("           ignored regions: {0}".format(" ".join(IGNORED_REGIONS)))
 
         for specific_handler in specific_handlers:
