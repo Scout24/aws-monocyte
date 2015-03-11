@@ -73,7 +73,8 @@ class Monocyte(object):
         if self.problematic_resources:
             self.logger.info("\nproblems encountered while deleting the following resources:")
             for resource, service_handler, exception in self.problematic_resources:
-                self.logger.info("{0:10s} {1}".format(resource.region, service_handler.name))
+                self.logger.info("{0:10s} {1}: {2}".format(
+                    resource.region, service_handler.name, exception))
             return 1
         return 0
 
