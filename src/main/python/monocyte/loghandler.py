@@ -15,7 +15,7 @@ class CloudWatchHandler(logging.StreamHandler):
         self.log_stream_name = log_stream_name
         self.connection = None
         self.sequence_token = None
-        self.level = self.setLevel(level)
+        self.setLevel(level)
 
     def create_group_and_stream(self, log_group_name, log_stream_name):
         try:
