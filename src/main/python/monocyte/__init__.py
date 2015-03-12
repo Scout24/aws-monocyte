@@ -20,7 +20,7 @@ import monocyte.handler
 import monocyte.loghandler
 
 REMOVE_WARNING = "WARNING: region '%s' not allowed!"
-IGNORED_REGIONS = ["cn-north-1", "us-gov-west-1", "us-east-1", "us-west-2"]
+IGNORED_REGIONS = ["cn-north-1", "us-gov-west-1"]
 ALLOWED_REGION_PREFIXES = ["eu"]
 
 
