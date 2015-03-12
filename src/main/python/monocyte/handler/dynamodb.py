@@ -30,7 +30,7 @@ class Table(Handler):
     def fetch_unwanted_resources(self):
         for region in self.regions:
             connection = boto.dynamodb2.connect_to_region(region.name)
-            names = connection.list_tables(limit=100) or {}  # TODO ahilmann: what happens with more than 100 tables per region?
+            names = connection.list_tables(limit=100) or {}
             for name in names.get("TableNames"):
                 resource = connection.describe_table(name)
                 yield Resource(resource["Table"], region.name)
