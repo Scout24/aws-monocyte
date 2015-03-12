@@ -29,8 +29,11 @@ class Monocyte(object):
     def __init__(self, logger=None):
         self.logger = logger or logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
+        formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s', datefmt='%Y-%m-%dT%H:%M:%S')
 
         console_handler = logging.StreamHandler()
+        console_handler.setFormatter(formatter)
+
         self.logger.addHandler(console_handler)
 
         self.problematic_resources = []
