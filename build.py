@@ -14,7 +14,7 @@ use_plugin('python.pytddmon')
 default_task = ['analyze', 'publish']
 
 name = 'aws-monocyte'
-version = '0.0.1'
+version = '0.0.2'
 summary = 'Monocyte - Search and Destroy unwanted AWS Resources relentlessly.'
 description = """
     Monocyte is a bot for destroying AWS resources in non-EU regions written in Python using Boto.
@@ -33,6 +33,7 @@ def set_properties(project):
 
     project.depends_on("docopt")
     project.depends_on("boto")
+    project.depends_on("python-cloudwatchlogs-logging")
 
     project.build_depends_on("mock")
 
