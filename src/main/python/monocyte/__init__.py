@@ -82,9 +82,7 @@ class Monocyte(object):
     def handle_service(self, specific_handler):
         for resource in specific_handler.fetch_unwanted_resources():
             if not self.is_region_allowed(resource.region):
-                self.logger.info("%s %s" % (
-                    specific_handler.to_string(resource),
-                    REMOVE_WARNING % resource.region))
+                self.logger.info(specific_handler.to_string(resource))
                 try:
                     specific_handler.delete(resource)
                 except Exception as exc:

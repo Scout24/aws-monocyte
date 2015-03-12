@@ -37,18 +37,17 @@ class Stack(Handler):
                 yield Resource(resource, region.name)
 
     def to_string(self, resource):
-        return "CloudFormation Stack found in {region} \n\t".format(**vars(resource)) + \
-               "{stack_name}, since {creation_time}" \
-               "\n\tstate {stack_status}".format(**vars(resource.wrapped))
+        return "CloudFormation Stack found in {region}, ".format(**vars(resource)) + \
+               "with name {stack_name}, created {creation_time}, " \
+               "with state {stack_status}".format(**vars(resource.wrapped))
 
     def delete(self, resource):
         if resource.wrapped.stack_status in Stack.VALID_TARGET_STATES:
-            self.logger.info("\tstate '{0}' is a valid target state ({1}), skipping".format(
-                resource.wrapped.stack_status, ", ".join(Stack.VALID_TARGET_STATES)))
+            self.logger.info("Skipping deletion: State '{0}' is a valid target state.".format(
+                resource.wrapped.stack_status))
             return
         if self.dry_run:
-            self.logger.info("\tStack would be removed")
             return
-        self.logger.info("\tInitiating deletion sequence")
+        self.logger.info("Initiating deletion sequence for {stack_name}.".format(**vars(resource.wrapped)))
         connection = boto.cloudformation.connect_to_region(resource.region)
         connection.delete_stack(resource.wrapped.stack_id)
