@@ -54,27 +54,27 @@ class Monocyte(object):
                                                                    logging.INFO)
         self.logger.addHandler(cloudwatch_handler)
 
-        self.logger.info("Monocyte - Search and Destroy unwanted AWS Resources relentlessly.\n")
+        self.logger.info("Monocyte - Search and Destroy unwanted AWS Resources relentlessly.")
 
         if dry_run:
-            self.logger.info(" DRY RUN " * 8)
-            self.logger.info("\n")
+            self.logger.info("Dry Run Activated. Will not destroy anything.")
 
         handler_classes = fetch_all_handler_classes()
         specific_handlers = self.instantiate_handlers(handler_classes, handler_names, dry_run)
 
-        self.logger.info("              aws handlers: {0}".format(" -> ".join(handler_names)))
-        self.logger.info("allowed regions start with: {0}".format(ALLOWED_REGION_PREFIXES))
-        self.logger.info("           ignored regions: {0}".format(" ".join(IGNORED_REGIONS)))
+        self.logger.info("Handler activated in Order: {0}".format(handler_names))
+        self.logger.info("Allowed regions start with: {0}".format(ALLOWED_REGION_PREFIXES))
+        self.logger.info("Ignored regions: {0}".format(IGNORED_REGIONS))
 
         for specific_handler in specific_handlers:
-            self.logger.info("\n---- checking %s resources" % specific_handler.name)
+            self.logger.info("Start handling %s resources" % specific_handler.name)
             self.handle_service(specific_handler)
+            self.logger.info("Finish handling %s resources" % specific_handler.name)
 
         if self.problematic_resources:
-            self.logger.info("\nproblems encountered while deleting the following resources:")
+            self.logger.info("Problems encountered while deleting the following resources.")
             for resource, service_handler, exception in self.problematic_resources:
-                self.logger.info("{0:10s} {1}: {2}".format(
+                self.logger.warn("{0:10s} {1}: {2}".format(
                     resource.region, service_handler.name, exception))
             return 1
         return 0
@@ -82,13 +82,13 @@ class Monocyte(object):
     def handle_service(self, specific_handler):
         for resource in specific_handler.fetch_unwanted_resources():
             if not self.is_region_allowed(resource.region):
-                self.logger.info("\n%s\n\t%s" % (
+                self.logger.info("%s %s" % (
                     specific_handler.to_string(resource),
                     REMOVE_WARNING % resource.region))
                 try:
                     specific_handler.delete(resource)
                 except Exception as exc:
-                    self.logger.exception("\t{0}".format(exc))
+                    self.logger.exception(exc)
                     self.problematic_resources.append((resource, specific_handler, exc))
 
     def instantiate_handlers(self, handler_classes, handler_names, dry_run):

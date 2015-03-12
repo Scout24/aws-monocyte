@@ -19,7 +19,7 @@ from mock import Mock, patch
 from monocyte import Monocyte, fetch_all_handler_classes
 from monocyte.handler import Resource, Handler
 
-REGION_NOT_ALLOWED = "\ntest handler\n\tWARNING: region 'test_region' not allowed!"
+REGION_NOT_ALLOWED = "test handler WARNING: region 'test_region' not allowed!"
 
 
 class MonocyteTest(TestCase):
