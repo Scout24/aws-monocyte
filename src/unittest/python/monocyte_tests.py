@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from unittest import TestCase
+from boto.regioninfo import RegionInfo
 from mock import Mock, patch
 from monocyte import Monocyte, fetch_all_handler_classes
 from monocyte.handler import Resource, Handler
@@ -74,7 +75,9 @@ class DummyHandler(Handler):
         return [Resource(Mock(), "us")]
 
     def fetch_regions(self):
-        return [Mock(name="us")]
+        mock = Mock(RegionInfo)
+        mock.name = "us"
+        return [mock]
 
     def to_string(self, resource):
         pass
