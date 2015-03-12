@@ -34,8 +34,8 @@ class Bucket(Handler):
             except S3ResponseError as exc:
                 # See https://github.com/boto/boto/issues/2741
                 if exc.status == 400:
-                    self.logger.info(
-                        "\twarning: get_location() crashed for %s, skipping" %
+                    self.logger.error(
+                        "warning: get_location() crashed for %s, skipping" %
                         bucket.name)
                     continue
                 region = "__error__"
@@ -44,17 +44,15 @@ class Bucket(Handler):
                 yield Resource(bucket, region)
 
     def to_string(self, resource):
-        return "s3 bucket found in {0}\n\t{1}, created {2}".format(
+        return "s3 bucket found in {0}, with name {1}, created {2} and {3} entries".format(
             resource.region, resource.wrapped.name,
-            resource.wrapped.creation_date)
+            resource.wrapped.creation_date,
+            len(resource.wrapped.get_all_keys()))
 
     def delete(self, resource):
         if self.dry_run:
             nr_keys = len(resource.wrapped.get_all_keys())
-            self.logger.info("\t{0} entries would be removed:".format(nr_keys))
-            self.logger.warn(
-                "s3 bucket {0} would be removed because it's available in "
-                "unwanted region {1}".format(resource.wrapped.name, resource.region))
+            self.logger.info("{0} entries would be removed:".format(nr_keys))
             if nr_keys:
                 for nr, key in enumerate(resource.wrapped.list()):
                     if nr >= Bucket.NR_KEYS_TO_SHOW:
@@ -64,10 +62,7 @@ class Bucket(Handler):
                     self.logger.info("\tkey '{0}'".format(key.name))
             return
         delete_keys_result = resource.wrapped.delete_keys(resource.wrapped.list())
-        self.logger.info("\tInitiating deletion sequence")
-        self.logger.warn(
-            "s3 bucket {0} gets removed because it's available in unwanted "
-            "region {1}".format(resource.wrapped.name, resource.region))
+        self.logger.info("Initiating deletion sequence for {name}.".format(**vars(resource.wrapped)))
 
         delete_bucket_result = boto.connect_s3().delete_bucket(resource.wrapped.name)
         return delete_keys_result, delete_bucket_result

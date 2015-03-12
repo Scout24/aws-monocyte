@@ -19,14 +19,14 @@ import boto.s3.key
 import boto.exception
 import boto.regioninfo
 from unittest import TestCase
-from mock import patch, Mock
+from mock import patch, Mock, MagicMock
 from monocyte.handler import s3, Resource
 
-LOCATATION_CRASHED = "\twarning: get_location() crashed for test_bucket, skipping"
-WOULD_BE_REMOVED = "\t0 entries would be removed:"
+LOCATATION_CRASHED = "warning: get_location() crashed for test_bucket, skipping"
+WOULD_BE_REMOVED = "0 entries would be removed:"
 KEYS_OMITTED = "\t... (2 keys omitted)"
 KEY = "\tkey 'test.txt'"
-INITIATING_DELITION = "\tInitiating deletion sequence"
+INITIATING_DELITION = "Initiating deletion sequence for %s."
 
 
 class S3BucketTest(TestCase):
@@ -51,7 +51,7 @@ class S3BucketTest(TestCase):
         self.bucket_mock.get_location.side_effect = boto.exception.S3ResponseError(400, 'boom')
         list(self.s3_handler.fetch_unwanted_resources())
 
-        self.logger_mock.getLogger.return_value.info.assert_called_with(LOCATATION_CRASHED)
+        self.logger_mock.getLogger.return_value.error.assert_called_with(LOCATATION_CRASHED)
 
     def test_fetch_unwanted_resources_not_400_exception(self):
         self.bucket_mock.get_location.side_effect = boto.exception.S3ResponseError(999, 'boom')
@@ -107,10 +107,10 @@ class S3BucketTest(TestCase):
         self.assertEquals([self.bucket_mock], deleted_bucket)
         self.assertEquals([self.key_mock], deleted_key)
 
-        self.logger_mock.getLogger.return_value.info.assert_called_with(INITIATING_DELITION)
+        self.logger_mock.getLogger.return_value.info.assert_called_with(INITIATING_DELITION % self.bucket_mock.name)
 
     def _given_bucket_mock(self):
-        bucket_mock = Mock(boto.s3.bucket.Bucket)
+        bucket_mock = MagicMock(boto.s3.bucket.Bucket)
         bucket_mock.get_location.return_value = "my-region"
         bucket_mock.name = "test_bucket"
         bucket_mock.creation_date = "01.01.2015"
