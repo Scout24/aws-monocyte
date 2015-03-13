@@ -51,7 +51,6 @@ class EC2InstanceHandlerTest(TestCase):
         resource_string = self.ec2_handler_filter.to_string(only_resource)
 
         self.assertTrue(self.instance_mock.id in resource_string)
-        self.assertTrue(self.instance_mock.image_id in resource_string)
         self.assertTrue(self.instance_mock.instance_type in resource_string)
         self.assertTrue(self.instance_mock.launch_time in resource_string)
         self.assertTrue(self.instance_mock.public_dns_name in resource_string)
@@ -69,7 +68,7 @@ class EC2InstanceHandlerTest(TestCase):
         deleted_resource = self.ec2_handler_filter.delete(resource)[0]
 
         self.assertEquals(self.instance_mock, deleted_resource)
-        self.logger_mock.getLogger.return_value.info.assert_called_with("\tTermination test")
+        self.logger_mock.getLogger.return_value.info.assert_called_with("Termination test")
 
     def _given_instance_mock(self):
         instance_mock = Mock(boto.ec2.instance, image_id="ami-1112")
@@ -127,7 +126,7 @@ class EC2VolumeHandlerTest(TestCase):
         deleted_resource = self.ec2_handler_filter.delete(resource)[0]
 
         self.assertEquals(self.volume_mock, deleted_resource)
-        self.logger_mock.getLogger.return_value.info.assert_called_with("\tTermination test")
+        self.logger_mock.getLogger.return_value.info.assert_called_with("Termination test")
 
     def _given_volume_mock(self):
         volume_mock = Mock(boto.ec2.volume)

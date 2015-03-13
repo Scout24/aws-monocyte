@@ -34,14 +34,14 @@ class Instance(Handler):
                 yield Resource(resource, region.name)
 
     def to_string(self, resource):
-        return "ec2 instance found in {region.name}\n\t" \
-               "{id} [{image_id}] - {instance_type}, since {launch_time}" \
-               "\n\tdnsname {public_dns_name}, key {key_name}, state {_state}".format(**vars(resource.wrapped))
+        return "ec2 instance found in {region.name}, " \
+               "with identifier {id}, instance type is {instance_type}, created {launch_time}, " \
+               "dnsname is {public_dns_name}, key {key_name}, with state {_state}".format(**vars(resource.wrapped))
 
     def delete(self, resource):
         if resource.wrapped.state in Instance.VALID_TARGET_STATES:
-            self.logger.info("\tstate '{0}' is a valid target state ({1}), skipping".format(
-                resource.wrapped.state, ", ".join(Instance.VALID_TARGET_STATES)))
+            self.logger.info("state '{0}' is a valid target state, skipping".format(
+                resource.wrapped.state))
             return []
         connection = boto.ec2.connect_to_region(resource.region)
         if self.dry_run:
@@ -49,12 +49,12 @@ class Instance(Handler):
                 connection.terminate_instances([resource.wrapped.id], dry_run=True)
             except EC2ResponseError as exc:
                 if exc.status == 412:  # Precondition Failed
-                    self.logger.info("\tTermination {message}".format(**vars(exc)))
+                    self.logger.info("Termination {message}".format(**vars(exc)))
                     return [resource.wrapped]
                 raise
         else:
             instances = connection.terminate_instances([resource.wrapped.id], dry_run=False)
-            self.logger.info("\tInitiating shutdown sequence for {0}".format(instances))
+            self.logger.info("Initiating shutdown sequence for {0}".format(instances))
             return instances
 
 
@@ -71,8 +71,9 @@ class Volume(Handler):
                 yield Resource(resource, region.name)
 
     def to_string(self, resource):
-        return "ebs volume found in {region.name}\n\t" \
-               "{id} {status}, since {create_time}".format(**vars(resource.wrapped))
+        return "ebs volume found in {region.name}, " \
+               "with identifier {id}, created {create_time}, " \
+               "with state {status}".format(**vars(resource.wrapped))
 
     def delete(self, resource):
         connection = boto.ec2.connect_to_region(resource.region)
@@ -82,9 +83,9 @@ class Volume(Handler):
                 connection.delete_volume(resource.wrapped.id, dry_run=True)
             except EC2ResponseError as exc:
                 if exc.status == 412:  # Precondition Failed
-                    self.logger.info("\tTermination {message}".format(**vars(exc)))
+                    self.logger.info("Termination {message}".format(**vars(exc)))
                     return [resource.wrapped]
                 raise
         else:
-            self.logger.info("\tInitiating deletion of EBS volume {0}".format(resource.wrapped.id))
+            self.logger.info("Initiating deletion of EBS volume {0}".format(resource.wrapped.id))
             connection.delete_volume(resource.wrapped.id, dry_run=False)
