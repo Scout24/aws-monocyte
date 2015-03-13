@@ -58,7 +58,6 @@ class RDSInstanceTest(TestCase):
         resource = Resource(self.instance_mock, self.negative_fake_region.name)
 
         deleted_resource = self.rds_instance.delete(resource)
-        self.logger_mock.getLogger.return_value.info.assert_called_with(rds2.DRY_RUN_STATEMENT)
 
         self.assertEquals(None, deleted_resource)
 
@@ -81,7 +80,8 @@ class RDSInstanceTest(TestCase):
             self._given_delete_db_instance_response()
 
         deleted_resource = self.rds_instance.delete(resource)
-        self.logger_mock.getLogger.return_value.info.assert_called_with(rds2.DELETION_STATEMENT)
+        self.logger_mock.getLogger.return_value.info.assert_called_with(rds2.DELETION_STATEMENT %
+                                                                        self.instance_mock["DBInstanceIdentifier"])
         self.assertEquals(self.instance_mock["DBInstanceIdentifier"], deleted_resource["DBInstanceIdentifier"])
         self.assertEquals(rds2.DELETION_STATUS, deleted_resource["DBInstanceStatus"])
 
@@ -151,7 +151,7 @@ class RDSSnapshotTest(TestCase):
         resource = Resource(self.snapshot_mock, self.negative_fake_region.name)
 
         deleted_resource = self.rds_snapshot.delete(resource)
-        self.logger_mock.getLogger.return_value.info.assert_called_with(rds2.DRY_RUN_STATEMENT)
+
         self.assertEquals(None, deleted_resource)
 
     def test_skip_deletion_if_already_deleted(self):
@@ -183,7 +183,8 @@ class RDSSnapshotTest(TestCase):
             self._given_delete_db_snapshot_response()
 
         deleted_resource = self.rds_snapshot.delete(resource)
-        self.logger_mock.getLogger.return_value.info.assert_called_with(rds2.DELETION_STATEMENT)
+        self.logger_mock.getLogger.return_value.info.assert_called_with(rds2.DELETION_STATEMENT %
+                                                                        self.snapshot_mock["DBSnapshotIdentifier"])
         self.assertEquals(self.snapshot_mock["DBSnapshotIdentifier"], deleted_resource["DBSnapshotIdentifier"])
         self.assertEquals("deleted", deleted_resource["Status"])
 
