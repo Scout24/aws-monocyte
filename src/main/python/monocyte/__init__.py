@@ -57,7 +57,9 @@ class Monocyte(object):
                                                    logging.INFO)
         self.logger.addHandler(cloudwatch_handler)
 
-        self.logger.info("Monocyte - Search and Destroy unwanted AWS Resources relentlessly.")
+        self.logger.warn("Monocyte - Search and Destroy unwanted AWS Resources relentlessly.")
+
+        self.logger.info("CloudWatchLogs handler used: {0}".format(log_group_name))
 
         if dry_run:
             self.logger.info("Dry Run Activated. Will not destroy anything.")
@@ -85,7 +87,7 @@ class Monocyte(object):
     def handle_service(self, specific_handler):
         for resource in specific_handler.fetch_unwanted_resources():
             if not self.is_region_allowed(resource.region):
-                self.logger.info(specific_handler.to_string(resource))
+                self.logger.warn(specific_handler.to_string(resource))
                 try:
                     specific_handler.delete(resource)
                 except Exception as exc:
