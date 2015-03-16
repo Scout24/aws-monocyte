@@ -64,18 +64,7 @@ class Monocyte(object):
         if dry_run:
             self.logger.info("Dry Run Activated. Will not destroy anything.")
 
-        handler_classes_list = [
-            monocyte.handler.cloudformation.Stack,
-            monocyte.handler.dynamodb.Table,
-            monocyte.handler.ec2.Instance,
-            monocyte.handler.ec2.Volume,
-            monocyte.handler.rds2.Instance,
-            monocyte.handler.rds2.Snapshot,
-            monocyte.handler.s3.Bucket,
-        ]
-        handler_classes = {}
-        for hc in handler_classes_list:
-            handler_classes["%s.%s" % (hc.__module__, hc.__name__)] = hc
+        handler_classes = self.get_all_handler_classes()
         specific_handlers = self.instantiate_handlers(handler_classes, handler_names, dry_run)
 
         self.logger.info("Handler activated in Order: {0}".format(handler_names))
@@ -109,3 +98,18 @@ class Monocyte(object):
         return [handler_classes["monocyte.handler." + handler_name](
                 self.is_region_handled, dry_run=dry_run)
                 for handler_name in handler_names]
+
+    def get_all_handler_classes(self):
+        handler_classes_list = [
+            monocyte.handler.cloudformation.Stack,
+            monocyte.handler.dynamodb.Table,
+            monocyte.handler.ec2.Instance,
+            monocyte.handler.ec2.Volume,
+            monocyte.handler.rds2.Instance,
+            monocyte.handler.rds2.Snapshot,
+            monocyte.handler.s3.Bucket,
+        ]
+        handler_classes = {}
+        for hc in handler_classes_list:
+            handler_classes["%s.%s" % (hc.__module__, hc.__name__)] = hc
+        return handler_classes
