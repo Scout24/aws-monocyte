@@ -19,14 +19,24 @@ from cloudwatchlogs_logging import CloudWatchLogsHandler
 
 import monocyte.handler
 
-REMOVE_WARNING = "WARNING: region '%s' not allowed!"
-IGNORED_REGIONS = ["cn-north-1", "us-gov-west-1"]
-ALLOWED_REGION_PREFIXES = ["eu"]
+DEFAULT_IGNORED_REGIONS = ["cn-north-1", "us-gov-west-1"]
+DEFAULT_ALLOWED_REGIONS_PREFIXES = ["eu"]
 
 
 class Monocyte(object):
 
-    def __init__(self, logger=None):
+    def __init__(self,
+                 allowed_regions_prefixes=None,
+                 ignored_regions=None,
+                 cloudwatchlogs_groupname=None,
+                 logger=None):
+        if allowed_regions_prefixes:
+            self.allowed_regions_prefixes = allowed_regions_prefixes
+        else:
+            self.allowed_regions_prefixes = DEFAULT_ALLOWED_REGIONS_PREFIXES
+        self.ignored_regions = ignored_regions if ignored_regions else DEFAULT_IGNORED_REGIONS
+        self.cloudwatchlogs_groupname = cloudwatchlogs_groupname
+
         self.logger = logger or logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
         formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s', datefmt='%Y-%m-%dT%H:%M:%S')
@@ -40,26 +50,25 @@ class Monocyte(object):
 
     def is_region_allowed(self, region):
         region_prefix = region.lower()[:2]
-        return region_prefix in ALLOWED_REGION_PREFIXES
+        return region_prefix in self.allowed_regions_prefixes
 
     def is_region_ignored(self, region):
-        return region.lower() in IGNORED_REGIONS
+        return region.lower() in self.ignored_regions
 
     def is_region_handled(self, region):
         return not self.is_region_allowed(region) and not self.is_region_ignored(region)
 
     def search_and_destroy_unwanted_resources(self, handler_names, dry_run=True):
-        log_group_name = "monocyte-dryrun" if dry_run else "monocyte"
-
-        cloudwatch_handler = CloudWatchLogsHandler("eu-central-1",
-                                                   log_group_name,
-                                                   "search_and_destroy_unwanted_resources",
-                                                   logging.INFO)
-        self.logger.addHandler(cloudwatch_handler)
+        if self.cloudwatchlogs_groupname:
+            cloudwatch_handler = CloudWatchLogsHandler("eu-central-1",
+                                                       self.cloudwatchlogs_groupname,
+                                                       "search_and_destroy_unwanted_resources",
+                                                       logging.INFO)
+            self.logger.addHandler(cloudwatch_handler)
 
         self.logger.warn("Monocyte - Search and Destroy unwanted AWS Resources relentlessly.")
 
-        self.logger.info("CloudWatchLogs handler used: {0}".format(log_group_name))
+        self.logger.info("CloudWatchLogs handler used: {0}".format(self.cloudwatchlogs_groupname))
 
         if dry_run:
             self.logger.info("Dry Run Activated. Will not destroy anything.")
@@ -68,8 +77,8 @@ class Monocyte(object):
         specific_handlers = self.instantiate_handlers(handler_classes, handler_names, dry_run)
 
         self.logger.info("Handler activated in Order: {0}".format(handler_names))
-        self.logger.info("Allowed regions start with: {0}".format(ALLOWED_REGION_PREFIXES))
-        self.logger.info("Ignored regions: {0}".format(IGNORED_REGIONS))
+        self.logger.info("Allowed regions start with: {0}".format(self.allowed_regions_prefixes))
+        self.logger.info("Ignored regions: {0}".format(self.ignored_regions))
 
         for specific_handler in specific_handlers:
             self.logger.info("Start handling %s resources" % specific_handler.name)

@@ -22,6 +22,9 @@ options:
     --dry-run=bool valid values "True" or "False" [default: True]
     --use-handlers=HANDLER1,HANDLER2,...    aws handlers to use (order might be important)
         [default: cloudformation.Stack, ec2.Instance, ec2.Volume, rds2.Instance, rds2.Snapshot, dynamodb.Table, s3.Bucket]
+    --allowed-regions-prefixes=PREFIX1,PREFIX2,...  allowed regions start with these prefixes [default: eu]
+    --ignored-regions=REGION1,REGION2,...  regions to be ignored [default: cn-north-1, us-gov-west-1]
+    --cwl-groupname=GROUPNAME  log events to CloudWatchLogs Group
 """
 
 
@@ -36,8 +39,15 @@ def run():
     arguments = docopt(__doc__)
     dry_run = (arguments["--dry-run"] != "False")
     handlers = [handler.strip() for handler in arguments["--use-handlers"].split(",")]
+    allowed_regions_prefixes = [prefix.strip() for prefix in arguments["--allowed-regions-prefixes"].split(",")]
+    ignored_regions = [region.strip() for region in arguments["--ignored-regions"].split(",")]
+    cloudwatchlogs_groupname = arguments["--cwl-groupname"]
 
-    sys.exit(Monocyte().search_and_destroy_unwanted_resources(handlers, dry_run))
+    monocyte = Monocyte(
+        allowed_regions_prefixes=allowed_regions_prefixes,
+        ignored_regions=ignored_regions,
+        cloudwatchlogs_groupname=cloudwatchlogs_groupname)
+    sys.exit(monocyte.search_and_destroy_unwanted_resources(handlers, dry_run))
 
 
 if __name__ == "__main__":

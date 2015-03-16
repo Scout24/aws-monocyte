@@ -28,6 +28,7 @@ class MonocyteTest(TestCase):
         self.logger_mock = patch("monocyte.logging").start()
         self.logger_mock.INFO = 20
         self.monocyte = Monocyte()
+        self.monocyte.allowed_region_prefixes = ["eu"]
         self.allowed_region = "EU"
         self.not_allowed_region = "US"
         self.ignored_region = "us-gov-west-1"
