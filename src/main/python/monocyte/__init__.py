@@ -49,11 +49,11 @@ class Monocyte(object):
         return not self.is_region_allowed(region) and not self.is_region_ignored(region)
 
     def search_and_destroy_unwanted_resources(self, handler_names, dry_run=True):
-        stream_name = "dryrun" if dry_run else "removed"
+        log_group_name = "monocyte-dryrun" if dry_run else "monocyte"
 
         cloudwatch_handler = CloudWatchLogsHandler("eu-central-1",
-                                                   "monocyte",
-                                                   stream_name,
+                                                   log_group_name,
+                                                   "search_and_destroy_unwanted_resources",
                                                    logging.INFO)
         self.logger.addHandler(cloudwatch_handler)
 
