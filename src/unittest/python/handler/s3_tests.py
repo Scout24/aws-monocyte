@@ -23,9 +23,8 @@ from mock import patch, Mock, MagicMock
 from monocyte.handler import s3, Resource
 
 LOCATATION_CRASHED = "warning: get_location() crashed for test_bucket, skipping"
-WOULD_BE_REMOVED = "0 entries would be removed:"
-KEYS_OMITTED = "\t... (2 keys omitted)"
-KEY = "\tkey 'test.txt'"
+KEYS_OMITTED = " ... (2 keys omitted)"
+KEY = "'test.txt'"
 INITIATING_DELITION = "Initiating deletion sequence for %s."
 
 
@@ -73,20 +72,14 @@ class S3BucketTest(TestCase):
         self.assertTrue(self.bucket_mock.name in resource_string)
         self.assertTrue(self.bucket_mock.creation_date in resource_string)
 
-    def test_skip_deletion_in_dry_run_without_keys(self):
-        self.s3_handler.dry_run = True
-        self.bucket_mock.get_all_keys.return_value = []
-        resource = Resource(self.bucket_mock, self.negative_fake_region.name)
-        self.s3_handler.delete(resource)
-        self.logger_mock.getLogger.return_value.info.assert_called_with(WOULD_BE_REMOVED)
-
     def test_skip_deletion_in_dry_run_with_keys(self):
         self.s3_handler.dry_run = True
         self.bucket_mock.get_all_keys.return_value = [self.key_mock]
         self.bucket_mock.list.return_value = [self.key_mock]
         resource = Resource(self.bucket_mock, self.negative_fake_region.name)
         self.s3_handler.delete(resource)
-        self.logger_mock.getLogger.return_value.info.assert_called_with(KEY)
+        call_args = self.logger_mock.getLogger.return_value.info.call_args[0][0]
+        self.assertTrue(KEY in call_args)
 
     def test_skip_deletion_in_dry_run_with_keys_omitted(self):
         self.s3_handler.dry_run = True
@@ -94,7 +87,8 @@ class S3BucketTest(TestCase):
         self.bucket_mock.list.return_value = [self.key_mock] * 6
         resource = Resource(self.bucket_mock, self.negative_fake_region.name)
         self.s3_handler.delete(resource)
-        self.logger_mock.getLogger.return_value.info.assert_called_with(KEYS_OMITTED)
+        call_args = self.logger_mock.getLogger.return_value.info.call_args[0][0]
+        self.assertTrue(KEYS_OMITTED in call_args)
 
     def test_does_delete_if_not_dry_run(self):
         self.s3_handler.dry_run = False

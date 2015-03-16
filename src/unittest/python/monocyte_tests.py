@@ -16,7 +16,7 @@
 from unittest import TestCase
 from boto.regioninfo import RegionInfo
 from mock import Mock, patch
-from monocyte import Monocyte, fetch_all_handler_classes
+from monocyte import Monocyte
 from monocyte.handler import Resource, Handler
 
 REGION_NOT_ALLOWED = "test handler"
@@ -50,21 +50,14 @@ class MonocyteTest(TestCase):
         handler.to_string.return_value = "test handler"
         self.monocyte.handle_service(handler)
 
-        self.logger_mock.getLogger.return_value.info.assert_called_with(REGION_NOT_ALLOWED)
+        self.logger_mock.getLogger.return_value.warn.assert_called_with(REGION_NOT_ALLOWED)
 
-    def test_fetch_all_handler_classes(self):
-        classes = fetch_all_handler_classes()
-        self.assertTrue(len(classes) > 0)
-        for cls in classes:
-            self.assertTrue(cls.startswith("monocyte"))
-            self.assertTrue("andler" in cls)
-
-    @patch("monocyte.fetch_all_handler_classes", create=True)
+    @patch("monocyte.Monocyte.get_all_handler_classes", create=True)
     def test_search_and_destroy_unwanted_resources_dry_run(self, fetch_mock):
         fetch_mock.return_value = {"monocyte.handler.dummy": DummyHandler}
         self.monocyte.search_and_destroy_unwanted_resources(["dummy"])
 
-    @patch("monocyte.fetch_all_handler_classes", create=True)
+    @patch("monocyte.Monocyte.get_all_handler_classes", create=True)
     def test_search_and_destroy_unwanted_resources(self, fetch_mock):
         fetch_mock.return_value = {"monocyte.handler.dummy": DummyHandler}
         self.monocyte.search_and_destroy_unwanted_resources(["dummy"], dry_run=False)
