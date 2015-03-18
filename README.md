@@ -3,8 +3,6 @@
 [![Coverage Status](https://coveralls.io/repos/ImmobilienScout24/aws-monocyte/badge.svg)](https://coveralls.io/r/ImmobilienScout24/aws-monocyte)
 [![Codacy Badge](https://www.codacy.com/project/badge/ab632d7511e14a7ebfd47a797ced7b62)](https://www.codacy.com/public/jan_1691/aws-monocyte_2)
 
-**_Currently under construction._**
-
 **Monocyte - Search and Destroy unwanted AWS Resources relentlessly.**
 Monocyte is a bot for destroying AWS resources in non-EU regions written in Python using Boto.
 It is especially useful for companies that are bound to European privacy laws and for that reason don't want to process user data in non-EU regions.
