@@ -15,6 +15,8 @@
 
 import boto.exception
 import boto.dynamodb2.table
+import boto.regioninfo
+
 from unittest import TestCase
 from mock import patch, Mock
 from monocyte.handler import dynamodb

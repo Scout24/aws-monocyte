@@ -14,10 +14,14 @@
 # limitations under the License.
 
 import logging
+import monocyte.handler.cloudformation
+import monocyte.handler.dynamodb
+import monocyte.handler.ec2
+import monocyte.handler.rds2
+import monocyte.handler.s3
 
 from cloudwatchlogs_logging import CloudWatchLogsHandler
 
-import monocyte.handler
 
 DEFAULT_IGNORED_REGIONS = ["cn-north-1", "us-gov-west-1"]
 DEFAULT_ALLOWED_REGIONS_PREFIXES = ["eu"]
