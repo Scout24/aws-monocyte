@@ -20,9 +20,10 @@ as there is still no standardized way to restrict AWS-account rights on this reg
 Especially in open, DevOps-inspired company cultures like ours this becomes a major issue. 
 On the one hand we want our teams to work with AWS and manage their own accounts mostly autonomously.
 On the other hand we are bound to EU and German privacy laws and for that reason want to search and destroy 
-unwanted AWS resources relentlessly.
+unwanted AWS resources relentlessly. Therefore, we started implementing our own basic AWS immune system layer: Monocyte.
 
-Therefore, we started implementing our own basic AWS immune system layer: Monocyte.
+Also read [AWS Monocyte - Let’s Build a Cloud Immune System](http://www.datahack.it/cloud-privacy-aws-monocyte/) or 
+check out [the presentation](https://dl.dropboxusercontent.com/u/1874278/datahackit/AWS-Monocyte.pdf) we did for the AWS UserGroup Meetup in March 2015 at the Immobilien Scout HQ in Berlin.
 
 ## Prerequisites
 - [Boto SDK](http://docs.pythonboto.org/en/latest/getting_started.html)
