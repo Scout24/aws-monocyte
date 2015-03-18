@@ -18,7 +18,7 @@ import datetime
 
 import boto
 import boto.dynamodb2
-import boto.dynamodb2.exceptions
+from boto.dynamodb2.exceptions import ResourceInUseException
 
 from monocyte.handler import Resource, Handler
 
@@ -47,8 +47,8 @@ class Table(Handler):
         if self.dry_run:
             return
         connection = boto.dynamodb2.connect_to_region(resource.region)
-        self.logger.info("Initiating deletion sequence for {0}.".format(resource.wrapped["TableName"]))
         try:
+            self.logger.info("Initiating deletion sequence for {0}.".format(resource.wrapped["TableName"]))
             connection.delete_table(resource.wrapped["TableName"])
-        except boto.dynamodb2.exceptions.ResourceInUseException as exc:
+        except ResourceInUseException as exc:
             self.logger.exception(exc)
