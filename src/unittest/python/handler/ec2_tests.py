@@ -27,13 +27,13 @@ from monocyte.handler import Resource
 class EC2InstanceHandlerTest(TestCase):
 
     def setUp(self):
-        self.boto_mock = patch("monocyte.handler.ec2.boto").start()
+        self.ec2_mock = patch("monocyte.handler.ec2.ec2").start()
         self.positive_fake_region = Mock(boto.ec2.regioninfo.EC2RegionInfo)
         self.positive_fake_region.name = "allowed_region"
         self.negative_fake_region = Mock(boto.ec2.regioninfo.EC2RegionInfo)
         self.negative_fake_region.name = "forbidden_region"
 
-        self.boto_mock.ec2.regions.return_value = [self.positive_fake_region, self.negative_fake_region]
+        self.ec2_mock.regions.return_value = [self.positive_fake_region, self.negative_fake_region]
         self.logger_mock = patch("monocyte.handler.logging").start()
         self.ec2_handler_filter = ec2.Instance(lambda region_name: region_name == self.positive_fake_region.name)
 
@@ -59,7 +59,7 @@ class EC2InstanceHandlerTest(TestCase):
 
     def test_delete(self):
         resource = Resource(self.instance_mock, self.negative_fake_region.name)
-        connection = self.boto_mock.ec2.connect_to_region.return_value
+        connection = self.ec2_mock.connect_to_region.return_value
 
         e = boto.exception.EC2ResponseError(412, 'boom')
         e.message = "test"
@@ -81,20 +81,20 @@ class EC2InstanceHandlerTest(TestCase):
         instance_mock._state = boto.ec2.instance.InstanceState(16, "running")
         instance_mock.state = instance_mock._state.name
 
-        self.boto_mock.ec2.connect_to_region.return_value.get_only_instances.return_value = [instance_mock]
+        self.ec2_mock.connect_to_region.return_value.get_only_instances.return_value = [instance_mock]
         return instance_mock
 
 
 class EC2VolumeHandlerTest(TestCase):
 
     def setUp(self):
-        self.boto_mock = patch("monocyte.handler.ec2.boto").start()
+        self.ec2_mock = patch("monocyte.handler.ec2.ec2").start()
         self.positive_fake_region = Mock(boto.ec2.regioninfo.EC2RegionInfo)
         self.positive_fake_region.name = "allowed_region"
         self.negative_fake_region = Mock(boto.ec2.regioninfo.EC2RegionInfo)
         self.negative_fake_region.name = "forbidden_region"
 
-        self.boto_mock.ec2.regions.return_value = [self.positive_fake_region, self.negative_fake_region]
+        self.ec2_mock.regions.return_value = [self.positive_fake_region, self.negative_fake_region]
         self.logger_mock = patch("monocyte.handler.logging").start()
         self.ec2_handler_filter = ec2.Volume(lambda region_name: region_name == self.positive_fake_region.name)
 
@@ -117,7 +117,7 @@ class EC2VolumeHandlerTest(TestCase):
 
     def test_delete(self):
         resource = Resource(self.volume_mock, self.negative_fake_region.name)
-        connection = self.boto_mock.ec2.connect_to_region.return_value
+        connection = self.ec2_mock.connect_to_region.return_value
 
         e = boto.exception.EC2ResponseError(412, 'boom')
         e.message = "test"
@@ -135,5 +135,5 @@ class EC2VolumeHandlerTest(TestCase):
         volume_mock.region = self.positive_fake_region
         volume_mock.status = "OK"
 
-        self.boto_mock.ec2.connect_to_region.return_value.get_all_volumes.return_value = [volume_mock]
+        self.ec2_mock.connect_to_region.return_value.get_all_volumes.return_value = [volume_mock]
         return volume_mock

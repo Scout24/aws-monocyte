@@ -30,12 +30,12 @@ VALID_TARGET_STATE_STATEMENT = "Skipping deletion: State 'DELETE_COMPLETE' is a 
 class CloudFormationTest(TestCase):
 
     def setUp(self):
-        self.boto_mock = patch("monocyte.handler.cloudformation.boto").start()
+        self.cloudformation_mock = patch("monocyte.handler.cloudformation.cloudformation").start()
         self.positive_fake_region = Mock(boto.cloudformation.regions)
         self.positive_fake_region.name = "allowed_region"
         self.negative_fake_region = Mock(boto.cloudformation.regions)
         self.negative_fake_region.name = "forbbiden_region"
-        self.boto_mock.cloudformation.regions.return_value = [self.positive_fake_region, self.negative_fake_region]
+        self.cloudformation_mock.regions.return_value = [self.positive_fake_region, self.negative_fake_region]
         self.logger_mock = patch("monocyte.handler.logging").start()
         self.cloudformation_handler_filter = cloudformation.Stack(
             lambda region_name: region_name == self.positive_fake_region.name)
@@ -61,14 +61,14 @@ class CloudFormationTest(TestCase):
         resource = Resource(self.stack_mock, self.negative_fake_region.name)
         self.cloudformation_handler_filter.dry_run = True
         self.cloudformation_handler_filter.delete(resource)
-        self.assertFalse(self.boto_mock.cloudformation.connect_to_region.return_value.delete_stack.called)
+        self.assertFalse(self.cloudformation_mock.connect_to_region.return_value.delete_stack.called)
 
     def test_does_delete_if_not_dry_run(self):
         resource = Resource(self.stack_mock, self.negative_fake_region.name)
         self.cloudformation_handler_filter.dry_run = False
         self.cloudformation_handler_filter.delete(resource)
         self.logger_mock.getLogger.return_value.info.assert_called_with(DELETION_STATEMENT % self.stack_mock.stack_name)
-        self.assertTrue(self.boto_mock.cloudformation.connect_to_region.return_value.delete_stack.called)
+        self.assertTrue(self.cloudformation_mock.connect_to_region.return_value.delete_stack.called)
 
     def test_skip_deletion_if_already_deleted(self):
         self.stack_mock.stack_status = "DELETE_COMPLETE"
@@ -76,7 +76,7 @@ class CloudFormationTest(TestCase):
         self.cloudformation_handler_filter.dry_run = False
         self.cloudformation_handler_filter.delete(resource)
         self.logger_mock.getLogger.return_value.info.assert_called_with(VALID_TARGET_STATE_STATEMENT)
-        self.assertFalse(self.boto_mock.cloudformation.connect_to_region.return_value.delete_stack.called)
+        self.assertFalse(self.cloudformation_mock.connect_to_region.return_value.delete_stack.called)
 
     def _given_stack_mock(self):
         stack_mock = Mock(boto.cloudformation.stack.Stack, stack_name="test-stack")
@@ -85,7 +85,7 @@ class CloudFormationTest(TestCase):
         stack_mock.creation_time = "01.01.2015"
         stack_mock.region = self.positive_fake_region.name
 
-        self.boto_mock.cloudformation.connect_to_region.return_value.valid_states = ('CREATE_COMPLETE',
+        self.cloudformation_mock.connect_to_region.return_value.valid_states = ('CREATE_COMPLETE',
                                                                                      'DELETE_COMPLETE')
-        self.boto_mock.cloudformation.connect_to_region.return_value.list_stacks.return_value = [stack_mock]
+        self.cloudformation_mock.connect_to_region.return_value.list_stacks.return_value = [stack_mock]
         return stack_mock

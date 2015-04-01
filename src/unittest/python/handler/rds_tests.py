@@ -22,14 +22,14 @@ from monocyte.handler import rds2, Resource
 
 class RDSInstanceTest(TestCase):
     def setUp(self):
-        self.boto_mock = patch("monocyte.handler.rds2.boto").start()
+        self.rds2_mock = patch("monocyte.handler.rds2.rds2").start()
         self.instance_mock = self._given_instance_mock()
 
         self.positive_fake_region = Mock(boto.regioninfo.RegionInfo)
         self.positive_fake_region.name = "allowed_region"
         self.negative_fake_region = Mock(boto.regioninfo.RegionInfo)
         self.negative_fake_region.name = "forbidden_region"
-        self.boto_mock.rds2.regions.return_value = [self.positive_fake_region, self.negative_fake_region]
+        self.rds2_mock.regions.return_value = [self.positive_fake_region, self.negative_fake_region]
         self.logger_mock = patch("monocyte.handler.logging").start()
         self.rds_instance = rds2.Instance(lambda region_name: True)
 
@@ -37,14 +37,14 @@ class RDSInstanceTest(TestCase):
         patch.stopall()
 
     def test_fetch_unwanted_resources_filtered(self):
-        self.boto_mock.rds2.connect_to_region.return_value.describe_db_instances.return_value = \
+        self.rds2_mock.connect_to_region.return_value.describe_db_instances.return_value = \
             self._given_db_instances_response()
 
         only_resource = list(self.rds_instance.fetch_unwanted_resources())[0]
         self.assertEquals(only_resource.wrapped, self.instance_mock)
 
     def test_to_string(self):
-        self.boto_mock.rds2.connect_to_region.return_value.describe_db_instances.return_value = \
+        self.rds2_mock.connect_to_region.return_value.describe_db_instances.return_value = \
             self._given_db_instances_response()
 
         only_resource = list(self.rds_instance.fetch_unwanted_resources())[0]
@@ -76,7 +76,7 @@ class RDSInstanceTest(TestCase):
 
         resource = Resource(self.instance_mock, self.negative_fake_region.name)
 
-        self.boto_mock.rds2.connect_to_region.return_value.delete_db_instance.return_value = \
+        self.rds2_mock.connect_to_region.return_value.delete_db_instance.return_value = \
             self._given_delete_db_instance_response()
 
         deleted_resource = self.rds_instance.delete(resource)
@@ -115,14 +115,14 @@ class RDSInstanceTest(TestCase):
 
 class RDSSnapshotTest(TestCase):
     def setUp(self):
-        self.boto_mock = patch("monocyte.handler.rds2.boto").start()
+        self.rds2_mock = patch("monocyte.handler.rds2.rds2").start()
         self.snapshot_mock = self._given_snapshot_mock()
 
         self.positive_fake_region = Mock(boto.regioninfo.RegionInfo)
         self.positive_fake_region.name = "allowed_region"
         self.negative_fake_region = Mock(boto.regioninfo.RegionInfo)
         self.negative_fake_region.name = "forbidden_region"
-        self.boto_mock.rds2.regions.return_value = [self.positive_fake_region, self.negative_fake_region]
+        self.rds2_mock.regions.return_value = [self.positive_fake_region, self.negative_fake_region]
         self.logger_mock = patch("monocyte.handler.logging").start()
         self.rds_snapshot = rds2.Snapshot(lambda region_name: True)
 
@@ -130,14 +130,14 @@ class RDSSnapshotTest(TestCase):
         patch.stopall()
 
     def test_fetch_unwanted_resources_filtered(self):
-        self.boto_mock.rds2.connect_to_region.return_value.describe_db_snapshots.return_value = \
+        self.rds2_mock.connect_to_region.return_value.describe_db_snapshots.return_value = \
             self._given_db_snapshot_response()
 
         only_resource = list(self.rds_snapshot.fetch_unwanted_resources())[0]
         self.assertEquals(only_resource.wrapped, self.snapshot_mock)
 
     def test_to_string(self):
-        self.boto_mock.rds2.connect_to_region.return_value.describe_db_snapshots.return_value = \
+        self.rds2_mock.connect_to_region.return_value.describe_db_snapshots.return_value = \
             self._given_db_snapshot_response()
 
         only_resource = list(self.rds_snapshot.fetch_unwanted_resources())[0]
@@ -179,7 +179,7 @@ class RDSSnapshotTest(TestCase):
 
         resource = Resource(self.snapshot_mock, self.negative_fake_region.name)
 
-        self.boto_mock.rds2.connect_to_region.return_value.delete_db_snapshot.return_value = \
+        self.rds2_mock.connect_to_region.return_value.delete_db_snapshot.return_value = \
             self._given_delete_db_snapshot_response()
 
         deleted_resource = self.rds_snapshot.delete(resource)

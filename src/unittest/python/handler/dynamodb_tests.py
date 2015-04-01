@@ -25,19 +25,19 @@ from monocyte.handler import dynamodb
 class DynamoDbTableHandlerTest(TestCase):
 
     def setUp(self):
-        self.boto_mock = patch("monocyte.handler.dynamodb.boto").start()
+        self.dynamodb_mock = patch("monocyte.handler.dynamodb.dynamodb2").start()
         self.positive_fake_region = Mock(boto.regioninfo.RegionInfo)
         self.positive_fake_region.name = "allowed_region"
         self.negative_fake_region = Mock(boto.regioninfo.RegionInfo)
         self.negative_fake_region.name = "forbidden_region"
 
-        self.boto_mock.dynamodb2.regions.return_value = [self.positive_fake_region, self.negative_fake_region]
+        self.dynamodb_mock.regions.return_value = [self.positive_fake_region, self.negative_fake_region]
         self.logger_mock = patch("monocyte.handler.logging").start()
         self.dynamodb_handler = dynamodb.Table(
             lambda region_name: region_name == self.positive_fake_region.name)
 
         self.instance_mock = self._given_instance_mock()
-        connection = self.boto_mock.dynamodb2.connect_to_region.return_value
+        connection = self.dynamodb_mock.connect_to_region.return_value
         connection.list_tables.return_value = {"TableNames": ["mock_table"]}
         connection.describe_table.return_value = self.instance_mock
 
