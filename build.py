@@ -47,7 +47,7 @@ def set_properties(project):
     project.set_property('dir_dist_scripts', 'scripts')
 
     project.set_property('distutils_classifiers', [
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 4 - Beta',
         'Environment :: Console',
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
