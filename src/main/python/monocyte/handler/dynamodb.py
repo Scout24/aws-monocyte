@@ -13,23 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import datetime
-
-import boto
-import boto.dynamodb2
+from boto import dynamodb2
 from boto.dynamodb2.exceptions import ResourceInUseException
-
 from monocyte.handler import Resource, Handler
 
 
 class Table(Handler):
     def fetch_regions(self):
-        return boto.dynamodb2.regions()
+        return dynamodb2.regions()
 
     def fetch_unwanted_resources(self):
         for region in self.regions:
-            connection = boto.dynamodb2.connect_to_region(region.name)
+            connection = dynamodb2.connect_to_region(region.name)
             names = connection.list_tables(limit=100) or {}
             for name in names.get("TableNames"):
                 resource = connection.describe_table(name)
@@ -46,7 +42,7 @@ class Table(Handler):
     def delete(self, resource):
         if self.dry_run:
             return
-        connection = boto.dynamodb2.connect_to_region(resource.region)
+        connection = dynamodb2.connect_to_region(resource.region)
         try:
             self.logger.info("Initiating deletion sequence for {0}.".format(resource.wrapped["TableName"]))
             connection.delete_table(resource.wrapped["TableName"])

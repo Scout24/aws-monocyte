@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-import boto
-import boto.ec2
+from boto import ec2
 from boto.exception import EC2ResponseError
 from monocyte.handler import Resource, Handler
 
@@ -24,11 +22,11 @@ class Instance(Handler):
     VALID_TARGET_STATES = ["terminated", "shutting-down"]
 
     def fetch_regions(self):
-        return boto.ec2.regions()
+        return ec2.regions()
 
     def fetch_unwanted_resources(self):
         for region in self.regions:
-            connection = boto.ec2.connect_to_region(region.name)
+            connection = ec2.connect_to_region(region.name)
             resources = connection.get_only_instances() or []
             for resource in resources:
                 yield Resource(resource, region.name)
@@ -43,7 +41,7 @@ class Instance(Handler):
             self.logger.info("state '{0}' is a valid target state, skipping".format(
                 resource.wrapped.state))
             return []
-        connection = boto.ec2.connect_to_region(resource.region)
+        connection = ec2.connect_to_region(resource.region)
         if self.dry_run:
             try:
                 connection.terminate_instances([resource.wrapped.id], dry_run=True)
@@ -61,11 +59,11 @@ class Instance(Handler):
 class Volume(Handler):
 
     def fetch_regions(self):
-        return boto.ec2.regions()
+        return ec2.regions()
 
     def fetch_unwanted_resources(self):
         for region in self.regions:
-            connection = boto.ec2.connect_to_region(region.name)
+            connection = ec2.connect_to_region(region.name)
             resources = connection.get_all_volumes() or []
             for resource in resources:
                 yield Resource(resource, region.name)
@@ -76,7 +74,7 @@ class Volume(Handler):
                "with state {status}".format(**vars(resource.wrapped))
 
     def delete(self, resource):
-        connection = boto.ec2.connect_to_region(resource.region)
+        connection = ec2.connect_to_region(resource.region)
 
         if self.dry_run:
             try:
