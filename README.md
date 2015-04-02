@@ -27,5 +27,22 @@ check out [the presentation](https://dl.dropboxusercontent.com/u/1874278/datahac
 - [Boto SDK](http://docs.pythonboto.org/en/latest/getting_started.html)
 - [AWS Credentials for Boto](http://docs.pythonboto.org/en/latest/boto_config_tut.html#credentials)
 
+## Usage
+```
+pip install aws-monocyte
+monocyte --help
+
+usage:
+    monocyte [options]
+
+options:
+    --dry-run=bool valid values "True" or "False" [default: True]
+    --use-handlers=HANDLER1,HANDLER2,...    aws handlers to use (order might be important)
+        [default: cloudformation.Stack, ec2.Instance, ec2.Volume, rds2.Instance, rds2.Snapshot, dynamodb.Table, s3.Bucket]
+    --allowed-regions-prefixes=PREFIX1,PREFIX2,...  allowed regions start with these prefixes [default: eu]
+    --ignored-regions=REGION1,REGION2,...  regions to be ignored [default: cn-north-1, us-gov-west-1]
+    --cwl-groupname=GROUPNAME  log events to CloudWatchLogs Group
+```
+
 ## Licensing 
 Monocyte is licensed under [Apache License, Version 2.0](https://github.com/ImmobilienScout24/aws-monocyte/blob/master/LICENSE.txt).
