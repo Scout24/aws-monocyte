@@ -22,6 +22,7 @@ from mock import patch, Mock
 from monocyte.handler import cloudformation
 from monocyte.handler import Resource
 
+STACK_NAME = 'test-stack'
 
 DELETION_STATEMENT = "Initiating deletion sequence for %s."
 VALID_TARGET_STATE_STATEMENT = "Skipping deletion: State 'DELETE_COMPLETE' is a valid target state."
@@ -37,7 +38,7 @@ class CloudFormationTest(TestCase):
         self.negative_fake_region.name = "forbbiden_region"
         self.cloudformation_mock.regions.return_value = [self.positive_fake_region, self.negative_fake_region]
         self.logger_mock = patch("monocyte.handler.logging").start()
-        self.cloudformation_handler_filter = cloudformation.Stack(
+        self.cloudformation_handler = cloudformation.Stack(
             lambda region_name: region_name == self.positive_fake_region.name)
 
         self.stack_mock = self._given_stack_mock()
@@ -45,13 +46,18 @@ class CloudFormationTest(TestCase):
     def tearDown(self):
         patch.stopall()
 
-    def test_fetch_unwanted_resources_filtered(self):
-        only_resource = list(self.cloudformation_handler_filter.fetch_unwanted_resources())[0]
+    def test_fetch_unwanted_resources_filtered_by_region(self):
+        only_resource = list(self.cloudformation_handler.fetch_unwanted_resources())[0]
         self.assertEquals(only_resource.wrapped, self.stack_mock)
 
+    def test_fetch_unwanted_resources_filtered_by_ignored_resources(self):
+        self.cloudformation_handler.ignored_resources = [STACK_NAME]
+        empty_list = list(self.cloudformation_handler.fetch_unwanted_resources())
+        self.assertEquals(empty_list.__len__(), 0)
+
     def test_to_string(self):
-        only_resource = list(self.cloudformation_handler_filter.fetch_unwanted_resources())[0]
-        resource_string = self.cloudformation_handler_filter.to_string(only_resource)
+        only_resource = list(self.cloudformation_handler.fetch_unwanted_resources())[0]
+        resource_string = self.cloudformation_handler.to_string(only_resource)
 
         self.assertTrue(self.stack_mock.stack_status in resource_string)
         self.assertTrue(self.stack_mock.creation_time in resource_string)
@@ -59,27 +65,27 @@ class CloudFormationTest(TestCase):
 
     def test_skip_deletion_in_dry_run(self):
         resource = Resource(self.stack_mock, self.negative_fake_region.name)
-        self.cloudformation_handler_filter.dry_run = True
-        self.cloudformation_handler_filter.delete(resource)
+        self.cloudformation_handler.dry_run = True
+        self.cloudformation_handler.delete(resource)
         self.assertFalse(self.cloudformation_mock.connect_to_region.return_value.delete_stack.called)
 
     def test_does_delete_if_not_dry_run(self):
         resource = Resource(self.stack_mock, self.negative_fake_region.name)
-        self.cloudformation_handler_filter.dry_run = False
-        self.cloudformation_handler_filter.delete(resource)
+        self.cloudformation_handler.dry_run = False
+        self.cloudformation_handler.delete(resource)
         self.logger_mock.getLogger.return_value.info.assert_called_with(DELETION_STATEMENT % self.stack_mock.stack_name)
         self.assertTrue(self.cloudformation_mock.connect_to_region.return_value.delete_stack.called)
 
     def test_skip_deletion_if_already_deleted(self):
         self.stack_mock.stack_status = "DELETE_COMPLETE"
         resource = Resource(self.stack_mock, self.negative_fake_region.name)
-        self.cloudformation_handler_filter.dry_run = False
-        self.cloudformation_handler_filter.delete(resource)
+        self.cloudformation_handler.dry_run = False
+        self.cloudformation_handler.delete(resource)
         self.logger_mock.getLogger.return_value.info.assert_called_with(VALID_TARGET_STATE_STATEMENT)
         self.assertFalse(self.cloudformation_mock.connect_to_region.return_value.delete_stack.called)
 
     def _given_stack_mock(self):
-        stack_mock = Mock(boto.cloudformation.stack.Stack, stack_name="test-stack")
+        stack_mock = Mock(boto.cloudformation.stack.Stack, stack_name=STACK_NAME)
         stack_mock.stack_id = "id-12345"
         stack_mock.stack_status = "CREATE_COMPLETE"
         stack_mock.creation_time = "01.01.2015"

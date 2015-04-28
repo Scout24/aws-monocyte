@@ -31,7 +31,12 @@ class Stack(Handler):
             unwanted_states.remove("DELETE_COMPLETE")
             resources = connection.list_stacks(stack_status_filters=list(unwanted_states)) or []
             for resource in resources:
-                yield Resource(resource, region.name)
+                resource_wrapper = Resource(resource, region.name)
+                if resource.stack_name in self.ignored_resources:
+                    self.logger.info('{0} {1}'.format('IGNORE', self.to_string(resource_wrapper)))
+                    continue
+
+                yield resource_wrapper
 
     def to_string(self, resource):
         return "CloudFormation Stack found in {region}, ".format(**vars(resource)) + \

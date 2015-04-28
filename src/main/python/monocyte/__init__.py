@@ -5,7 +5,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#    http://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,10 +28,10 @@ DEFAULT_ALLOWED_REGIONS_PREFIXES = ["eu"]
 
 
 class Monocyte(object):
-
     def __init__(self,
                  allowed_regions_prefixes=None,
                  ignored_regions=None,
+                 ignored_resources=None,
                  cloudwatchlogs_groupname=None,
                  logger=None):
         if allowed_regions_prefixes:
@@ -39,6 +39,7 @@ class Monocyte(object):
         else:
             self.allowed_regions_prefixes = DEFAULT_ALLOWED_REGIONS_PREFIXES
         self.ignored_regions = ignored_regions if ignored_regions else DEFAULT_IGNORED_REGIONS
+        self.ignored_resources = ignored_resources
         self.cloudwatchlogs_groupname = cloudwatchlogs_groupname
 
         self.logger = logger or logging.getLogger(__name__)
@@ -71,7 +72,6 @@ class Monocyte(object):
             self.logger.addHandler(cloudwatch_handler)
 
         self.logger.warn("Monocyte - Search and Destroy unwanted AWS Resources relentlessly.")
-
         self.logger.info("CloudWatchLogs handler used: {0}".format(self.cloudwatchlogs_groupname))
 
         if dry_run:
@@ -108,9 +108,10 @@ class Monocyte(object):
                     self.problematic_resources.append((resource, specific_handler, exc))
 
     def instantiate_handlers(self, handler_classes, handler_names, dry_run):
-        return [handler_classes["monocyte.handler." + handler_name](
-                self.is_region_handled, dry_run=dry_run)
-                for handler_name in handler_names]
+        return [
+            handler_classes["monocyte.handler." + handler_name](
+                self.is_region_handled, dry_run=dry_run,
+                ignored_resources=self.ignored_resources[handler_name.split('.')[0]]) for handler_name in handler_names]
 
     def get_all_handler_classes(self):
         handler_classes_list = [
