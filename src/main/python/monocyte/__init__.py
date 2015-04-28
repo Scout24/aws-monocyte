@@ -39,7 +39,7 @@ class Monocyte(object):
         else:
             self.allowed_regions_prefixes = DEFAULT_ALLOWED_REGIONS_PREFIXES
         self.ignored_regions = ignored_regions if ignored_regions else DEFAULT_IGNORED_REGIONS
-        self.ignored_resources = ignored_resources
+        self.ignored_resources = ignored_resources or {}
         self.cloudwatchlogs_groupname = cloudwatchlogs_groupname
 
         self.logger = logger or logging.getLogger(__name__)
@@ -111,7 +111,9 @@ class Monocyte(object):
         return [
             handler_classes["monocyte.handler." + handler_name](
                 self.is_region_handled, dry_run=dry_run,
-                ignored_resources=self.ignored_resources[handler_name.split('.')[0]]) for handler_name in handler_names]
+                ignored_resources=self.ignored_resources[handler_name.split('.')[0]]
+                if handler_name.split('.')[0] in self.ignored_resources.keys() else None)
+            for handler_name in handler_names]
 
     def get_all_handler_classes(self):
         handler_classes_list = [
