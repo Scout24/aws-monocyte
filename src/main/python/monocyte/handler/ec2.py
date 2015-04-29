@@ -29,7 +29,11 @@ class Instance(Handler):
             connection = ec2.connect_to_region(region.name)
             resources = connection.get_only_instances() or []
             for resource in resources:
-                yield Resource(resource, region.name)
+                resource_wrapper = Resource(resource, region.name)
+                if resource.id in self.ignored_resources:
+                    self.logger.info('{0} {1}'.format('IGNORE', self.to_string(resource_wrapper)))
+                    continue
+                yield resource_wrapper
 
     def to_string(self, resource):
         return "ec2 instance found in {region.name}, " \
@@ -66,7 +70,11 @@ class Volume(Handler):
             connection = ec2.connect_to_region(region.name)
             resources = connection.get_all_volumes() or []
             for resource in resources:
-                yield Resource(resource, region.name)
+                resource_wrapper = Resource(resource, region.name)
+                if resource.id in self.ignored_resources:
+                    self.logger.info('{0} {1}'.format('IGNORE', self.to_string(resource_wrapper)))
+                    continue
+                yield resource_wrapper
 
     def to_string(self, resource):
         return "ebs volume found in {region.name}, " \

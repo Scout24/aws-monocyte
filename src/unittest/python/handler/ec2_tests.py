@@ -23,6 +23,10 @@ from mock import patch, Mock
 from monocyte.handler import ec2
 from monocyte.handler import Resource
 
+VOLUME_ID = "vol-12345"
+
+INSTANCE_ID = "id-12345"
+
 
 class EC2InstanceHandlerTest(TestCase):
 
@@ -35,20 +39,25 @@ class EC2InstanceHandlerTest(TestCase):
 
         self.ec2_mock.regions.return_value = [self.positive_fake_region, self.negative_fake_region]
         self.logger_mock = patch("monocyte.handler.logging").start()
-        self.ec2_handler_filter = ec2.Instance(lambda region_name: region_name == self.positive_fake_region.name)
+        self.ec2_handler = ec2.Instance(lambda region_name: region_name == self.positive_fake_region.name)
 
         self.instance_mock = self._given_instance_mock()
 
     def tearDown(self):
         patch.stopall()
 
-    def test_fetch_unwanted_resources_filtered(self):
-        only_resource = list(self.ec2_handler_filter.fetch_unwanted_resources())[0]
+    def test_fetch_unwanted_resources_filtered_by_region(self):
+        only_resource = list(self.ec2_handler.fetch_unwanted_resources())[0]
         self.assertEquals(only_resource.wrapped, self.instance_mock)
 
+    def test_fetch_unwanted_resources_filtered_by_ignored_resources(self):
+        self.ec2_handler.ignored_resources = [INSTANCE_ID]
+        empty_list = list(self.ec2_handler.fetch_unwanted_resources())
+        self.assertEquals(empty_list.__len__(), 0)
+
     def test_to_string(self):
-        only_resource = list(self.ec2_handler_filter.fetch_unwanted_resources())[0]
-        resource_string = self.ec2_handler_filter.to_string(only_resource)
+        only_resource = list(self.ec2_handler.fetch_unwanted_resources())[0]
+        resource_string = self.ec2_handler.to_string(only_resource)
 
         self.assertTrue(self.instance_mock.id in resource_string)
         self.assertTrue(self.instance_mock.instance_type in resource_string)
@@ -65,14 +74,14 @@ class EC2InstanceHandlerTest(TestCase):
         e.message = "test"
         connection.terminate_instances.side_effect = e
 
-        deleted_resource = self.ec2_handler_filter.delete(resource)[0]
+        deleted_resource = self.ec2_handler.delete(resource)[0]
 
         self.assertEquals(self.instance_mock, deleted_resource)
         self.logger_mock.getLogger.return_value.info.assert_called_with("Termination test")
 
     def _given_instance_mock(self):
         instance_mock = Mock(boto.ec2.instance, image_id="ami-1112")
-        instance_mock.id = "id-12345"
+        instance_mock.id = INSTANCE_ID
         instance_mock.instance_type = "m1.small"
         instance_mock.launch_time = "01.01.2015"
         instance_mock.public_dns_name = "test.aws.com"
@@ -96,20 +105,25 @@ class EC2VolumeHandlerTest(TestCase):
 
         self.ec2_mock.regions.return_value = [self.positive_fake_region, self.negative_fake_region]
         self.logger_mock = patch("monocyte.handler.logging").start()
-        self.ec2_handler_filter = ec2.Volume(lambda region_name: region_name == self.positive_fake_region.name)
+        self.ec2_handler = ec2.Volume(lambda region_name: region_name == self.positive_fake_region.name)
 
         self.volume_mock = self._given_volume_mock()
 
     def tearDown(self):
         patch.stopall()
 
-    def test_fetch_unwanted_resources_filtered(self):
-        only_resource = list(self.ec2_handler_filter.fetch_unwanted_resources())[0]
+    def test_fetch_unwanted_resources_filtered_by_region(self):
+        only_resource = list(self.ec2_handler.fetch_unwanted_resources())[0]
         self.assertEquals(only_resource.wrapped, self.volume_mock)
 
+    def test_fetch_unwanted_resources_filtered_by_ignored_resources(self):
+        self.ec2_handler.ignored_resources = [VOLUME_ID]
+        empty_list = list(self.ec2_handler.fetch_unwanted_resources())
+        self.assertEquals(empty_list.__len__(), 0)
+
     def test_to_string(self):
-        only_resource = list(self.ec2_handler_filter.fetch_unwanted_resources())[0]
-        resource_string = self.ec2_handler_filter.to_string(only_resource)
+        only_resource = list(self.ec2_handler.fetch_unwanted_resources())[0]
+        resource_string = self.ec2_handler.to_string(only_resource)
 
         self.assertTrue(self.volume_mock.id in resource_string)
         self.assertTrue(self.volume_mock.create_time in resource_string)
@@ -123,14 +137,14 @@ class EC2VolumeHandlerTest(TestCase):
         e.message = "test"
         connection.delete_volume.side_effect = e
 
-        deleted_resource = self.ec2_handler_filter.delete(resource)[0]
+        deleted_resource = self.ec2_handler.delete(resource)[0]
 
         self.assertEquals(self.volume_mock, deleted_resource)
         self.logger_mock.getLogger.return_value.info.assert_called_with("Termination test")
 
     def _given_volume_mock(self):
         volume_mock = Mock(boto.ec2.volume)
-        volume_mock.id = "vol-12345"
+        volume_mock.id = VOLUME_ID
         volume_mock.create_time = "01.01.2015"
         volume_mock.region = self.positive_fake_region
         volume_mock.status = "OK"
