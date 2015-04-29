@@ -41,7 +41,11 @@ class Bucket(Handler):
                 region = "__error__"
             region = region if region else US_STANDARD_REGION
             if self.region_filter(region):
-                yield Resource(bucket, region)
+                resource_wrapper = Resource(bucket, region)
+                if bucket.name in self.ignored_resources:
+                    self.logger.info('{0} {1}'.format('IGNORE', self.to_string(resource_wrapper)))
+                    continue
+                yield resource_wrapper
 
     def to_string(self, resource):
         return "s3 bucket found in {0}, with name {1}, created {2} and {3} entries".format(

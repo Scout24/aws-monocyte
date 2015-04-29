@@ -22,6 +22,8 @@ from unittest import TestCase
 from mock import patch, Mock, MagicMock
 from monocyte.handler import s3, Resource
 
+BUCKET_NAME = "test_bucket"
+
 LOCATATION_CRASHED = "warning: get_location() crashed for test_bucket, skipping"
 KEYS_OMITTED = " ... (2 keys omitted)"
 KEY = "'test.txt'"
@@ -72,6 +74,11 @@ class S3BucketTest(TestCase):
         self.assertTrue(self.bucket_mock.name in resource_string)
         self.assertTrue(self.bucket_mock.creation_date in resource_string)
 
+    def test_fetch_unwanted_resources_filtered_by_ignored_resources(self):
+        self.s3_handler.ignored_resources = [BUCKET_NAME]
+        empty_list = list(self.s3_handler.fetch_unwanted_resources())
+        self.assertEquals(empty_list.__len__(), 0)
+
     def test_skip_deletion_in_dry_run_with_keys(self):
         self.s3_handler.dry_run = True
         self.bucket_mock.get_all_keys.return_value = [self.key_mock]
@@ -106,7 +113,7 @@ class S3BucketTest(TestCase):
     def _given_bucket_mock(self):
         bucket_mock = MagicMock(boto.s3.bucket.Bucket)
         bucket_mock.get_location.return_value = "my-region"
-        bucket_mock.name = "test_bucket"
+        bucket_mock.name = BUCKET_NAME
         bucket_mock.creation_date = "01.01.2015"
 
         self.boto_mock.connect_s3.return_value.get_all_buckets.return_value = [bucket_mock]
