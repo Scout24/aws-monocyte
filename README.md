@@ -41,6 +41,8 @@ options:
         [default: cloudformation.Stack, ec2.Instance, ec2.Volume, rds2.Instance, rds2.Snapshot, dynamodb.Table, s3.Bucket]
     --allowed-regions-prefixes=PREFIX1,PREFIX2,...  allowed regions start with these prefixes [default: eu]
     --ignored-regions=REGION1,REGION2,...  regions to be ignored [default: cn-north-1, us-gov-west-1]
+    --ignored-resources=RESOURCE1,RESOURCE2,... resources to be ignored
+        [default: cloudformation.cloudtrail-logging]
     --cwl-groupname=GROUPNAME  log events to CloudWatchLogs Group
 ```
 
