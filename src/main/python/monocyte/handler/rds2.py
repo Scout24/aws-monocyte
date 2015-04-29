@@ -36,7 +36,11 @@ class Instance(Handler):
             connection = rds2.connect_to_region(region.name)
             resources = connection.describe_db_instances() or []
             for resource in resources["DescribeDBInstancesResponse"]["DescribeDBInstancesResult"]["DBInstances"]:
-                yield Resource(resource, region.name)
+                resource_wrapper = Resource(resource, region.name)
+                if resource['DBInstanceIdentifier'] in self.ignored_resources:
+                    self.logger.info('{0} {1}'.format('IGNORE', self.to_string(resource_wrapper)))
+                    continue
+                yield resource_wrapper
 
     def to_string(self, resource):
         return "Database Instance found in {region}, ".format(**vars(resource)) + \
@@ -64,7 +68,11 @@ class Snapshot(Handler):
             connection = rds2.connect_to_region(region.name)
             resources = connection.describe_db_snapshots() or []
             for resource in resources["DescribeDBSnapshotsResponse"]["DescribeDBSnapshotsResult"]["DBSnapshots"]:
-                yield Resource(resource, region.name)
+                resource_wrapper = Resource(resource, region.name)
+                if resource['DBSnapshotIdentifier'] in self.ignored_resources:
+                    self.logger.info('{0} {1}'.format('IGNORE', self.to_string(resource_wrapper)))
+                    continue
+                yield resource_wrapper
 
     def to_string(self, resource):
         return "Database Snapshot found in {region}, ".format(**vars(resource)) + \

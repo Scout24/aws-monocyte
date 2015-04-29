@@ -19,6 +19,10 @@ from unittest import TestCase
 from mock import patch, Mock
 from monocyte.handler import rds2, Resource
 
+SNAPSHOT_IDENTIFIER = "mySnapshotIdentifier"
+
+INSTANCE_IDENTIFIER = "myInstanceIdentifier"
+
 
 class RDSInstanceTest(TestCase):
     def setUp(self):
@@ -36,12 +40,17 @@ class RDSInstanceTest(TestCase):
     def tearDown(self):
         patch.stopall()
 
-    def test_fetch_unwanted_resources_filtered(self):
+    def test_fetch_unwanted_resources_filtered_by_region(self):
         self.rds2_mock.connect_to_region.return_value.describe_db_instances.return_value = \
             self._given_db_instances_response()
 
         only_resource = list(self.rds_instance.fetch_unwanted_resources())[0]
         self.assertEquals(only_resource.wrapped, self.instance_mock)
+
+    def test_fetch_unwanted_resources_filtered_by_ignored_resources(self):
+        self.rds_instance.ignored_resources = [INSTANCE_IDENTIFIER]
+        empty_list = list(self.rds_instance.fetch_unwanted_resources())
+        self.assertEquals(empty_list.__len__(), 0)
 
     def test_to_string(self):
         self.rds2_mock.connect_to_region.return_value.describe_db_instances.return_value = \
@@ -96,7 +105,7 @@ class RDSInstanceTest(TestCase):
 
     def _given_instance_mock(self):
         return {
-            "DBInstanceIdentifier": "myInstanceIdentifier",
+            "DBInstanceIdentifier": INSTANCE_IDENTIFIER,
             "DBInstanceStatus": "myStatus"
         }
 
@@ -129,12 +138,17 @@ class RDSSnapshotTest(TestCase):
     def tearDown(self):
         patch.stopall()
 
-    def test_fetch_unwanted_resources_filtered(self):
+    def test_fetch_unwanted_resources_filtered_by_region(self):
         self.rds2_mock.connect_to_region.return_value.describe_db_snapshots.return_value = \
             self._given_db_snapshot_response()
 
         only_resource = list(self.rds_snapshot.fetch_unwanted_resources())[0]
         self.assertEquals(only_resource.wrapped, self.snapshot_mock)
+
+    def test_fetch_unwanted_resources_filtered_by_ignored_resources(self):
+        self.rds_snapshot.ignored_resources = [SNAPSHOT_IDENTIFIER]
+        empty_list = list(self.rds_snapshot.fetch_unwanted_resources())
+        self.assertEquals(empty_list.__len__(), 0)
 
     def test_to_string(self):
         self.rds2_mock.connect_to_region.return_value.describe_db_snapshots.return_value = \
@@ -199,7 +213,7 @@ class RDSSnapshotTest(TestCase):
 
     def _given_snapshot_mock(self):
         return {
-            "DBSnapshotIdentifier": "mySnapshotIdentifier",
+            "DBSnapshotIdentifier": SNAPSHOT_IDENTIFIER,
             "Status": "myStatus",
             "SnapshotType": "manual"
         }
