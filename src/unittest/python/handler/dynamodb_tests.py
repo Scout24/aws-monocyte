@@ -5,7 +5,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#    http://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,9 +21,10 @@ from unittest import TestCase
 from mock import patch, Mock
 from monocyte.handler import dynamodb
 
+TABLE_NAME = "mock_table"
+
 
 class DynamoDbTableHandlerTest(TestCase):
-
     def setUp(self):
         self.dynamodb_mock = patch("monocyte.handler.dynamodb.dynamodb2").start()
         self.positive_fake_region = Mock(boto.regioninfo.RegionInfo)
@@ -44,9 +45,14 @@ class DynamoDbTableHandlerTest(TestCase):
     def tearDown(self):
         patch.stopall()
 
-    def test_fetch_unwanted_resources_filtered(self):
+    def test_fetch_unwanted_resources_filtered_by_region(self):
         only_resource = list(self.dynamodb_handler.fetch_unwanted_resources())[0]
         self.assertEquals(only_resource.wrapped, self.instance_mock["Table"])
+
+    def test_fetch_unwanted_resources_filtered_by_ignored_resources(self):
+        self.dynamodb_handler.ignored_resources = [TABLE_NAME]
+        empty_list = list(self.dynamodb_handler.fetch_unwanted_resources())
+        self.assertEquals(empty_list.__len__(), 0)
 
     def test_to_string(self):
         only_resource = list(self.dynamodb_handler.fetch_unwanted_resources())[0]
@@ -54,9 +60,6 @@ class DynamoDbTableHandlerTest(TestCase):
 
         self.assertTrue("mock_table" in resource_string)
 
-    def test_delete(self):
-        pass
-
     def _given_instance_mock(self):
-        instance_mock = {"Table": {"TableName": "mock_table", "CreationDateTime": 1, "TableStatus": "mocked"}}
+        instance_mock = {"Table": {"TableName": TABLE_NAME, "CreationDateTime": 1, "TableStatus": "mocked"}}
         return instance_mock

@@ -29,7 +29,12 @@ class Table(Handler):
             names = connection.list_tables(limit=100) or {}
             for name in names.get("TableNames"):
                 resource = connection.describe_table(name)
-                yield Resource(resource["Table"], region.name)
+                resource_wrapper = Resource(resource["Table"], region.name)
+                if name in self.ignored_resources:
+                    self.logger.info('{0} {1}'.format('IGNORE', self.to_string(resource_wrapper)))
+                    continue
+
+                yield resource_wrapper
 
     def to_string(self, resource):
         table = resource.wrapped
