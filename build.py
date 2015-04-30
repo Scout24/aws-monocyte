@@ -6,15 +6,13 @@ use_plugin('python.distutils')
 use_plugin('python.flake8')
 use_plugin('python.unittest')
 use_plugin('python.coverage')
-
 use_plugin('copy_resources')
-
 use_plugin('python.pytddmon')
 
 default_task = ['analyze', 'publish']
 
 name = 'aws-monocyte'
-version = '0.0.2'
+version = '0.0.3'
 summary = 'Monocyte - Search and Destroy unwanted AWS Resources relentlessly.'
 description = """
     Monocyte is a bot for destroying AWS resources in non-EU regions written in Python using Boto.
