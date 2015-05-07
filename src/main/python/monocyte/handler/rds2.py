@@ -38,7 +38,7 @@ class Instance(Handler):
             for resource in resources["DescribeDBInstancesResponse"]["DescribeDBInstancesResult"]["DBInstances"]:
                 resource_wrapper = Resource(resource, region.name)
                 if resource['DBInstanceIdentifier'] in self.ignored_resources:
-                    self.logger.info('{0} {1}'.format('IGNORE', self.to_string(resource_wrapper)))
+                    self.logger.info('IGNORE ' + self.to_string(resource_wrapper))
                     continue
                 yield resource_wrapper
 
@@ -70,7 +70,7 @@ class Snapshot(Handler):
             for resource in resources["DescribeDBSnapshotsResponse"]["DescribeDBSnapshotsResult"]["DBSnapshots"]:
                 resource_wrapper = Resource(resource, region.name)
                 if resource['DBSnapshotIdentifier'] in self.ignored_resources:
-                    self.logger.info('{0} {1}'.format('IGNORE', self.to_string(resource_wrapper)))
+                    self.logger.info('IGNORE ' + self.to_string(resource_wrapper))
                     continue
                 yield resource_wrapper
 

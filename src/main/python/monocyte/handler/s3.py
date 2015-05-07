@@ -43,7 +43,7 @@ class Bucket(Handler):
             if self.region_filter(region):
                 resource_wrapper = Resource(bucket, region)
                 if bucket.name in self.ignored_resources:
-                    self.logger.info('{0} {1}'.format('IGNORE', self.to_string(resource_wrapper)))
+                    self.logger.info('IGNORE ' + self.to_string(resource_wrapper))
                     continue
                 yield resource_wrapper
 

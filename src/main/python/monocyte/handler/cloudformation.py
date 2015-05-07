@@ -33,7 +33,7 @@ class Stack(Handler):
             for resource in resources:
                 resource_wrapper = Resource(resource, region.name)
                 if resource.stack_name in self.ignored_resources:
-                    self.logger.info('{0} {1}'.format('IGNORE', self.to_string(resource_wrapper)))
+                    self.logger.info('IGNORE ' + self.to_string(resource_wrapper))
                     continue
 
                 yield resource_wrapper

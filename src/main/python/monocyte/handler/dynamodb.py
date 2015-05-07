@@ -31,7 +31,7 @@ class Table(Handler):
                 resource = connection.describe_table(name)
                 resource_wrapper = Resource(resource["Table"], region.name)
                 if name in self.ignored_resources:
-                    self.logger.info('{0} {1}'.format('IGNORE', self.to_string(resource_wrapper)))
+                    self.logger.info('IGNORE ' + self.to_string(resource_wrapper))
                     continue
 
                 yield resource_wrapper
