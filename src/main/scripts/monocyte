@@ -43,8 +43,7 @@ def run():
     handlers = [handler.strip() for handler in arguments["--use-handlers"].split(",")]
     allowed_regions_prefixes = [prefix.strip() for prefix in arguments["--allowed-regions-prefixes"].split(",")]
     ignored_regions = [region.strip() for region in arguments["--ignored-regions"].split(",")]
-    ignored_resources = [tuple(resource.strip().split('.')) for resource in arguments["--ignored-resources"].split(",")]
-    ignored_resources = convert_tuple_list_to_dictionary(ignored_resources)
+    ignored_resources = parse_ignored_resources(arguments["--ignored_resources"])
     cloudwatchlogs_groupname = arguments["--cwl-groupname"]
 
     monocyte = Monocyte(
@@ -54,13 +53,13 @@ def run():
         cloudwatchlogs_groupname=cloudwatchlogs_groupname)
     sys.exit(monocyte.search_and_destroy_unwanted_resources(handlers, dry_run))
 
+def parse_ignored_resources(ignored_resources):
+    parsed = defaultdict(list)
+    for resource in ignored_resources.split(","):
+        namespace, name = resource.strip().split(".")
+        parsed[namespace].append(name)
+    return parsed
 
-def convert_tuple_list_to_dictionary(list_of_tuple):
-    dictionary = defaultdict(list)
-    for k, v in list_of_tuple:
-        dictionary[k].append(v)
-
-    return dictionary
 
 if __name__ == "__main__":
     run()
