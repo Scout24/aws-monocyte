@@ -92,6 +92,6 @@ class CloudFormationTest(TestCase):
         stack_mock.region = self.positive_fake_region.name
 
         self.cloudformation_mock.connect_to_region.return_value.valid_states = ('CREATE_COMPLETE',
-                                                                                     'DELETE_COMPLETE')
+                                                                                'DELETE_COMPLETE')
         self.cloudformation_mock.connect_to_region.return_value.list_stacks.return_value = [stack_mock]
         return stack_mock
