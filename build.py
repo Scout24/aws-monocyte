@@ -11,7 +11,7 @@ use_plugin('python.pytddmon')
 
 default_task = ['analyze', 'publish']
 
-name = 'aws-monocyte'
+name = 'aws-monocyte2'
 version = '0.0.3'
 summary = 'Monocyte - Search and Destroy unwanted AWS Resources relentlessly.'
 description = """
