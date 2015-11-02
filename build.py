@@ -1,4 +1,5 @@
 from pybuilder.core import use_plugin, init, Author
+from pybuilder.vcs import VCSRevision
 
 use_plugin('python.core')
 use_plugin('python.install_dependencies')
@@ -60,7 +61,7 @@ def set_properties(project):
 def set_properties_for_teamcity_builds(project):
     import os
     project.version = '%s-%s' % (
-        project.version, os.environ.get('BUILD_NUMBER', 0))
+        project.version, VCSRevision().get_git_revision_count())
     project.default_task = ['install_build_dependencies', 'publish']
     project.set_property(
         'install_dependencies_index_url', os.environ.get('PYPIPROXY_URL'))
