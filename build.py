@@ -13,7 +13,7 @@ use_plugin('python.pytddmon')
 default_task = ['analyze', 'publish']
 
 name = 'aws-monocyte2'
-version = '0.0.3'
+version = '0.3'
 summary = 'Monocyte - Search and Destroy unwanted AWS Resources relentlessly.'
 description = """
     Monocyte is a bot for destroying AWS resources in non-EU regions written in Python using Boto.
@@ -60,7 +60,7 @@ def set_properties(project):
 @init(environments='teamcity')
 def set_properties_for_teamcity_builds(project):
     import os
-    project.version = '%s-%s-%s' % (
+    project.version = '%s.%s-%s' % (
         project.version, VCSRevision().get_git_revision_count(), os.environ.get('BUILD_NUMBER', 0))
     project.default_task = ['install_build_dependencies', 'publish']
     project.set_property(
