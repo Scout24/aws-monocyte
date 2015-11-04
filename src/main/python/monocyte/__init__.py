@@ -34,11 +34,9 @@ class Monocyte(object):
                  ignored_resources=None,
                  cloudwatchlogs_groupname=None,
                  logger=None):
-        if allowed_regions_prefixes:
-            self.allowed_regions_prefixes = allowed_regions_prefixes
-        else:
-            self.allowed_regions_prefixes = DEFAULT_ALLOWED_REGIONS_PREFIXES
-        self.ignored_regions = ignored_regions if ignored_regions else DEFAULT_IGNORED_REGIONS
+
+        self.allowed_regions_prefixes = allowed_regions_prefixes or DEFAULT_ALLOWED_REGIONS_PREFIXES
+        self.ignored_regions = ignored_regions or DEFAULT_IGNORED_REGIONS
         self.ignored_resources = ignored_resources or {}
         self.cloudwatchlogs_groupname = cloudwatchlogs_groupname
 
@@ -108,12 +106,19 @@ class Monocyte(object):
                     self.problematic_resources.append((resource, specific_handler, exc))
 
     def instantiate_handlers(self, handler_classes, handler_names, dry_run):
-        return [
-            handler_classes["monocyte.handler." + handler_name](
-                self.is_region_handled, dry_run=dry_run,
-                ignored_resources=self.ignored_resources[handler_name.split('.')[0]]
-                if handler_name.split('.')[0] in self.ignored_resources.keys() else None)
-            for handler_name in handler_names]
+        handlers = []
+
+        for handler_name in handler_names:
+            handler_prefix = handler_name.split('.')[0]
+            ignored_resources = handler_prefix if handler_prefix in self.ignored_resources.keys() else None
+
+            handler_class = handler_classes["monocyte.handler." + handler_name]
+            handler = handler_class(self.is_region_handled,
+                                    dry_run=dry_run,
+                                    ignored_resources=ignored_resources)
+            handlers.append(handler)
+
+        return handlers
 
     def get_all_handler_classes(self):
         handler_classes_list = [
