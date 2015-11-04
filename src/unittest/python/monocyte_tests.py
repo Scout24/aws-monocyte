@@ -53,12 +53,12 @@ class MonocyteTest(TestCase):
 
         self.logger_mock.getLogger.return_value.warn.assert_called_with(REGION_NOT_ALLOWED)
 
-    @patch("monocyte.Monocyte.get_all_handler_classes", create=True)
+    @patch("monocyte.Monocyte.get_all_handler_classes")
     def test_search_and_destroy_unwanted_resources_dry_run(self, fetch_mock):
         fetch_mock.return_value = {"monocyte.handler.dummy": DummyHandler}
         self.monocyte.search_and_destroy_unwanted_resources(["dummy"])
 
-    @patch("monocyte.Monocyte.get_all_handler_classes", create=True)
+    @patch("monocyte.Monocyte.get_all_handler_classes")
     def test_search_and_destroy_unwanted_resources(self, fetch_mock):
         fetch_mock.return_value = {"monocyte.handler.dummy": DummyHandler}
         self.monocyte.search_and_destroy_unwanted_resources(["dummy"], dry_run=False)

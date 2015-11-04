@@ -52,7 +52,7 @@ class DynamoDbTableHandlerTest(TestCase):
     def test_fetch_unwanted_resources_filtered_by_ignored_resources(self):
         self.dynamodb_handler.ignored_resources = [TABLE_NAME]
         empty_list = list(self.dynamodb_handler.fetch_unwanted_resources())
-        self.assertEquals(empty_list.__len__(), 0)
+        self.assertEqual(empty_list, [])
 
     def test_to_string(self):
         only_resource = list(self.dynamodb_handler.fetch_unwanted_resources())[0]

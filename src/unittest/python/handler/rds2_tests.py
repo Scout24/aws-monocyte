@@ -50,7 +50,7 @@ class RDSInstanceTest(TestCase):
     def test_fetch_unwanted_resources_filtered_by_ignored_resources(self):
         self.rds_instance.ignored_resources = [INSTANCE_IDENTIFIER]
         empty_list = list(self.rds_instance.fetch_unwanted_resources())
-        self.assertEquals(empty_list.__len__(), 0)
+        self.assertEqual(empty_list, [])
 
     def test_to_string(self):
         self.rds2_mock.connect_to_region.return_value.describe_db_instances.return_value = \
@@ -148,7 +148,7 @@ class RDSSnapshotTest(TestCase):
     def test_fetch_unwanted_resources_filtered_by_ignored_resources(self):
         self.rds_snapshot.ignored_resources = [SNAPSHOT_IDENTIFIER]
         empty_list = list(self.rds_snapshot.fetch_unwanted_resources())
-        self.assertEquals(empty_list.__len__(), 0)
+        self.assertEqual(empty_list, [])
 
     def test_to_string(self):
         self.rds2_mock.connect_to_region.return_value.describe_db_snapshots.return_value = \
