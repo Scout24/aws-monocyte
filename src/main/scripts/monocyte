@@ -27,6 +27,7 @@ options:
     --ignored-resources=RESOURCE1,RESOURCE2,... resources to be ignored
         [default: cloudformation.cloudtrail-logging]
     --cwl-groupname=GROUPNAME  log events to CloudWatchLogs Group
+    --config-path  path to config yaml files
 """
 
 
@@ -39,6 +40,9 @@ from monocyte import Monocyte
 
 def run():
     arguments = docopt(__doc__)
+    sys.exit(cli.main(arguments))
+
+
     dry_run = (arguments["--dry-run"] != "False")
     handlers = [handler.strip() for handler in arguments["--use-handlers"].split(",")]
     allowed_regions_prefixes = [prefix.strip() for prefix in arguments["--allowed-regions-prefixes"].split(",")]
