@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import warnings
 from boto import ec2
 from boto.exception import EC2ResponseError
 from monocyte.handler import Resource, Handler
@@ -46,17 +47,15 @@ class Instance(Handler):
 
     def delete(self, resource):
         if resource.wrapped.state in Instance.VALID_TARGET_STATES:
-            self.logger.info("state '{0}' is a valid target state, skipping".format(
+            raise Warning("state '{0}' is a valid target state, skipping".format(
                 resource.wrapped.state))
-            return []
         connection = ec2.connect_to_region(resource.region)
         if self.dry_run:
             try:
                 connection.terminate_instances([resource.wrapped.id], dry_run=True)
             except EC2ResponseError as exc:
                 if exc.status == 412:  # Precondition Failed
-                    self.logger.info("Termination {message}".format(**vars(exc)))
-                    return [resource.wrapped]
+                    raise Warning("Termination {message}".format(**vars(exc)))
                 raise
         else:
             instances = connection.terminate_instances([resource.wrapped.id], dry_run=False)
@@ -97,8 +96,7 @@ class Volume(Handler):
                 connection.delete_volume(resource.wrapped.id, dry_run=True)
             except EC2ResponseError as exc:
                 if exc.status == 412:  # Precondition Failed
-                    self.logger.info("Termination {message}".format(**vars(exc)))
-                    return [resource.wrapped]
+                    warnings.warn(Warning("Termination {message}".format(**vars(exc))))
                 raise
         else:
             self.logger.info("Initiating deletion of EBS volume {0}".format(resource.wrapped.id))

@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import warnings
 from boto import cloudformation
 from monocyte.handler import Resource, Handler
 
@@ -49,9 +50,8 @@ class Stack(Handler):
 
     def delete(self, resource):
         if resource.wrapped.stack_status in Stack.VALID_TARGET_STATES:
-            self.logger.info("Skipping deletion: State '{0}' is a valid target state.".format(
-                resource.wrapped.stack_status))
-            return
+            warnings.warn(Warning("Skipping deletion: State '{0}' is a valid target state.".format(
+                resource.wrapped.stack_status)))
         if self.dry_run:
             return
         self.logger.info("Initiating deletion sequence for {stack_name}.".format(**vars(resource.wrapped)))

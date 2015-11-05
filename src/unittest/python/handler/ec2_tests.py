@@ -74,11 +74,7 @@ class EC2InstanceHandlerTest(TestCase):
         e = boto.exception.EC2ResponseError(412, 'boom')
         e.message = "test"
         connection.terminate_instances.side_effect = e
-
-        deleted_resource = self.ec2_handler.delete(resource)[0]
-
-        self.assertEquals(self.instance_mock, deleted_resource)
-        self.logger_mock.getLogger.return_value.info.assert_called_with("Termination test")
+        self.assertRaises(Warning, self.ec2_handler.delete, resource)
 
     def _given_instance_mock(self):
         instance_mock = Mock(boto.ec2.instance, image_id="ami-1112")
@@ -140,10 +136,7 @@ class EC2VolumeHandlerTest(TestCase):
         e.message = "test"
         connection.delete_volume.side_effect = e
 
-        deleted_resource = self.ec2_handler.delete(resource)[0]
-
-        self.assertEquals(self.volume_mock, deleted_resource)
-        self.logger_mock.getLogger.return_value.info.assert_called_with("Termination test")
+        self.assertRaises(Warning, self.ec2_handler.delete, resource)
 
     def _given_volume_mock(self):
         volume_mock = Mock(boto.ec2.volume)

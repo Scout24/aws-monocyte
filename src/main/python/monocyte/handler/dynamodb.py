@@ -52,8 +52,5 @@ class Table(Handler):
         if self.dry_run:
             return
         connection = dynamodb2.connect_to_region(resource.region)
-        try:
-            self.logger.info("Initiating deletion sequence for {0}.".format(resource.wrapped["TableName"]))
-            connection.delete_table(resource.wrapped["TableName"])
-        except ResourceInUseException as exc:
-            self.logger.exception(exc)
+        self.logger.info("Initiating deletion sequence for {0}.".format(resource.wrapped["TableName"]))
+        connection.delete_table(resource.wrapped["TableName"])

@@ -34,7 +34,6 @@ class Monocyte(object):
                  ignored_resources=None,
                  cloudwatchlogs_groupname=None,
                  logger=None):
-
         self.allowed_regions_prefixes = allowed_regions_prefixes or DEFAULT_ALLOWED_REGIONS_PREFIXES
         self.ignored_regions = ignored_regions or DEFAULT_IGNORED_REGIONS
         self.ignored_resources = ignored_resources or {}
@@ -103,6 +102,8 @@ class Monocyte(object):
                 self.logger.warn(specific_handler.to_string(resource))
                 try:
                     specific_handler.delete(resource)
+                except Warning as warn:
+                    self.logger.warning(warn)
                 except Exception as exc:
                     self.logger.exception(exc)
                     self.problematic_resources.append((resource, specific_handler, exc))
