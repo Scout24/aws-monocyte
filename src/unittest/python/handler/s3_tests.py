@@ -78,7 +78,7 @@ class S3BucketTest(TestCase):
     def test_fetch_unwanted_resources_filtered_by_ignored_resources(self):
         self.s3_handler.ignored_resources = [BUCKET_NAME]
         empty_list = list(self.s3_handler.fetch_unwanted_resources())
-        self.assertEquals(empty_list.__len__(), 0)
+        self.assertEqual(empty_list, [])
 
     def test_skip_deletion_in_dry_run_with_keys(self):
         self.s3_handler.dry_run = True
