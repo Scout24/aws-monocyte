@@ -29,7 +29,11 @@ class Instance(Handler):
             connection = ec2.connect_to_region(region.name)
             resources = connection.get_only_instances() or []
             for resource in resources:
-                resource_wrapper = Resource(resource, region.name)
+                resource_wrapper = Resource(resource=resource,
+                                            resource_type=self.resource_type,
+                                            resource_id=resource.id,
+                                            creation_date=resource.launch_time,
+                                            region=region.name)
                 if resource.id in self.ignored_resources:
                     self.logger.info('IGNORE ' + self.to_string(resource_wrapper))
                     continue
@@ -70,7 +74,11 @@ class Volume(Handler):
             connection = ec2.connect_to_region(region.name)
             resources = connection.get_all_volumes() or []
             for resource in resources:
-                resource_wrapper = Resource(resource, region.name)
+                resource_wrapper = Resource(resource=resource,
+                                            resource_type=self.resource_type,
+                                            resource_id=resource.id,
+                                            creation_date=resource.create_time,
+                                            region=region.name)
                 if resource.id in self.ignored_resources:
                     self.logger.info('IGNORE ' + self.to_string(resource_wrapper))
                     continue

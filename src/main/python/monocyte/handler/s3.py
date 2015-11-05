@@ -41,7 +41,11 @@ class Bucket(Handler):
                 region = "__error__"
             region = region if region else US_STANDARD_REGION
             if self.region_filter(region):
-                resource_wrapper = Resource(bucket, region)
+                resource_wrapper = Resource(resource=bucket,
+                                            resource_type=self.resource_type,
+                                            resource_id=bucket.name,
+                                            creation_date=bucket.creation_date,
+                                            region=region)
                 if bucket.name in self.ignored_resources:
                     self.logger.info('IGNORE ' + self.to_string(resource_wrapper))
                     continue

@@ -33,6 +33,7 @@ class RDSInstanceTest(TestCase):
         self.positive_fake_region.name = "allowed_region"
         self.negative_fake_region = Mock(boto.regioninfo.RegionInfo)
         self.negative_fake_region.name = "forbidden_region"
+        self.resource_type = "rds2 Instance"
         self.rds2_mock.regions.return_value = [self.positive_fake_region, self.negative_fake_region]
         self.logger_mock = patch("monocyte.handler.logging").start()
         self.rds_instance = rds2.Instance(lambda region_name: True)
@@ -64,7 +65,8 @@ class RDSInstanceTest(TestCase):
 
     def test_skip_deletion_in_dry_run(self):
         self.rds_instance.dry_run = True
-        resource = Resource(self.instance_mock, self.negative_fake_region.name)
+        resource = Resource(self.instance_mock, self.resource_type, self.instance_mock["DBInstanceIdentifier"],
+                            self.instance_mock["InstanceCreateTime"], self.negative_fake_region.name)
 
         deleted_resource = self.rds_instance.delete(resource)
 
@@ -74,7 +76,8 @@ class RDSInstanceTest(TestCase):
         self.rds_instance.dry_run = False
         self.instance_mock["DBInstanceStatus"] = rds2.DELETION_STATUS
 
-        resource = Resource(self.instance_mock, self.negative_fake_region.name)
+        resource = Resource(self.instance_mock, self.resource_type, self.instance_mock["DBInstanceIdentifier"],
+                            self.instance_mock["InstanceCreateTime"], self.negative_fake_region.name)
 
         deleted_resource = self.rds_instance.delete(resource)
         self.logger_mock.getLogger.return_value.info.assert_called_with(rds2.SKIPPING_DELETION_STATEMENT)
@@ -83,7 +86,8 @@ class RDSInstanceTest(TestCase):
     def test_does_delete_if_not_dry_run(self):
         self.rds_instance.dry_run = False
 
-        resource = Resource(self.instance_mock, self.negative_fake_region.name)
+        resource = Resource(self.instance_mock, self.resource_type, self.instance_mock["DBInstanceIdentifier"],
+                            self.instance_mock["InstanceCreateTime"], self.negative_fake_region.name)
 
         self.rds2_mock.connect_to_region.return_value.delete_db_instance.return_value = \
             self._given_delete_db_instance_response()
@@ -106,7 +110,8 @@ class RDSInstanceTest(TestCase):
     def _given_instance_mock(self):
         return {
             "DBInstanceIdentifier": INSTANCE_IDENTIFIER,
-            "DBInstanceStatus": "myStatus"
+            "DBInstanceStatus": "myStatus",
+            "InstanceCreateTime": "01.01.2015"
         }
 
     def _given_delete_db_instance_response(self):
@@ -115,7 +120,8 @@ class RDSInstanceTest(TestCase):
                 "DeleteDBInstanceResult": {
                     "DBInstance": {
                         "DBInstanceStatus": "deleting",
-                        "DBInstanceIdentifier": self.instance_mock["DBInstanceIdentifier"]
+                        "DBInstanceIdentifier": self.instance_mock["DBInstanceIdentifier"],
+                        "InstanceCreateTime": self.instance_mock["InstanceCreateTime"]
                     }
                 }
             }
@@ -131,6 +137,7 @@ class RDSSnapshotTest(TestCase):
         self.positive_fake_region.name = "allowed_region"
         self.negative_fake_region = Mock(boto.regioninfo.RegionInfo)
         self.negative_fake_region.name = "forbidden_region"
+        self.resource_type = "rds2 Snapshot"
         self.rds2_mock.regions.return_value = [self.positive_fake_region, self.negative_fake_region]
         self.logger_mock = patch("monocyte.handler.logging").start()
         self.rds_snapshot = rds2.Snapshot(lambda region_name: True)
@@ -162,7 +169,8 @@ class RDSSnapshotTest(TestCase):
 
     def test_skip_deletion_in_dry_run(self):
         self.rds_snapshot.dry_run = True
-        resource = Resource(self.snapshot_mock, self.negative_fake_region.name)
+        resource = Resource(self.snapshot_mock, self.resource_type, self.snapshot_mock["DBSnapshotIdentifier"],
+                            self.snapshot_mock["SnapshotCreateTime"], self.negative_fake_region.name)
 
         deleted_resource = self.rds_snapshot.delete(resource)
 
@@ -172,7 +180,8 @@ class RDSSnapshotTest(TestCase):
         self.rds_snapshot.dry_run = False
         self.snapshot_mock["Status"] = rds2.DELETION_STATUS
 
-        resource = Resource(self.snapshot_mock, self.negative_fake_region.name)
+        resource = Resource(self.snapshot_mock, self.resource_type, self.snapshot_mock["DBSnapshotIdentifier"],
+                            self.snapshot_mock["SnapshotCreateTime"], self.negative_fake_region.name)
 
         deleted_resource = self.rds_snapshot.delete(resource)
         self.logger_mock.getLogger.return_value.info.assert_called_with(rds2.SKIPPING_DELETION_STATEMENT)
@@ -182,7 +191,8 @@ class RDSSnapshotTest(TestCase):
         self.rds_snapshot.dry_run = False
         self.snapshot_mock["SnapshotType"] = rds2.AUTOMATED_STATUS
 
-        resource = Resource(self.snapshot_mock, self.negative_fake_region.name)
+        resource = Resource(self.snapshot_mock, self.resource_type, self.snapshot_mock["DBSnapshotIdentifier"],
+                            self.snapshot_mock["SnapshotCreateTime"], self.negative_fake_region.name)
 
         deleted_resource = self.rds_snapshot.delete(resource)
         self.logger_mock.getLogger.return_value.info.assert_called_with(rds2.SKIPPING_AUTOGENERATED_STATEMENT)
@@ -190,8 +200,8 @@ class RDSSnapshotTest(TestCase):
 
     def test_does_delete_if_not_dry_run(self):
         self.rds_snapshot.dry_run = False
-
-        resource = Resource(self.snapshot_mock, self.negative_fake_region.name)
+        resource = Resource(self.snapshot_mock, self.resource_type, self.snapshot_mock["DBSnapshotIdentifier"],
+                            self.snapshot_mock["SnapshotCreateTime"], self.negative_fake_region.name)
 
         self.rds2_mock.connect_to_region.return_value.delete_db_snapshot.return_value = \
             self._given_delete_db_snapshot_response()
@@ -215,7 +225,8 @@ class RDSSnapshotTest(TestCase):
         return {
             "DBSnapshotIdentifier": SNAPSHOT_IDENTIFIER,
             "Status": "myStatus",
-            "SnapshotType": "manual"
+            "SnapshotType": "manual",
+            "SnapshotCreateTime" : "01.01.2015"
         }
 
     def _given_delete_db_snapshot_response(self):
@@ -224,7 +235,8 @@ class RDSSnapshotTest(TestCase):
                 "DeleteDBSnapshotResult": {
                     "DBSnapshot": {
                         "Status": "deleted",
-                        "DBSnapshotIdentifier": self.snapshot_mock["DBSnapshotIdentifier"]
+                        "DBSnapshotIdentifier": self.snapshot_mock["DBSnapshotIdentifier"],
+                        "SnapshotCreateTime" : self.snapshot_mock["SnapshotCreateTime"]
                     }
                 }
             }

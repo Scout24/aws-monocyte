@@ -36,7 +36,7 @@ class EC2InstanceHandlerTest(TestCase):
         self.positive_fake_region.name = "allowed_region"
         self.negative_fake_region = Mock(boto.ec2.regioninfo.EC2RegionInfo)
         self.negative_fake_region.name = "forbidden_region"
-
+        self.resource_type = "ec2 Instance"
         self.ec2_mock.regions.return_value = [self.positive_fake_region, self.negative_fake_region]
         self.logger_mock = patch("monocyte.handler.logging").start()
         self.ec2_handler = ec2.Instance(lambda region_name: region_name == self.positive_fake_region.name)
@@ -67,7 +67,8 @@ class EC2InstanceHandlerTest(TestCase):
         self.assertTrue(self.instance_mock.region.name in resource_string)
 
     def test_delete(self):
-        resource = Resource(self.instance_mock, self.negative_fake_region.name)
+        resource = Resource(self.instance_mock, self.resource_type, self.instance_mock.id,
+                            self.instance_mock.launch_time, self.negative_fake_region.name)
         connection = self.ec2_mock.connect_to_region.return_value
 
         e = boto.exception.EC2ResponseError(412, 'boom')
@@ -102,6 +103,7 @@ class EC2VolumeHandlerTest(TestCase):
         self.positive_fake_region.name = "allowed_region"
         self.negative_fake_region = Mock(boto.ec2.regioninfo.EC2RegionInfo)
         self.negative_fake_region.name = "forbidden_region"
+        self.resource_type = "ec2 Volume"
 
         self.ec2_mock.regions.return_value = [self.positive_fake_region, self.negative_fake_region]
         self.logger_mock = patch("monocyte.handler.logging").start()
@@ -130,7 +132,8 @@ class EC2VolumeHandlerTest(TestCase):
         self.assertTrue(self.volume_mock.region.name in resource_string)
 
     def test_delete(self):
-        resource = Resource(self.volume_mock, self.negative_fake_region.name)
+        resource = Resource(self.volume_mock, self.resource_type, self.volume_mock.id,
+                            self.volume_mock.create_time, self.negative_fake_region.name)
         connection = self.ec2_mock.connect_to_region.return_value
 
         e = boto.exception.EC2ResponseError(412, 'boom')

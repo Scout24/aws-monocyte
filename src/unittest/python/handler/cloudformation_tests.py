@@ -36,6 +36,7 @@ class CloudFormationTest(TestCase):
         self.positive_fake_region.name = "allowed_region"
         self.negative_fake_region = Mock(boto.cloudformation.regions)
         self.negative_fake_region.name = "forbbiden_region"
+        self.resource_type = "cloudformation Stack"
         self.cloudformation_mock.regions.return_value = [self.positive_fake_region, self.negative_fake_region]
         self.logger_mock = patch("monocyte.handler.logging").start()
         self.cloudformation_handler = cloudformation.Stack(
@@ -64,13 +65,15 @@ class CloudFormationTest(TestCase):
         self.assertTrue(self.stack_mock.region in resource_string)
 
     def test_skip_deletion_in_dry_run(self):
-        resource = Resource(self.stack_mock, self.negative_fake_region.name)
+        resource = Resource(self.stack_mock, self.resource_type, self.stack_mock.stack_id,
+                            self.stack_mock.creation_time, self.negative_fake_region.name)
         self.cloudformation_handler.dry_run = True
         self.cloudformation_handler.delete(resource)
         self.assertFalse(self.cloudformation_mock.connect_to_region.return_value.delete_stack.called)
 
     def test_does_delete_if_not_dry_run(self):
-        resource = Resource(self.stack_mock, self.negative_fake_region.name)
+        resource = Resource(self.stack_mock, self.resource_type, self.stack_mock.stack_id,
+                            self.stack_mock.creation_time, self.negative_fake_region.name)
         self.cloudformation_handler.dry_run = False
         self.cloudformation_handler.delete(resource)
         self.logger_mock.getLogger.return_value.info.assert_called_with(DELETION_STATEMENT % self.stack_mock.stack_name)
@@ -78,7 +81,8 @@ class CloudFormationTest(TestCase):
 
     def test_skip_deletion_if_already_deleted(self):
         self.stack_mock.stack_status = "DELETE_COMPLETE"
-        resource = Resource(self.stack_mock, self.negative_fake_region.name)
+        resource = Resource(self.stack_mock, self.resource_type, self.stack_mock.stack_id,
+                            self.stack_mock.creation_time, self.negative_fake_region.name)
         self.cloudformation_handler.dry_run = False
         self.cloudformation_handler.delete(resource)
         self.logger_mock.getLogger.return_value.info.assert_called_with(VALID_TARGET_STATE_STATEMENT)

@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 from unittest import TestCase
 from boto.regioninfo import RegionInfo
 from mock import Mock, patch
@@ -47,7 +48,8 @@ class MonocyteTest(TestCase):
 
     def test_handle_service(self):
         handler = Mock()
-        handler.fetch_unwanted_resources.return_value = [Resource("foo", "test_region")]
+        handler.fetch_unwanted_resources.return_value = [Resource(
+            "foo", "test_type", "test_id", datetime.datetime.now(), "test_region")]
         handler.to_string.return_value = "test handler"
         self.monocyte.handle_service(handler)
 
@@ -66,7 +68,7 @@ class MonocyteTest(TestCase):
 
 class DummyHandler(Handler):
     def fetch_unwanted_resources(self):
-        return [Resource(Mock(), "us")]
+        return [Resource(Mock(), "ec2 instance", "123456789", datetime.datetime.now(), "us")]
 
     def fetch_regions(self):
         mock = Mock(RegionInfo)

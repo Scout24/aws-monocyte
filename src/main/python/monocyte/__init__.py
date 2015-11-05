@@ -53,6 +53,8 @@ class Monocyte(object):
 
         self.problematic_resources = []
 
+        self.unwanted_resources = []
+
     def is_region_allowed(self, region):
         region_prefix = region.lower()[:2]
         return region_prefix in self.allowed_regions_prefixes
@@ -106,6 +108,8 @@ class Monocyte(object):
                 except Exception as exc:
                     self.logger.exception(exc)
                     self.problematic_resources.append((resource, specific_handler, exc))
+                else:
+                    self.unwanted_resources.append(resource)
 
     def instantiate_handlers(self, handler_classes, handler_names, dry_run):
         return [

@@ -31,7 +31,11 @@ class Stack(Handler):
             unwanted_states.remove("DELETE_COMPLETE")
             resources = connection.list_stacks(stack_status_filters=list(unwanted_states)) or []
             for resource in resources:
-                resource_wrapper = Resource(resource, region.name)
+                resource_wrapper = Resource(resource=resource,
+                                            resource_type=self.resource_type,
+                                            resource_id=resource.stack_id,
+                                            creation_date=resource.creation_time,
+                                            region=region.name)
                 if resource.stack_name in self.ignored_resources:
                     self.logger.info('IGNORE ' + self.to_string(resource_wrapper))
                     continue

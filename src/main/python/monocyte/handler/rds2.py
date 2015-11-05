@@ -36,7 +36,11 @@ class Instance(Handler):
             connection = rds2.connect_to_region(region.name)
             resources = connection.describe_db_instances() or []
             for resource in resources["DescribeDBInstancesResponse"]["DescribeDBInstancesResult"]["DBInstances"]:
-                resource_wrapper = Resource(resource, region.name)
+                resource_wrapper = Resource(resource=resource,
+                                            resource_type=self.resource_type,
+                                            resource_id=resource["DBInstanceIdentifier"],
+                                            creation_date=resource["InstanceCreateTime"],
+                                            region=region.name)
                 if resource['DBInstanceIdentifier'] in self.ignored_resources:
                     self.logger.info('IGNORE ' + self.to_string(resource_wrapper))
                     continue
@@ -68,7 +72,11 @@ class Snapshot(Handler):
             connection = rds2.connect_to_region(region.name)
             resources = connection.describe_db_snapshots() or []
             for resource in resources["DescribeDBSnapshotsResponse"]["DescribeDBSnapshotsResult"]["DBSnapshots"]:
-                resource_wrapper = Resource(resource, region.name)
+                resource_wrapper = Resource(resource=resource,
+                                            resource_type=self.resource_type,
+                                            resource_id=resource["DBSnapshotIdentifier"],
+                                            creation_date=resource["SnapshotCreateTime"],
+                                            region=region.name)
                 if resource['DBSnapshotIdentifier'] in self.ignored_resources:
                     self.logger.info('IGNORE ' + self.to_string(resource_wrapper))
                     continue

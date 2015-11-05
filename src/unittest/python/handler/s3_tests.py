@@ -36,6 +36,7 @@ class S3BucketTest(TestCase):
         self.boto_mock = patch("monocyte.handler.s3.boto").start()
         self.bucket_mock = self._given_bucket_mock()
         self.key_mock = self._given_key_mock()
+        self.resource_type = "s3 Bucket"
         self.negative_fake_region = Mock(boto.regioninfo.RegionInfo)
         self.negative_fake_region.name = "forbidden_region"
         self.logger_mock = patch("monocyte.handler.logging").start()
@@ -83,7 +84,8 @@ class S3BucketTest(TestCase):
         self.s3_handler.dry_run = True
         self.bucket_mock.get_all_keys.return_value = [self.key_mock]
         self.bucket_mock.list.return_value = [self.key_mock]
-        resource = Resource(self.bucket_mock, self.negative_fake_region.name)
+        resource = Resource(self.bucket_mock, self.resource_type, self.bucket_mock.name,
+                            self.bucket_mock.creation_date, self.negative_fake_region.name)
         self.s3_handler.delete(resource)
         call_args = self.logger_mock.getLogger.return_value.info.call_args[0][0]
         self.assertTrue(KEY in call_args)
@@ -92,14 +94,16 @@ class S3BucketTest(TestCase):
         self.s3_handler.dry_run = True
         self.bucket_mock.get_all_keys.return_value = [self.key_mock] * 6
         self.bucket_mock.list.return_value = [self.key_mock] * 6
-        resource = Resource(self.bucket_mock, self.negative_fake_region.name)
+        resource = Resource(self.bucket_mock, self.resource_type, self.bucket_mock.name,
+                            self.bucket_mock.creation_date, self.negative_fake_region.name)
         self.s3_handler.delete(resource)
         call_args = self.logger_mock.getLogger.return_value.info.call_args[0][0]
         self.assertTrue(KEYS_OMITTED in call_args)
 
     def test_does_delete_if_not_dry_run(self):
         self.s3_handler.dry_run = False
-        resource = Resource(self.bucket_mock, self.negative_fake_region.name)
+        resource = Resource(self.bucket_mock, self.resource_type, self.bucket_mock.name,
+                            self.bucket_mock.creation_date, self.negative_fake_region.name)
 
         self.bucket_mock.delete_keys.return_value = [self.key_mock]
         self.boto_mock.connect_s3().delete_bucket.return_value = [self.bucket_mock]

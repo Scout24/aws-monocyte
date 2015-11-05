@@ -20,9 +20,13 @@ import logging
 
 
 class Resource(object):
-    def __init__(self, resource, region=None):
+    def __init__(self, resource, resource_type, resource_id, creation_date, region=None):
         self.wrapped = resource
         self.region = region
+        self.resource_type = resource_type
+        self.resource_id = resource_id
+        self.creation_date = creation_date
+
 
 HANDLER_PREFIX = "monocyte.handler."
 
@@ -35,6 +39,10 @@ class Handler(object):
         self.dry_run = dry_run
         self.ignored_resources = ignored_resources or []
         self.logger = logger or logging.getLogger(__name__)
+
+    @property
+    def resource_type(self):
+        return "%s %s" % (self.__class__.__module__, self.__class__.__name__)
 
     @property
     def name(self):
