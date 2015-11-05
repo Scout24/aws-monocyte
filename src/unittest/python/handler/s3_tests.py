@@ -107,12 +107,8 @@ class S3BucketTest(TestCase):
 
         self.bucket_mock.delete_keys.return_value = [self.key_mock]
         self.boto_mock.connect_s3().delete_bucket.return_value = [self.bucket_mock]
-        deleted_key, deleted_bucket = self.s3_handler.delete(resource)
+        self.s3_handler.delete(resource)
 
-        self.assertEquals([self.bucket_mock], deleted_bucket)
-        self.assertEquals([self.key_mock], deleted_key)
-
-        self.logger_mock.getLogger.return_value.info.assert_called_with(INITIATING_DELITION % self.bucket_mock.name)
 
     def _given_bucket_mock(self):
         bucket_mock = MagicMock(boto.s3.bucket.Bucket)

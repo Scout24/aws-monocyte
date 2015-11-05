@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import print_function
 import datetime
 from unittest import TestCase
 from boto.regioninfo import RegionInfo
@@ -59,16 +60,27 @@ class MonocyteTest(TestCase):
     def test_search_and_destroy_unwanted_resources_dry_run(self, fetch_mock):
         fetch_mock.return_value = {"monocyte.handler.dummy": DummyHandler}
         self.monocyte.search_and_destroy_unwanted_resources(["dummy"])
+        dummy_handler = DummyHandler(self.monocyte.is_region_handled)
+        expected_unwanted_resources = dummy_handler.fetch_unwanted_resources()
+        expected_resource_ids = {resource.resource_id for resource in expected_unwanted_resources}
+        result_resource_ids = {resource.resource_id for resource in self.monocyte.unwanted_resources}
+        self.assertItemsEqual(expected_resource_ids, result_resource_ids.intersection(expected_resource_ids))
 
     @patch("monocyte.Monocyte.get_all_handler_classes")
     def test_search_and_destroy_unwanted_resources(self, fetch_mock):
         fetch_mock.return_value = {"monocyte.handler.dummy": DummyHandler}
         self.monocyte.search_and_destroy_unwanted_resources(["dummy"], dry_run=False)
+        dummy_handler = DummyHandler(self.monocyte.is_region_handled)
+        expected_unwanted_resources = dummy_handler.fetch_unwanted_resources()
+        expected_resource_ids = {resource.resource_id for resource in expected_unwanted_resources}
+        result_resource_ids = {resource.resource_id for resource in self.monocyte.unwanted_resources}
+        self.assertItemsEqual(expected_resource_ids, result_resource_ids.intersection(expected_resource_ids))
 
 
 class DummyHandler(Handler):
     def fetch_unwanted_resources(self):
-        return [Resource(Mock(), "ec2 instance", "123456789", datetime.datetime.now(), "us")]
+        return [Resource(Mock(), "ec2 instance", "123456789", datetime.datetime.now(), "us"),
+                Resource(Mock(), "ec2 volume", "33123456789", datetime.datetime.now(), "us")]
 
     def fetch_regions(self):
         mock = Mock(RegionInfo)
@@ -81,4 +93,4 @@ class DummyHandler(Handler):
     def delete(self, resource):
         if self.dry_run:
             return
-        raise Exception("boo")
+        return

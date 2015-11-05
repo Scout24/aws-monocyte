@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import warnings
 import boto.cloudformation
 import boto.cloudformation.stack
 
@@ -84,8 +85,7 @@ class CloudFormationTest(TestCase):
         resource = Resource(self.stack_mock, self.resource_type, self.stack_mock.stack_id,
                             self.stack_mock.creation_time, self.negative_fake_region.name)
         self.cloudformation_handler.dry_run = False
-        self.cloudformation_handler.delete(resource)
-        self.logger_mock.getLogger.return_value.info.assert_called_with(VALID_TARGET_STATE_STATEMENT)
+        self.assertRaises(Warning, self.cloudformation_handler.delete, resource)
         self.assertFalse(self.cloudformation_mock.connect_to_region.return_value.delete_stack.called)
 
     def _given_stack_mock(self):

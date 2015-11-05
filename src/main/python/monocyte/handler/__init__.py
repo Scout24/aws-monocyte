@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from __future__ import absolute_import
-
+import warnings
 import os
 import logging
 
@@ -34,6 +34,7 @@ HANDLER_PREFIX = "monocyte.handler."
 class Handler(object):
 
     def __init__(self, region_filter, dry_run=True, logger=None, ignored_resources=None):
+        warnings.filterwarnings('error')
         self.region_filter = region_filter
         self.regions = [region for region in self.fetch_regions() if self.region_filter(region.name)]
         self.dry_run = dry_run
