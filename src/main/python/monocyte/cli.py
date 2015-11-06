@@ -15,8 +15,8 @@ def convert_arguments_to_config(arguments):
     handlers = [handler.strip() for handler in arguments["--use-handlers"].split(",")]
     allowed_regions_prefixes = [prefix.strip() for prefix in arguments["--allowed-regions-prefixes"].split(",")]
     ignored_regions = [region.strip() for region in arguments["--ignored-regions"].split(",")]
-    ignored_resources = _parse_ignored_resources(arguments["--ignored_resources"])
-    config_path = arguments["--config_path"]
+    ignored_resources = _parse_ignored_resources(arguments["--ignored-resources"])
+    config_path = arguments["--config-path"]
 
     config = {
         "dry_run": dry_run,
