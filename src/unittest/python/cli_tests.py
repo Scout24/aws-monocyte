@@ -6,7 +6,6 @@ import monocyte.cli as cli
 
 
 class CliTest(TestCase):
-
     def test_cloudwatch_can_be_deactivated(self):
         test_config = {
             "cloudwatchlogs": {}
@@ -54,6 +53,22 @@ class CliTest(TestCase):
 
         self.assertEqual(test_config, expected_config)
 
+    def test_region_can_be_configured(self):
+        test_config = {
+            "cloudwatchlogs": {"region": "my_region"}
+            }
+
+        expected_config = {
+            "cloudwatchlogs": {
+                'region': 'my_region',
+                'log_level': 20,
+                'groupname': 'monocyte_logs'
+            }
+        }
+        cli.apply_default_config(test_config)
+
+        self.assertEqual(test_config, expected_config)
+
 
 class ArgumentsToConfigTest(TestCase):
     def setUp(self):
@@ -83,3 +98,16 @@ class ArgumentsToConfigTest(TestCase):
         self.assertEqual(config_path, "/foo/bar/batz")
         self.assertEqual(config, self.expected_config)
 
+    def test_dry_run_can_be_deactivated(self):
+        self.arguments['--dry-run'] = 'False'
+        self.expected_config['dry_run'] = True
+
+        _, config = cli.convert_arguments_to_config(self.arguments)
+        self.assertEqual(config, self.expected_config)
+
+    def test_cloudwatchlogs_groupname_is_configurable(self):
+        self.arguments['--cwl-groupname'] = 'my_groupname'
+        self.expected_config['cloudwatchlogs'] = {'groupname': 'my_groupname'}
+
+        _, config = cli.convert_arguments_to_config(self.arguments)
+        self.assertEqual(config, self.expected_config)
