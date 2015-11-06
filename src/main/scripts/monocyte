@@ -31,37 +31,14 @@ options:
 """
 
 import sys
-
 from docopt import docopt
-from collections import defaultdict
-from monocyte import Monocyte
+
+import monocyte.cli as cli
 
 
 def run():
     arguments = docopt(__doc__)
     sys.exit(cli.main(arguments))
-
-
-    dry_run = (arguments["--dry-run"] != "False")
-    handlers = [handler.strip() for handler in arguments["--use-handlers"].split(",")]
-    allowed_regions_prefixes = [prefix.strip() for prefix in arguments["--allowed-regions-prefixes"].split(",")]
-    ignored_regions = [region.strip() for region in arguments["--ignored-regions"].split(",")]
-    ignored_resources = parse_ignored_resources(arguments["--ignored_resources"])
-    cloudwatchlogs_groupname = arguments["--cwl-groupname"]
-
-    monocyte = Monocyte(
-        allowed_regions_prefixes=allowed_regions_prefixes,
-        ignored_regions=ignored_regions,
-        ignored_resources=ignored_resources,
-        cloudwatchlogs_groupname=cloudwatchlogs_groupname)
-    sys.exit(monocyte.search_and_destroy_unwanted_resources(handlers, dry_run))
-
-def parse_ignored_resources(ignored_resources):
-    parsed = defaultdict(list)
-    for resource in ignored_resources.split(","):
-        namespace, name = resource.strip().split(".")
-        parsed[namespace].append(name)
-    return parsed
 
 
 if __name__ == "__main__":
