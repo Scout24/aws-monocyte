@@ -100,7 +100,7 @@ class ArgumentsToConfigTest(TestCase):
 
     def test_dry_run_can_be_deactivated(self):
         self.arguments['--dry-run'] = 'False'
-        self.expected_config['dry_run'] = True
+        self.expected_config['dry_run'] = False
 
         _, config = cli.convert_arguments_to_config(self.arguments)
         self.assertEqual(config, self.expected_config)
