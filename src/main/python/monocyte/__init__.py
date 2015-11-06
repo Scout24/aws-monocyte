@@ -19,6 +19,7 @@ import monocyte.handler.dynamodb
 import monocyte.handler.ec2
 import monocyte.handler.rds2
 import monocyte.handler.s3
+from pils import get_item_from_module
 
 from cloudwatchlogs_logging import CloudWatchLogsHandler
 
@@ -35,13 +36,16 @@ class Monocyte(object):
                  cloudwatchlogs=None,
                  handler_names=None,
                  dry_run=True,
-                 logger=None):
+                 logger=None,
+                 **kwargs):
         self.allowed_regions_prefixes = allowed_regions_prefixes or DEFAULT_ALLOWED_REGIONS_PREFIXES
         self.ignored_regions = ignored_regions or DEFAULT_IGNORED_REGIONS
         self.ignored_resources = ignored_resources or {}
         self.cloudwatchlogs_config = cloudwatchlogs
         self.handler_names = handler_names
         self.dry_run = dry_run
+
+        self.config = kwargs
 
         self.logger = logger or logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
@@ -89,6 +93,8 @@ class Monocyte(object):
             self.logger.info("Start handling %s resources" % specific_handler.name)
             self.handle_service(specific_handler)
             self.logger.info("Finish handling %s resources" % specific_handler.name)
+
+        self.start_plugins()
 
         if self.problematic_resources:
             self.logger.info("Problems encountered while deleting the following resources.")
@@ -142,3 +148,17 @@ class Monocyte(object):
         for hc in handler_classes_list:
             handler_classes["%s.%s" % (hc.__module__, hc.__name__)] = hc
         return handler_classes
+
+    def start_plugins(self):
+        for plugin in self.config.get("plugins", []):
+            module_name = plugin["module"]
+            item_name = plugin["item"]
+            config = plugin.get("config", {})
+
+            self.logger.debug("Starting plugin '%s.%s' with config %s  ", module_name, item_name, config)
+
+            PluginClass = get_item_from_module(module_name, item_name)
+            plugin = PluginClass(self.problematic_resources, **config)
+
+            plugin.run()
+            self.logger.debug("Plugin '%s.%s' finished successfully", module_name, item_name)

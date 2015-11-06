@@ -34,6 +34,7 @@ def set_properties(project):
     project.depends_on("boto")
     project.depends_on("python-cloudwatchlogs-logging")
     project.depends_on("yamlreader")
+    project.depends_on("pils")
 
     project.build_depends_on("mock")
     project.build_depends_on("six")
