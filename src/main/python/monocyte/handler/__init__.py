@@ -15,7 +15,6 @@
 
 from __future__ import absolute_import
 import warnings
-import os
 import logging
 
 
@@ -61,4 +60,3 @@ class Handler(object):
 
     def delete(self, resource):
         raise NotImplementedError("Should have implemented this")
-
