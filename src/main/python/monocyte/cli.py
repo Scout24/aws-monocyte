@@ -11,10 +11,13 @@ def read_config(path):
 
 
 def convert_arguments_to_config(arguments):
+    def parse_csv(csv):
+        return [item.strip() for item in csv.split(',')]
+    handlers = parse_csv(arguments["--use-handlers"])
+    allowed_regions_prefixes = parse_csv(arguments["--allowed-regions-prefixes"])
+    ignored_regions = parse_csv(arguments["--ignored-regions"])
+
     dry_run = (arguments["--dry-run"] != "False")
-    handlers = [handler.strip() for handler in arguments["--use-handlers"].split(",")]
-    allowed_regions_prefixes = [prefix.strip() for prefix in arguments["--allowed-regions-prefixes"].split(",")]
-    ignored_regions = [region.strip() for region in arguments["--ignored-regions"].split(",")]
     ignored_resources = _parse_ignored_resources(arguments["--ignored-resources"])
     config_path = arguments["--config-path"]
 
