@@ -65,8 +65,8 @@ class MonocyteTest(TestCase):
         self.monocyte.search_and_destroy_unwanted_resources()
         dummy_handler = DummyHandler(self.monocyte.is_region_handled)
         expected_unwanted_resources = dummy_handler.fetch_unwanted_resources()
-        expected_resource_ids = {resource.resource_id for resource in expected_unwanted_resources}
-        result_resource_ids = {resource.resource_id for resource in self.monocyte.unwanted_resources}
+        expected_resource_ids = set([resource.resource_id for resource in expected_unwanted_resources])
+        result_resource_ids = set([resource.resource_id for resource in self.monocyte.unwanted_resources])
         six.assertCountEqual(self, expected_resource_ids, result_resource_ids.intersection(expected_resource_ids))
 
     @patch("monocyte.Monocyte.get_all_handler_classes")
@@ -76,8 +76,8 @@ class MonocyteTest(TestCase):
         self.monocyte.search_and_destroy_unwanted_resources()
         dummy_handler = DummyHandler(self.monocyte.is_region_handled)
         expected_unwanted_resources = dummy_handler.fetch_unwanted_resources()
-        expected_resource_ids = {resource.resource_id for resource in expected_unwanted_resources}
-        result_resource_ids = {resource.resource_id for resource in self.monocyte.unwanted_resources}
+        expected_resource_ids = set([resource.resource_id for resource in expected_unwanted_resources])
+        result_resource_ids = set([resource.resource_id for resource in self.monocyte.unwanted_resources])
         six.assertCountEqual(self, expected_resource_ids, result_resource_ids.intersection(expected_resource_ids))
 
 
