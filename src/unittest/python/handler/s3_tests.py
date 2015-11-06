@@ -109,7 +109,6 @@ class S3BucketTest(TestCase):
         self.boto_mock.connect_s3().delete_bucket.return_value = [self.bucket_mock]
         self.s3_handler.delete(resource)
 
-
     def _given_bucket_mock(self):
         bucket_mock = MagicMock(boto.s3.bucket.Bucket)
         bucket_mock.get_location.return_value = "my-region"

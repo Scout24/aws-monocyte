@@ -219,7 +219,7 @@ class RDSSnapshotTest(TestCase):
             "DBSnapshotIdentifier": SNAPSHOT_IDENTIFIER,
             "Status": "myStatus",
             "SnapshotType": "manual",
-            "SnapshotCreateTime" : "01.01.2015"
+            "SnapshotCreateTime": "01.01.2015"
         }
 
     def _given_delete_db_snapshot_response(self):
@@ -229,7 +229,7 @@ class RDSSnapshotTest(TestCase):
                     "DBSnapshot": {
                         "Status": "deleted",
                         "DBSnapshotIdentifier": self.snapshot_mock["DBSnapshotIdentifier"],
-                        "SnapshotCreateTime" : self.snapshot_mock["SnapshotCreateTime"]
+                        "SnapshotCreateTime": self.snapshot_mock["SnapshotCreateTime"]
                     }
                 }
             }

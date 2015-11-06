@@ -15,7 +15,6 @@
 
 import datetime
 from boto import dynamodb2
-from boto.dynamodb2.exceptions import ResourceInUseException
 from monocyte.handler import Resource, Handler
 
 

@@ -30,7 +30,6 @@ options:
     --config-path  path to config yaml files
 """
 
-
 import sys
 
 from docopt import docopt
