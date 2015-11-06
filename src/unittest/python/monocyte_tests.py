@@ -18,8 +18,11 @@ import datetime
 from unittest import TestCase
 from boto.regioninfo import RegionInfo
 from mock import Mock, patch
+import six
+
 from monocyte import Monocyte
 from monocyte.handler import Resource, Handler
+
 
 REGION_NOT_ALLOWED = "test handler"
 
@@ -65,7 +68,7 @@ class MonocyteTest(TestCase):
         expected_unwanted_resources = dummy_handler.fetch_unwanted_resources()
         expected_resource_ids = {resource.resource_id for resource in expected_unwanted_resources}
         result_resource_ids = {resource.resource_id for resource in self.monocyte.unwanted_resources}
-        self.assertItemsEqual(expected_resource_ids, result_resource_ids.intersection(expected_resource_ids))
+        six.assertCountEqual(self, expected_resource_ids, result_resource_ids.intersection(expected_resource_ids))
 
     @patch("monocyte.Monocyte.get_all_handler_classes")
     def test_search_and_destroy_unwanted_resources(self, fetch_mock):
@@ -76,7 +79,7 @@ class MonocyteTest(TestCase):
         expected_unwanted_resources = dummy_handler.fetch_unwanted_resources()
         expected_resource_ids = {resource.resource_id for resource in expected_unwanted_resources}
         result_resource_ids = {resource.resource_id for resource in self.monocyte.unwanted_resources}
-        self.assertItemsEqual(expected_resource_ids, result_resource_ids.intersection(expected_resource_ids))
+        six.assertCountEqual(self, expected_resource_ids, result_resource_ids.intersection(expected_resource_ids))
 
 
 class DummyHandler(Handler):

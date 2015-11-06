@@ -46,7 +46,7 @@ class RDSInstanceTest(TestCase):
             self._given_db_instances_response()
 
         only_resource = list(self.rds_instance.fetch_unwanted_resources())[0]
-        self.assertEquals(only_resource.wrapped, self.instance_mock)
+        self.assertEqual(only_resource.wrapped, self.instance_mock)
 
     def test_fetch_unwanted_resources_filtered_by_ignored_resources(self):
         self.rds_instance.ignored_resources = [INSTANCE_IDENTIFIER]
@@ -70,7 +70,7 @@ class RDSInstanceTest(TestCase):
 
         deleted_resource = self.rds_instance.delete(resource)
 
-        self.assertEquals(None, deleted_resource)
+        self.assertEqual(None, deleted_resource)
 
     def test_skip_deletion_if_already_deleted(self):
         self.rds_instance.dry_run = False
@@ -94,7 +94,7 @@ class RDSInstanceTest(TestCase):
         self.logger_mock.getLogger.return_value.info.assert_called_with(rds2.DELETION_STATEMENT %
                                                                         self.instance_mock["DBInstanceIdentifier"])
 
-        self.assertEquals(self.instance_mock["DBInstanceIdentifier"], resource.wrapped["DBInstanceIdentifier"])
+        self.assertEqual(self.instance_mock["DBInstanceIdentifier"], resource.wrapped["DBInstanceIdentifier"])
 
     def _given_db_instances_response(self):
         return {
@@ -148,7 +148,7 @@ class RDSSnapshotTest(TestCase):
             self._given_db_snapshot_response()
 
         only_resource = list(self.rds_snapshot.fetch_unwanted_resources())[0]
-        self.assertEquals(only_resource.wrapped, self.snapshot_mock)
+        self.assertEqual(only_resource.wrapped, self.snapshot_mock)
 
     def test_fetch_unwanted_resources_filtered_by_ignored_resources(self):
         self.rds_snapshot.ignored_resources = [SNAPSHOT_IDENTIFIER]
@@ -172,7 +172,7 @@ class RDSSnapshotTest(TestCase):
 
         deleted_resource = self.rds_snapshot.delete(resource)
 
-        self.assertEquals(None, deleted_resource)
+        self.assertEqual(None, deleted_resource)
 
     def test_skip_deletion_if_already_deleted(self):
         self.rds_snapshot.dry_run = False
@@ -203,7 +203,7 @@ class RDSSnapshotTest(TestCase):
         self.rds_snapshot.delete(resource)
         self.logger_mock.getLogger.return_value.info.assert_called_with(rds2.DELETION_STATEMENT %
                                                                         self.snapshot_mock["DBSnapshotIdentifier"])
-        self.assertEquals(self.snapshot_mock["DBSnapshotIdentifier"], resource.wrapped["DBSnapshotIdentifier"])
+        self.assertEqual(self.snapshot_mock["DBSnapshotIdentifier"], resource.wrapped["DBSnapshotIdentifier"])
 
     def _given_db_snapshot_response(self):
         return {

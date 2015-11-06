@@ -48,7 +48,7 @@ class EC2InstanceHandlerTest(TestCase):
 
     def test_fetch_unwanted_resources_filtered_by_region(self):
         only_resource = list(self.ec2_handler.fetch_unwanted_resources())[0]
-        self.assertEquals(only_resource.wrapped, self.instance_mock)
+        self.assertEqual(only_resource.wrapped, self.instance_mock)
 
     def test_fetch_unwanted_resources_filtered_by_ignored_resources(self):
         self.ec2_handler.ignored_resources = [INSTANCE_ID]
@@ -112,7 +112,7 @@ class EC2VolumeHandlerTest(TestCase):
 
     def test_fetch_unwanted_resources_filtered_by_region(self):
         only_resource = list(self.ec2_handler.fetch_unwanted_resources())[0]
-        self.assertEquals(only_resource.wrapped, self.volume_mock)
+        self.assertEqual(only_resource.wrapped, self.volume_mock)
 
     def test_fetch_unwanted_resources_filtered_by_ignored_resources(self):
         self.ec2_handler.ignored_resources = [VOLUME_ID]

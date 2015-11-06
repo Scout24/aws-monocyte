@@ -49,12 +49,12 @@ class CloudFormationTest(TestCase):
 
     def test_fetch_unwanted_resources_filtered_by_region(self):
         only_resource = list(self.cloudformation_handler.fetch_unwanted_resources())[0]
-        self.assertEquals(only_resource.wrapped, self.stack_mock)
+        self.assertEqual(only_resource.wrapped, self.stack_mock)
 
     def test_fetch_unwanted_resources_filtered_by_ignored_resources(self):
         self.cloudformation_handler.ignored_resources = [STACK_NAME]
         empty_list = list(self.cloudformation_handler.fetch_unwanted_resources())
-        self.assertEquals(empty_list.__len__(), 0)
+        self.assertEqual(empty_list.__len__(), 0)
 
     def test_to_string(self):
         only_resource = list(self.cloudformation_handler.fetch_unwanted_resources())[0]
