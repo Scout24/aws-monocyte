@@ -45,6 +45,6 @@ def main(arguments):
     file_config = read_config(path)
     config = yamlreader.data_merge(file_config, cli_config)
 
-    monocyte = Monocyte(config)
+    monocyte = Monocyte(**config)
 
     return monocyte.search_and_destroy_unwanted_resources()
