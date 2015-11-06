@@ -18,8 +18,11 @@ import datetime
 from unittest import TestCase
 from boto.regioninfo import RegionInfo
 from mock import Mock, patch
+import six
+
 from monocyte import Monocyte
 from monocyte.handler import Resource, Handler
+
 
 REGION_NOT_ALLOWED = "test handler"
 
@@ -29,8 +32,8 @@ class MonocyteTest(TestCase):
     def setUp(self):
         self.logger_mock = patch("monocyte.logging").start()
         self.logger_mock.INFO = 20
-        self.monocyte = Monocyte()
-        self.monocyte.allowed_region_prefixes = ["eu"]
+        self.monocyte = Monocyte(handler_names=["dummy"])
+
         self.allowed_region = "EU"
         self.not_allowed_region = "US"
         self.ignored_region = "us-gov-west-1"
@@ -59,22 +62,23 @@ class MonocyteTest(TestCase):
     @patch("monocyte.Monocyte.get_all_handler_classes")
     def test_search_and_destroy_unwanted_resources_dry_run(self, fetch_mock):
         fetch_mock.return_value = {"monocyte.handler.dummy": DummyHandler}
-        self.monocyte.search_and_destroy_unwanted_resources(["dummy"])
+        self.monocyte.search_and_destroy_unwanted_resources()
         dummy_handler = DummyHandler(self.monocyte.is_region_handled)
         expected_unwanted_resources = dummy_handler.fetch_unwanted_resources()
         expected_resource_ids = {resource.resource_id for resource in expected_unwanted_resources}
         result_resource_ids = {resource.resource_id for resource in self.monocyte.unwanted_resources}
-        self.assertItemsEqual(expected_resource_ids, result_resource_ids.intersection(expected_resource_ids))
+        six.assertCountEqual(self, expected_resource_ids, result_resource_ids.intersection(expected_resource_ids))
 
     @patch("monocyte.Monocyte.get_all_handler_classes")
     def test_search_and_destroy_unwanted_resources(self, fetch_mock):
         fetch_mock.return_value = {"monocyte.handler.dummy": DummyHandler}
-        self.monocyte.search_and_destroy_unwanted_resources(["dummy"], dry_run=False)
+        self.monocyte.dry_run = False
+        self.monocyte.search_and_destroy_unwanted_resources()
         dummy_handler = DummyHandler(self.monocyte.is_region_handled)
         expected_unwanted_resources = dummy_handler.fetch_unwanted_resources()
         expected_resource_ids = {resource.resource_id for resource in expected_unwanted_resources}
         result_resource_ids = {resource.resource_id for resource in self.monocyte.unwanted_resources}
-        self.assertItemsEqual(expected_resource_ids, result_resource_ids.intersection(expected_resource_ids))
+        six.assertCountEqual(self, expected_resource_ids, result_resource_ids.intersection(expected_resource_ids))
 
 
 class DummyHandler(Handler):

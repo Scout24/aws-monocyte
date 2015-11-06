@@ -47,7 +47,7 @@ class DynamoDbTableHandlerTest(TestCase):
 
     def test_fetch_unwanted_resources_filtered_by_region(self):
         only_resource = list(self.dynamodb_handler.fetch_unwanted_resources())[0]
-        self.assertEquals(only_resource.wrapped, self.instance_mock["Table"])
+        self.assertEqual(only_resource.wrapped, self.instance_mock["Table"])
 
     def test_fetch_unwanted_resources_filtered_by_ignored_resources(self):
         self.dynamodb_handler.ignored_resources = [TABLE_NAME]

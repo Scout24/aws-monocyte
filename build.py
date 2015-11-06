@@ -34,9 +34,11 @@ def set_properties(project):
     project.depends_on("boto")
     project.depends_on("python-cloudwatchlogs-logging")
     project.depends_on("yamlreader")
+    project.depends_on("pils")
 
     project.build_depends_on("mock")
     project.build_depends_on("moto")
+    project.build_depends_on("six")
 
     project.set_property("flake8_include_test_sources", True)
     project.set_property('coverage_break_build', False)

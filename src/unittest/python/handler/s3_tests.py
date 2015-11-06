@@ -47,7 +47,7 @@ class S3BucketTest(TestCase):
 
     def test_fetch_unwanted_resources(self):
         only_resource = list(self.s3_handler.fetch_unwanted_resources())[0]
-        self.assertEquals(only_resource.wrapped, self.bucket_mock)
+        self.assertEqual(only_resource.wrapped, self.bucket_mock)
 
     def test_fetch_unwanted_resources_400_exception(self):
         self.bucket_mock.get_location.side_effect = boto.exception.S3ResponseError(400, 'boom')
@@ -59,13 +59,13 @@ class S3BucketTest(TestCase):
         self.bucket_mock.get_location.side_effect = boto.exception.S3ResponseError(999, 'boom')
         only_resource = list(self.s3_handler.fetch_unwanted_resources())[0]
 
-        self.assertEquals(only_resource.region, '__error__')
+        self.assertEqual(only_resource.region, '__error__')
 
     def test_fetch_unwanted_resources_set_default_region(self):
         self.bucket_mock.get_location.return_value = ""
         only_resource = list(self.s3_handler.fetch_unwanted_resources())[0]
 
-        self.assertEquals(only_resource.region, s3.US_STANDARD_REGION)
+        self.assertEqual(only_resource.region, s3.US_STANDARD_REGION)
 
     def test_to_string(self):
         only_resource = list(self.s3_handler.fetch_unwanted_resources())[0]
@@ -108,7 +108,6 @@ class S3BucketTest(TestCase):
         self.bucket_mock.delete_keys.return_value = [self.key_mock]
         self.boto_mock.connect_s3().delete_bucket.return_value = [self.bucket_mock]
         self.s3_handler.delete(resource)
-
 
     def _given_bucket_mock(self):
         bucket_mock = MagicMock(boto.s3.bucket.Bucket)
