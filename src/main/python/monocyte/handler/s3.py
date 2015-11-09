@@ -70,7 +70,7 @@ class Bucket(Handler):
                     keys_log.append("'{0}', ".format(key.name))
                 self.logger.info("".join(keys_log))
             return
-        delete_keys_result = resource.wrapped.delete_keys(resource.wrapped.list())
+        resource.wrapped.delete_keys(resource.wrapped.list())
         self.logger.info("Initiating deletion sequence for {name}.".format(**vars(resource.wrapped)))
 
-        delete_bucket_result = boto.connect_s3().delete_bucket(resource.wrapped.name)
+        boto.connect_s3().delete_bucket(resource.wrapped.name)
