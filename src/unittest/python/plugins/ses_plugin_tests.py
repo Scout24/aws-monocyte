@@ -1,20 +1,20 @@
 from unittest import TestCase
 from monocyte.plugins.ses_plugin import AwsSesPlugin
-from moto import mock_ses
 
 
 class AwsSesPluginTest(TestCase):
 
     def setUp(self):
+        self.resources = "42"
         self.region = "eu-west-1"
         self.sender = "thomas.lehmann@immobilienscout24.de"
         self.subject = "AWS Monocyte"
         self.recipients = ["thomas.lehmann@immobilienscout24.de"]
         self.body = "myEmailBody"
-        self.aws_ses_plugin = AwsSesPlugin(self.region, self.sender,
+        self.aws_ses_plugin = AwsSesPlugin(self.resources, self.region, self.sender,
                                            self.subject, self.recipients, self.body)
 
-    @mock_ses
-    def test_send_mail_success(self):
-        # self.aws_ses_plugin.send_email()
-        pass
+    def test_ses_plugin_properties(self):
+        self.assertEqual(self.aws_ses_plugin.sender, self.sender)
+        self.assertEqual(self.aws_ses_plugin.recipients, self.recipients)
+        self.assertEqual(self.aws_ses_plugin.body, self.body)
