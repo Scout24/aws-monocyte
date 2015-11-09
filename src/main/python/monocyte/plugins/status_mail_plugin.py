@@ -1,4 +1,6 @@
-from ses_plugin import AwsSesPlugin
+from __future__ import print_function, absolute_import, division
+
+from .ses_plugin import AwsSesPlugin
 
 
 class StatusMailPlugin(AwsSesPlugin):

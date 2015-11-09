@@ -1,3 +1,5 @@
+from __future__ import print_function, absolute_import, division
+
 from unittest import TestCase
 from monocyte.plugins.ses_plugin import AwsSesPlugin
 
