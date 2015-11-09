@@ -3,7 +3,7 @@ from boto import ses
 
 class AwsSesPlugin(object):
 
-    def __init__(self, region, sender=None, subject=None, recipients=None, body=None):
+    def __init__(self, resources, region=None, sender=None, subject=None, recipients=None, body=None):
         self.region = region
         self.mail_sender = sender
         self.subject = subject
@@ -29,8 +29,12 @@ class AwsSesPlugin(object):
             aws_secret_access_key='XXX',
             security_token='XXXX'
         )
+
         conn.send_email(
             source=self.sender,
             subject='AWS Compliance Checker - Your action is required',
             body=self.body,
             to_addresses=self.recipients)
+
+    def run(self):
+        self.send_email()
