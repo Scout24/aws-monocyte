@@ -19,8 +19,8 @@ Please check and delete the following resources:
 
 Account: {0}\n'''.format(self.account_name)
 
-        regions = set([res.region for res in self.resources])
-        res_types = set([res.resource_type for res in self.resources])
+        regions = sorted(list(set([res.region for res in self.resources])))
+        res_types = sorted(list(set([res.resource_type for res in self.resources])))
 
         for region in regions:
             region_text = "Region: {0}\n".format(region)

@@ -29,8 +29,8 @@ Please check and delete the following resources:
 
 Account: IS24-Pro-Test
 Region: us
-\tec2 volume instance with identifier 3312345, created date2
 \tec2 instance instance with identifier 12345, created date1
+\tec2 volume instance with identifier 3312345, created date2
 
  Kind regards.
 \tYour Compliance Team'''
