@@ -7,6 +7,6 @@ install:
   - pip install pybuilder
   - pip install coveralls
   - pyb install_dependencies
-script: "pyb"
+script: "pyb -X"
 after_success:
   - coveralls --verbose
