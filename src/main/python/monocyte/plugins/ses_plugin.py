@@ -32,7 +32,7 @@ class AwsSesPlugin(object):
 
         conn.send_email(
             source=self.sender,
-            subject='AWS Compliance Checker - Your action is required',
+            subject=self.subject,
             body=self.body,
             to_addresses=self.recipients)
 
