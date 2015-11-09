@@ -1,5 +1,6 @@
 from __future__ import print_function, absolute_import, division
 from unittest2 import TestCase
+from mock import Mock
 
 from monocyte.plugins.status_mail_plugin import StatusMailPlugin
 from monocyte.handler import Resource
@@ -35,3 +36,11 @@ Region: us
 \tYour Compliance Team'''
         self.maxDiff = None
         self.assertEqual(body, expected_body)
+
+    def test_email_sending_only_if_resources_are_given(self):
+        self.test_status_mail_plugin.resources = []
+        self.test_status_mail_plugin.send_email = Mock()
+
+        self.test_status_mail_plugin.run()
+
+        self.assertEqual(self.test_status_mail_plugin.send_email.call_count, 0)

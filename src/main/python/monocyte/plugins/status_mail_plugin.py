@@ -34,3 +34,7 @@ Account: {0}\n'''.format(self.account_name)
         email_body += email_footer
 
         return email_body
+
+    def run(self):
+        if self.resources:
+            self.send_email()
