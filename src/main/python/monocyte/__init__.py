@@ -159,7 +159,7 @@ class Monocyte(object):
             self.logger.debug("Starting plugin '%s.%s' with config %s  ", module_name, item_name, config)
 
             PluginClass = get_item_from_module(module_name, item_name)
-            plugin = PluginClass(self.problematic_resources, **config)
+            plugin = PluginClass(self.unwanted_resources, **config)
 
             plugin.run()
             self.logger.debug("Plugin '%s.%s' finished successfully", module_name, item_name)
