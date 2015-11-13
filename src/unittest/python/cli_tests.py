@@ -76,7 +76,7 @@ class ArgumentsToConfigTest(TestCase):
             # Only an explicit 'False' may trigger deletion of resources.
             '--dry-run': "something",
             # These parameters should support "," as separator, ignoring whitespace.
-            '--use-handlers': "handler_a, handler_b,handler_c ",
+            '--handler-names': "handler_a, handler_b,handler_c ",
             '--allowed-regions-prefixes': "region_a, region_b,region_c ",
             '--ignored-regions': "ignored_a, ignored_b,ignored_c ",
             '--ignored-resources': "resource.a, resource.b,resource.c",
@@ -85,7 +85,7 @@ class ArgumentsToConfigTest(TestCase):
         }
         self.expected_config = {
             'dry_run': True,
-            'handlers': ['handler_a', 'handler_b', 'handler_c'],
+            'handler_names': ['handler_a', 'handler_b', 'handler_c'],
             'allowed_regions_prefixes': ["region_a", "region_b", "region_c"],
             'ignored_regions': ["ignored_a", "ignored_b", "ignored_c"],
             'ignored_resources': {"resource": ["a", "b", "c"]},
