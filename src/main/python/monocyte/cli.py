@@ -13,7 +13,7 @@ def read_config(path):
 def convert_arguments_to_config(arguments):
     def parse_csv(csv):
         return [item.strip() for item in csv.split(',')]
-    handlers = parse_csv(arguments["--use-handlers"])
+    handler_names = parse_csv(arguments["--handler-names"])
     allowed_regions_prefixes = parse_csv(arguments["--allowed-regions-prefixes"])
     ignored_regions = parse_csv(arguments["--ignored-regions"])
 
@@ -23,7 +23,7 @@ def convert_arguments_to_config(arguments):
 
     config = {
         "dry_run": dry_run,
-        "handlers": handlers,
+        "handler_names": handler_names,
         "allowed_regions_prefixes": allowed_regions_prefixes,
         "ignored_regions": ignored_regions,
         "ignored_resources": ignored_resources,
