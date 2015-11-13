@@ -6,16 +6,7 @@ import boto
 from monocyte.plugins.status_mail_plugin import StatusMailPlugin
 from monocyte.handler import Resource
 
-
-class StatusMailPluginTest(TestCase):
-    def setUp(self):
-        self.test_recipients = ["test_de@test.invalid", "test_com@test.invalid"]
-        self.test_resources = [
-            Resource(42, "ec2 instance", "12345", "date1", "us"),
-            Resource(42, "ec2 volume", "3312345", "date2", "us")]
-        self.test_region = "eu-west-1"
-        self.test_sender = "sender@test.invalid"
-        self.expected_body = '''Dear AWS User,
+EXPECTED_BODY = '''Dear AWS User,
 
 our Compliance checker found some AWS resources outside of Europe in your account.
 Please check and delete the following resources:
@@ -27,6 +18,17 @@ Region: us
 
  Kind regards.
 \tYour Compliance Team'''
+
+
+class StatusMailPluginTest(TestCase):
+    def setUp(self):
+        self.test_recipients = ["test_de@test.invalid", "test_com@test.invalid"]
+        self.test_resources = [
+            Resource(42, "ec2 instance", "12345", "date1", "us"),
+            Resource(42, "ec2 volume", "3312345", "date2", "us")]
+        self.test_region = "eu-west-1"
+        self.test_sender = "sender@test.invalid"
+        self.expected_body = EXPECTED_BODY
         self.test_status_mail_plugin = StatusMailPlugin(self.test_resources,
                                                         region=self.test_region,
                                                         sender=self.test_sender,
