@@ -112,9 +112,9 @@ class Monocyte(object):
                 try:
                     specific_handler.delete(resource)
                 except Warning as warn:
-                    self.logger.warning(warn)
+                    self.logger.warning(str(warn))
                 except Exception as exc:
-                    self.logger.exception(exc)
+                    self.logger.exception("Error while trying to delete resource")
                     self.problematic_resources.append((resource, specific_handler, exc))
                 else:
                     self.unwanted_resources.append(resource)
