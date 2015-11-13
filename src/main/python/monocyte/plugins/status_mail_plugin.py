@@ -1,13 +1,14 @@
 from __future__ import print_function, absolute_import, division
 
+import boto
+
 from .ses_plugin import AwsSesPlugin
 
 
 class StatusMailPlugin(AwsSesPlugin):
-    def __init__(self, resources, account_name=None, **kwargs):
+    def __init__(self, resources, **kwargs):
         self.subject = 'AWS Compliance Checker - Your action is required'
         super(StatusMailPlugin, self).__init__(resources, **kwargs)
-        self.account_name = account_name
 
     @property
     def body(self):
@@ -16,7 +17,7 @@ class StatusMailPlugin(AwsSesPlugin):
 our Compliance checker found some AWS resources outside of Europe in your account.
 Please check and delete the following resources:
 
-Account: {0}\n'''.format(self.account_name)
+Account: {0}\n'''.format(self._get_account_alias())
 
         regions = sorted(list(set([res.region for res in self.resources])))
         res_types = sorted(list(set([res.resource_type for res in self.resources])))
@@ -35,6 +36,12 @@ Account: {0}\n'''.format(self.account_name)
         email_body += email_footer
 
         return email_body
+
+    def _get_account_alias(self):
+        iam = boto.connect_iam()
+        response = iam.get_account_alias()['list_account_aliases_response']
+        return response['list_account_aliases_result']['account_aliases'][0]
+
 
     def run(self):
         if self.resources:
