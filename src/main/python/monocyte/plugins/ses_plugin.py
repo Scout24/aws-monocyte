@@ -5,11 +5,12 @@ from boto import ses
 
 class AwsSesPlugin(object):
 
-    def __init__(self, resources, region=None, sender=None, subject=None, recipients=None, body=None):
+    def __init__(self, resources, region=None, sender=None, subject=None,
+                 recipients=None, body=None):
         self.region = region
         self.mail_sender = sender
         self.subject = subject
-        self.mail_recipients = recipients
+        self.mail_recipients = recipients or []
         self.mail_body = body
         self.resources = resources
 
