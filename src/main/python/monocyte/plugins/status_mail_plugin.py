@@ -1,6 +1,7 @@
 from __future__ import print_function, absolute_import, division
 
 import boto
+import json
 
 from .ses_plugin import AwsSesPlugin
 
@@ -42,7 +43,32 @@ Account: {0}\n'''.format(self._get_account_alias())
         response = iam.get_account_alias()['list_account_aliases_response']
         return response['list_account_aliases_result']['account_aliases'][0]
 
-
     def run(self):
         if self.resources:
             self.send_email()
+
+
+class UsofaStatusMailPlugin(StatusMailPlugin):
+    """StatusMailPlugin that finds additional recipients via usofa"""
+    def __init__(self, resources, usofa_bucket_name=None, **kwargs):
+        super(UsofaStatusMailPlugin, self).__init__(resources, **kwargs)
+        self.usofa_bucket_name = usofa_bucket_name
+
+    def _get_usofa_data(self):
+        self.conn = boto.s3.connect_to_region(self.region)
+        bucket = self.conn.get_bucket(self.usofa_bucket_name)
+        key = bucket.get_key('accounts.json')
+        account_data = json.loads(key.get_contents_as_string())
+        return account_data
+
+    @property
+    def recipients(self):
+        usofa = self._get_usofa_data()
+        account_alias = self._get_account_alias()
+        responsible = usofa[account_alias]['email']
+
+        if self.mail_recipients:
+            recipients = list(self.mail_recipients)
+            recipients.append(responsible)
+            return recipients
+        return [responsible]

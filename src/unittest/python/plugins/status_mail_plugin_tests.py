@@ -1,9 +1,9 @@
 from __future__ import print_function, absolute_import, division
 from unittest2 import TestCase
 from mock import Mock, patch
-from moto import mock_ses
+from moto import mock_ses, mock_s3
 import boto
-from monocyte.plugins.status_mail_plugin import StatusMailPlugin
+from monocyte.plugins.status_mail_plugin import StatusMailPlugin, UsofaStatusMailPlugin
 from monocyte.handler import Resource
 
 EXPECTED_BODY = '''Dear AWS User,
@@ -80,3 +80,64 @@ class StatusMailPluginTest(TestCase):
 
         self.assertNotEqual(test_status_mail_plugin.body, not_expected_body)
         self.assertEqual(test_status_mail_plugin.body, self.expected_body)
+
+
+class UsofaStatusMailPluginTest(TestCase):
+    def setUp(self):
+        self.test_recipients = ["test_de@test.invalid", "test_com@test.invalid"]
+        self.test_resources = [
+            Resource(42, "ec2 instance", "12345", "date1", "us"),
+            Resource(42, "ec2 volume", "3312345", "date2", "us")]
+        self.test_region = "eu-west-1"
+        self.test_sender = "sender@test.invalid"
+        self.expected_body = EXPECTED_BODY
+        self.usofa_bucket_name = "usofbucket"
+        self.test_status_mail_plugin = UsofaStatusMailPlugin(
+            self.test_resources,
+            region=self.test_region,
+            sender=self.test_sender,
+            recipients=self.test_recipients,
+            usofa_bucket_name=self.usofa_bucket_name)
+
+    @patch('monocyte.plugins.status_mail_plugin.UsofaStatusMailPlugin._get_account_alias')
+    @patch('monocyte.plugins.status_mail_plugin.UsofaStatusMailPlugin._get_usofa_data')
+    def test_recipients_include_usofa_data(self, mock_get_usofa_data, mock_get_account_alias):
+        mock_get_account_alias.return_value = "testaccount"
+        mock_get_usofa_data.return_value = {
+            'testaccount': {'id': '42', 'email': 'foo@test.invalid'},
+            'otheraccount': {'id': '43', 'email': 'bar@test.invalid'}}
+
+        recipients = self.test_status_mail_plugin.recipients
+        expected_recipients = self.test_recipients
+        expected_recipients.append('foo@test.invalid')
+        self.assertEqual(recipients, expected_recipients)
+
+    @patch('monocyte.plugins.status_mail_plugin.UsofaStatusMailPlugin._get_account_alias')
+    @patch('monocyte.plugins.status_mail_plugin.UsofaStatusMailPlugin._get_usofa_data')
+    def test_works_without_explicit_recipients(self, mock_get_usofa_data, mock_get_account_alias):
+        mock_get_account_alias.return_value = "testaccount"
+        mock_get_usofa_data.return_value = {
+            'testaccount': {'id': '42', 'email': 'foo@test.invalid'},
+            'otheraccount': {'id': '43', 'email': 'bar@test.invalid'}}
+
+        # Do NOT pass a 'recipients' parameter!
+        self.test_status_mail_plugin = UsofaStatusMailPlugin(
+            self.test_resources,
+            region=self.test_region,
+            sender=self.test_sender,
+            usofa_bucket_name=self.usofa_bucket_name)
+        recipients = self.test_status_mail_plugin.recipients
+        expected_recipients = ['foo@test.invalid']
+        self.assertEqual(recipients, expected_recipients)
+
+    @mock_s3
+    def test_get_usofa_data__ok(self):
+        conn = boto.s3.connect_to_region(self.test_region)
+        conn.create_bucket(self.usofa_bucket_name)
+        bucket = conn.get_bucket(self.usofa_bucket_name)
+        key = boto.s3.key.Key(bucket)
+        key.key = "accounts.json"
+        key.set_contents_from_string('"This is a test of USofA"')
+
+        usofa_data = self.test_status_mail_plugin._get_usofa_data()
+        self.assertEqual(usofa_data, "This is a test of USofA")
