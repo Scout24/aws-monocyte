@@ -1,7 +1,7 @@
 cloudwatchlogs:
   region: eu-west-1
   log_level: info
-  groupname: monocyte logs
+  groupname: monocytelogs
 dry_run: true
 handlers:
   - cloudformation.Stack
@@ -17,7 +17,8 @@ ignored_regions:
   - cn-north-1
   - us-gov-west-1
 ignored_resources:
-  - cloudformation.cloudtrail-logging
+  cloudformation:
+    - cloudtrail-logging
 plugins:
   - module: monocyte.plugins.status_mail_plugin
     item: StatusMailPlugin
