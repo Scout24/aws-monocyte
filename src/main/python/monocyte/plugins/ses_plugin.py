@@ -25,12 +25,7 @@ class AwsSesPlugin(object):
         return self.mail_body
 
     def send_email(self):
-        conn = ses.connect_to_region(
-            region_name=self.region,
-            aws_access_key_id='XXX',
-            aws_secret_access_key='XXX',
-            security_token='XXXX'
-        )
+        conn = ses.connect_to_region(region_name=self.region)
 
         conn.send_email(
             source=self.sender,
