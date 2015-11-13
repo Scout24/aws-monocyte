@@ -1,0 +1,30 @@
+cloudwatchlogs:
+  region: eu-west-1
+  log_level: info
+  groupname: monocyte logs
+dry_run: true
+handlers:
+  - cloudformation.Stack
+  - ec2.Instance
+  - ec2.Volume
+  - rds2.Instance
+  - rds2.Snapshot
+  - dynamodb.Table
+  - s3.Bucket
+allowed_regions_prefixes:
+  - eu
+ignored_regions:
+  - cn-north-1
+  - us-gov-west-1
+ignored_resources:
+  - cloudformation.cloudtrail-logging
+plugins:
+  - module: monocyte.plugins.status_mail_plugin
+    item: StatusMailPlugin
+    config:
+      region: eu-west-1
+      sender: sender@test.invalid
+      recipients:
+        - recipient1@test.invalid
+        - recipient2@test.invalid
+      subject: Monocyte Status Report

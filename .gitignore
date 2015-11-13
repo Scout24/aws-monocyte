@@ -91,3 +91,6 @@ bootstrap.py
 venv*
 
 tags
+
+# configuration
+src/main/python/config/*.yaml
