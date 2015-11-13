@@ -1,6 +1,7 @@
 from __future__ import print_function, absolute_import, division
 
 from boto import ses
+import logging
 
 
 class AwsSesPlugin(object):
@@ -13,6 +14,7 @@ class AwsSesPlugin(object):
         self.mail_recipients = recipients or []
         self.mail_body = body
         self.resources = resources
+        self.logger = logging.getLogger(__name__)
 
     @property
     def sender(self):
@@ -28,6 +30,8 @@ class AwsSesPlugin(object):
 
     def send_email(self):
         conn = ses.connect_to_region(region_name=self.region)
+
+        self.logger.info("Sending Email to %s", ", ".join(self.recipients))
 
         conn.send_email(
             source=self.sender,
