@@ -59,7 +59,7 @@ class StatusMailPluginTest(TestCase):
         conn = boto.connect_ses('the_key', 'the_secret')
         conn.verify_email_identity(self.test_sender)
 
-        self.test_status_mail_plugin.send_email()
+        self.test_status_mail_plugin.run()
 
         send_quota = conn.get_send_quota()
         sent_count = int(
