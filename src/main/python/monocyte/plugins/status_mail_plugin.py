@@ -58,7 +58,7 @@ class UsofaStatusMailPlugin(StatusMailPlugin):
         self.conn = boto.s3.connect_to_region(self.region)
         bucket = self.conn.get_bucket(self.usofa_bucket_name)
         key = bucket.get_key('accounts.json')
-        account_data = json.loads(key.get_contents_as_string())
+        account_data = json.loads(key.get_contents_as_string().decode('utf-8'))
         return account_data
 
     @property
