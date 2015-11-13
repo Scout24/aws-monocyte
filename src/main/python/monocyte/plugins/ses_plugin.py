@@ -11,6 +11,7 @@ class AwsSesPlugin(object):
         self.subject = subject
         self.mail_recipients = recipients
         self.mail_body = body
+        self.resources = resources
 
     @property
     def sender(self):

@@ -15,9 +15,9 @@ class StatusMailPluginTest(TestCase):
         self.test_sender = "sender@test.com"
         self.test_account_name = "IS24-Pro-Test"
         self.test_status_mail_plugin = StatusMailPlugin(self.test_resources,
-                                                        self.test_region,
-                                                        self.test_sender,
-                                                        self.test_account_name,
+                                                        region=self.test_region,
+                                                        sender=self.test_sender,
+                                                        account_name=self.test_account_name,
                                                         recipients=self.test_recipients)
 
     def test_of_email_body_in_case_of_action(self):

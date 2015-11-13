@@ -4,10 +4,9 @@ from .ses_plugin import AwsSesPlugin
 
 
 class StatusMailPlugin(AwsSesPlugin):
-    def __init__(self, resources, region=None, sender=None, account_name=None, recipients=None):
+    def __init__(self, resources, account_name=None, **kwargs):
         self.subject = 'AWS Compliance Checker - Your action is required'
-        super(StatusMailPlugin, self).__init__(region, sender, recipients=recipients, subject=self.subject)
-        self.resources = resources
+        super(StatusMailPlugin, self).__init__(resources, **kwargs)
         self.account_name = account_name
 
     @property
