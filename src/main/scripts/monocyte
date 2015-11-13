@@ -27,7 +27,7 @@ options:
     --ignored-resources=RESOURCE1,RESOURCE2,... resources to be ignored
         [default: cloudformation.cloudtrail-logging]
     --cwl-groupname=GROUPNAME  log events to CloudWatchLogs Group
-    --config-path  path to config yaml files
+    --config-path=PATH path to config yaml files
 """
 
 import sys
