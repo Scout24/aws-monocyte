@@ -1,5 +1,5 @@
 from __future__ import print_function, absolute_import, division
-
+import os
 from unittest import TestCase
 from moto import mock_ses
 import boto

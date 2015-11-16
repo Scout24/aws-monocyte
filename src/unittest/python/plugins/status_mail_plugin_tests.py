@@ -1,4 +1,5 @@
 from __future__ import print_function, absolute_import, division
+import os
 from unittest2 import TestCase
 from mock import Mock, patch
 from moto import mock_ses, mock_s3
