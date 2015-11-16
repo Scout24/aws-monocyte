@@ -6,6 +6,9 @@ import boto
 
 from monocyte.plugins.ses_plugin import AwsSesPlugin
 
+os.environ['http_proxy'] = ''
+os.environ['https_proxy'] = ''
+os.environ['no_proxy'] = ''
 
 class AwsSesPluginTest(TestCase):
     def setUp(self):

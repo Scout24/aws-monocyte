@@ -19,6 +19,9 @@ Region: us
  Kind regards.
 \tYour Compliance Team'''
 
+os.environ['http_proxy'] = ''
+os.environ['https_proxy'] = ''
+os.environ['no_proxy'] = ''
 
 class StatusMailPluginTest(TestCase):
     def setUp(self):
