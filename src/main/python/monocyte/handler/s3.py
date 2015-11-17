@@ -17,6 +17,7 @@
 import boto
 from boto.exception import S3ResponseError
 from monocyte.handler import Resource, Handler
+import boto.s3.connection
 
 US_STANDARD_REGION = "us-east-1"
 
@@ -28,7 +29,7 @@ class Bucket(Handler):
         return []
 
     def fetch_unwanted_resources(self):
-        for bucket in boto.connect_s3().get_all_buckets():
+        for bucket in boto.connect_s3(calling_format=boto.s3.connection.OrdinaryCallingFormat()).get_all_buckets():
             try:
                 region = bucket.get_location()
             except S3ResponseError as exc:
