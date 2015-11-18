@@ -3,7 +3,7 @@ cloudwatchlogs:
   log_level: info
   groupname: monocytelogs
 dry_run: true
-handlers:
+handler_names:
   - cloudformation.Stack
   - ec2.Instance
   - ec2.Volume
