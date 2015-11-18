@@ -25,10 +25,6 @@ from pils import get_item_from_module
 from cloudwatchlogs_logging import CloudWatchLogsHandler
 
 
-DEFAULT_IGNORED_REGIONS = ["cn-north-1", "us-gov-west-1"]
-DEFAULT_ALLOWED_REGIONS_PREFIXES = ["eu"]
-
-
 class Monocyte(object):
     def __init__(self,
                  allowed_regions_prefixes=None,
@@ -39,9 +35,9 @@ class Monocyte(object):
                  dry_run=True,
                  logger=None,
                  **kwargs):
-        self.allowed_regions_prefixes = allowed_regions_prefixes or DEFAULT_ALLOWED_REGIONS_PREFIXES
-        self.ignored_regions = ignored_regions or DEFAULT_IGNORED_REGIONS
-        self.ignored_resources = ignored_resources or {}
+        self.allowed_regions_prefixes = allowed_regions_prefixes
+        self.ignored_regions = ignored_regions
+        self.ignored_resources = ignored_resources
         self.cloudwatchlogs_config = cloudwatchlogs
         self.handler_names = handler_names
         self.dry_run = dry_run

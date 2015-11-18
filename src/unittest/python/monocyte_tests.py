@@ -21,6 +21,7 @@ from mock import Mock, patch
 
 from monocyte import Monocyte
 from monocyte.handler import Resource, Handler
+from monocyte.cli import apply_default_config
 
 
 REGION_NOT_ALLOWED = "test handler"
@@ -31,7 +32,11 @@ class MonocyteTest(TestCase):
     def setUp(self):
         self.logger_mock = patch("monocyte.logging").start()
         self.logger_mock.INFO = 20
-        self.monocyte = Monocyte(handler_names=["dummy"])
+        self.config = {
+            "handler_names": ["dummy"]
+        }
+        apply_default_config(self.config)
+        self.monocyte = Monocyte(**self.config)
 
         self.allowed_region = "EU"
         self.not_allowed_region = "US"

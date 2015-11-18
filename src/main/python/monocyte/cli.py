@@ -11,40 +11,24 @@ def read_config(path):
 
 
 def convert_arguments_to_config(arguments):
-    def parse_csv(csv):
-        return [item.strip() for item in csv.split(',')]
-    handler_names = parse_csv(arguments["--handler-names"])
-    allowed_regions_prefixes = parse_csv(arguments["--allowed-regions-prefixes"])
-    ignored_regions = parse_csv(arguments["--ignored-regions"])
-
     dry_run = (arguments["--dry-run"] != "False")
-    ignored_resources = _parse_ignored_resources(arguments["--ignored-resources"])
     config_path = arguments["--config-path"]
 
     config = {
         "dry_run": dry_run,
-        "handler_names": handler_names,
-        "allowed_regions_prefixes": allowed_regions_prefixes,
-        "ignored_regions": ignored_regions,
-        "ignored_resources": ignored_resources,
-        "cloudwatchlogs": {}
     }
-
-    cloudwatchlogs_groupname = arguments["--cwl-groupname"]
-    if cloudwatchlogs_groupname:
-        config["cloudwatchlogs"]["groupname"] = cloudwatchlogs_groupname
 
     return config_path, config
 
 
 def apply_default_config(config):
-    if config["cloudwatchlogs"]:
-        default_config = {
+    if config.get("cloudwatchlogs"):
+        cloudwatchlogs_default_config = {
             'region': 'eu-central-1',
             'log_level': 'INFO',
             'groupname': 'monocyte_logs'
         }
-        yamlreader.data_merge(default_config, config['cloudwatchlogs'])
+        yamlreader.data_merge(cloudwatchlogs_default_config, config['cloudwatchlogs'])
 
         log_level_map = {
             'DEBUG': logging.DEBUG,
@@ -52,17 +36,25 @@ def apply_default_config(config):
             'WARN': logging.WARN,
             'ERROR': logging.ERROR
         }
-        default_config['log_level'] = log_level_map[default_config['log_level'].upper()]
+        cloudwatchlogs_default_config['log_level'] = log_level_map[cloudwatchlogs_default_config['log_level'].upper()]
 
-        config['cloudwatchlogs'] = default_config
+        config['cloudwatchlogs'] = cloudwatchlogs_default_config
 
-
-def _parse_ignored_resources(ignored_resources):
-    parsed = defaultdict(list)
-    for resource in ignored_resources.split(","):
-        namespace, name = resource.strip().split(".")
-        parsed[namespace].append(name)
-    return parsed
+    default_config = {
+        "handler_names": [
+            "cloudformation.Stack",
+            "ec2.Instance",
+            "ec2.Volume",
+            "rds2.Instance",
+            "rds2.Snapshot",
+            "dynamodb.Table",
+            "s3.Bucket"],
+        "ignored_resources": {"cloudformation": ["cloudtrail-logging"]},
+        "ignored_regions": ["cn-north-1", "us-gov-west-1"],
+        "allowed_regions_prefixes": ["eu"]
+    }
+    for key in default_config.keys():
+        config[key] = config.get(key, default_config[key])
 
 
 def main(arguments):

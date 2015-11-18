@@ -9,19 +9,16 @@ class CliTest(TestCase):
     def test_cloudwatch_can_be_deactivated(self):
         test_config = {
             "cloudwatchlogs": {}
-            }
-
-        expected_config = {
-            "cloudwatchlogs": {}
         }
+
         cli.apply_default_config(test_config)
 
-        self.assertEqual(test_config, expected_config)
+        self.assertEqual(test_config["cloudwatchlogs"], {})
 
     def test_default_cloudwatch_config_used_when_no_cloudwatch_config_is_given(self):
         test_config = {
             "cloudwatchlogs": {"groupname": "test"}
-            }
+        }
 
         expected_config = {
             "cloudwatchlogs": {
@@ -29,6 +26,26 @@ class CliTest(TestCase):
                 'log_level': 20,
                 'groupname': 'test'
             }
+        }
+        cli.apply_default_config(test_config)
+
+        self.assertEqual(test_config["cloudwatchlogs"], expected_config["cloudwatchlogs"])
+
+    def test_default_config_used_when_no_config_is_given(self):
+        test_config = {}
+
+        expected_config = {
+            "handler_names": [
+                "cloudformation.Stack",
+                "ec2.Instance",
+                "ec2.Volume",
+                "rds2.Instance",
+                "rds2.Snapshot",
+                "dynamodb.Table",
+                "s3.Bucket"],
+            "ignored_resources": {"cloudformation": ["cloudtrail-logging"]},
+            "ignored_regions": ["cn-north-1", "us-gov-west-1"],
+            "allowed_regions_prefixes": ["eu"]
         }
         cli.apply_default_config(test_config)
 
@@ -39,8 +56,8 @@ class CliTest(TestCase):
             "cloudwatchlogs": {
                 "groupname": "test",
                 "log_level": "debug"
-                }
             }
+        }
 
         expected_config = {
             "cloudwatchlogs": {
@@ -51,12 +68,12 @@ class CliTest(TestCase):
         }
         cli.apply_default_config(test_config)
 
-        self.assertEqual(test_config, expected_config)
+        self.assertEqual(test_config["cloudwatchlogs"], expected_config["cloudwatchlogs"])
 
     def test_region_can_be_configured(self):
         test_config = {
             "cloudwatchlogs": {"region": "my_region"}
-            }
+        }
 
         expected_config = {
             "cloudwatchlogs": {
@@ -67,7 +84,7 @@ class CliTest(TestCase):
         }
         cli.apply_default_config(test_config)
 
-        self.assertEqual(test_config, expected_config)
+        self.assertEqual(test_config["cloudwatchlogs"], expected_config["cloudwatchlogs"])
 
 
 class ArgumentsToConfigTest(TestCase):
@@ -75,21 +92,10 @@ class ArgumentsToConfigTest(TestCase):
         self.arguments = {
             # Only an explicit 'False' may trigger deletion of resources.
             '--dry-run': "something",
-            # These parameters should support "," as separator, ignoring whitespace.
-            '--handler-names': "handler_a, handler_b,handler_c ",
-            '--allowed-regions-prefixes': "region_a, region_b,region_c ",
-            '--ignored-regions': "ignored_a, ignored_b,ignored_c ",
-            '--ignored-resources': "resource.a, resource.b,resource.c",
             '--config-path': "/foo/bar/batz",
-            '--cwl-groupname': None
         }
         self.expected_config = {
-            'dry_run': True,
-            'handler_names': ['handler_a', 'handler_b', 'handler_c'],
-            'allowed_regions_prefixes': ["region_a", "region_b", "region_c"],
-            'ignored_regions': ["ignored_a", "ignored_b", "ignored_c"],
-            'ignored_resources': {"resource": ["a", "b", "c"]},
-            'cloudwatchlogs': {}
+            'dry_run': True
         }
 
     def test_basic_translation(self):
@@ -101,13 +107,6 @@ class ArgumentsToConfigTest(TestCase):
     def test_dry_run_can_be_deactivated(self):
         self.arguments['--dry-run'] = 'False'
         self.expected_config['dry_run'] = False
-
-        _, config = cli.convert_arguments_to_config(self.arguments)
-        self.assertEqual(config, self.expected_config)
-
-    def test_cloudwatchlogs_groupname_is_configurable(self):
-        self.arguments['--cwl-groupname'] = 'my_groupname'
-        self.expected_config['cloudwatchlogs'] = {'groupname': 'my_groupname'}
 
         _, config = cli.convert_arguments_to_config(self.arguments)
         self.assertEqual(config, self.expected_config)
