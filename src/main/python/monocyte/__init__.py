@@ -108,7 +108,10 @@ class Monocyte(object):
                 try:
                     specific_handler.delete(resource)
                 except Warning as warn:
-                    self.logger.warning(str(warn))
+                    # At least boto.ec2 throws an "exception.Warning"
+                    # if dry_run would succeed.
+                    self.logger.info(str(warn))
+                    self.unwanted_resources.append(resource)
                 except Exception as exc:
                     self.logger.exception("Error while trying to delete resource")
                     self.problematic_resources.append((resource, specific_handler, exc))
