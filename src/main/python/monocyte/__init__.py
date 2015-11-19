@@ -121,7 +121,7 @@ class Monocyte(object):
 
         for handler_name in self.handler_names:
             handler_prefix = handler_name.split('.')[0]
-            ignored_resources = handler_prefix if handler_prefix in self.ignored_resources.keys() else None
+            ignored_resources = self.ignored_resources[handler_prefix] if handler_prefix in self.ignored_resources.keys() else None
 
             handler_class = handler_classes["monocyte.handler." + handler_name]
             handler = handler_class(self.is_region_handled,
