@@ -7,36 +7,51 @@ from .ses_plugin import AwsSesPlugin
 
 
 class StatusMailPlugin(AwsSesPlugin):
-    def __init__(self, resources, **kwargs):
+    def __init__(self, unwanted_resources, problematic_resources, dry_run, **kwargs):
         self.subject = 'AWS Compliance Checker - Your action is required'
-        super(StatusMailPlugin, self).__init__(resources, **kwargs)
+        super(StatusMailPlugin, self).__init__(unwanted_resources, problematic_resources, dry_run, **kwargs)
 
     @property
     def body(self):
+        if self.dry_run:
+            unwanted_resources_info = "Please check and delete the following resources:"
+        else:
+            unwanted_resources_info = "Please check the following deleted resources:"
         email_body = '''Dear AWS User,
 
 our Compliance checker found some AWS resources outside of Europe in your account.
-Please check and delete the following resources:
+{0}
 
-Account: {0}\n'''.format(self._get_account_alias())
+Account: {1}\n'''.format(unwanted_resources_info, self._get_account_alias())
 
-        regions = sorted(list(set([res.region for res in self.resources])))
-        res_types = sorted(list(set([res.resource_type for res in self.resources])))
+        email_body += self._handle_resources(self.unwanted_resources)
 
-        for region in regions:
-            region_text = "Region: {0}\n".format(region)
-            email_body += region_text
-            for res_type in res_types:
-                selected_res = (resource for resource in self.resources
-                                if resource.region == region and resource.resource_type == res_type)
-                for resource in selected_res:
-                    res_text = "\t{0} instance with identifier {1}, created {2}\n".format(
-                        res_type, resource.resource_id, resource.creation_date)
-                    email_body += res_text
+        if self.problematic_resources:
+            email_body += ("\nAdditionally we had issues checking the following "
+                           "resource, please ensure that they are in the proper region:\n")
+            email_body += self._handle_resources(self.problematic_resources)
+
         email_footer = '\n Kind regards.\n\tYour Compliance Team'
         email_body += email_footer
 
         return email_body
+
+    def _handle_resources(self, resources):
+        return_text = ""
+        regions = sorted(list(set([res.region for res in resources])))
+        res_types = sorted(list(set([res.resource_type for res in resources])))
+
+        for region in regions:
+            region_text = "Region: {0}\n".format(region)
+            return_text += region_text
+            for res_type in res_types:
+                selected_res = (resource for resource in resources
+                                if resource.region == region and resource.resource_type == res_type)
+                for resource in selected_res:
+                    res_text = "\t{0} instance with identifier {1}, created {2}\n".format(
+                        res_type, resource.resource_id, resource.creation_date)
+                    return_text += res_text
+        return return_text or "\tNone\n"
 
     def _get_account_alias(self):
         iam = boto.connect_iam()
@@ -44,14 +59,14 @@ Account: {0}\n'''.format(self._get_account_alias())
         return response['list_account_aliases_result']['account_aliases'][0]
 
     def run(self):
-        if self.resources:
+        if self.unwanted_resources or self.problematic_resources:
             self.send_email()
 
 
 class UsofaStatusMailPlugin(StatusMailPlugin):
     """StatusMailPlugin that finds additional recipients via usofa"""
-    def __init__(self, resources, usofa_bucket_name=None, **kwargs):
-        super(UsofaStatusMailPlugin, self).__init__(resources, **kwargs)
+    def __init__(self, unwanted_resources, problematic_resources, dry_run, usofa_bucket_name=None, **kwargs):
+        super(UsofaStatusMailPlugin, self).__init__(unwanted_resources, problematic_resources, dry_run, **kwargs)
         self.usofa_bucket_name = usofa_bucket_name
 
     def _get_usofa_data(self):
