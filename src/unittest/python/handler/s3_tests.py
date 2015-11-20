@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import boto.s3
 import boto.s3.bucket
 import boto.s3.key

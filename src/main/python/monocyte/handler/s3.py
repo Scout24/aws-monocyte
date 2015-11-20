@@ -15,7 +15,6 @@
 
 
 import ssl
-import os
 import xml.etree.ElementTree as ET
 import boto
 from boto import s3
@@ -129,7 +128,7 @@ class Bucket(Handler):
         if self.dry_run and resource.wrapped.name != 'mk11.eu-central':
             num_keys, key_summary, skipped_keys = self.summary(resource)
             msg = "%s: %s entries would be removed: %s" % (
-                    resource.wrapped.name, num_keys, key_summary)
+                resource.wrapped.name, num_keys, key_summary)
             if skipped_keys:
                 msg += "... %s keys omitted" % skipped_keys
             self.logger.info(msg)
