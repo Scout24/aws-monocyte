@@ -20,7 +20,6 @@ from boto.s3.connection import OrdinaryCallingFormat, SubdomainCallingFormat
 import boto.exception
 import boto.regioninfo
 from moto import mock_s3
-from unittest import TestCase
 from mock import patch, Mock, MagicMock
 from monocyte.handler import s3, Resource
 import unittest2
@@ -34,7 +33,7 @@ INITIATING_DELITION = "Initiating deletion sequence for %s."
 
 
 @unittest2.skip
-class S3BucketTest(TestCase):
+class S3BucketTest(unittest2.TestCase):
 
     def setUp(self):
         self.boto_mock = patch("monocyte.handler.s3.boto").start()
@@ -138,7 +137,7 @@ class S3BucketTest(TestCase):
         return key_mock
 
 
-class S3BucketNewTest(TestCase):
+class S3BucketNewTest(unittest2.TestCase):
 
     def setUp(self):
         # self.boto_mock = patch("monocyte.handler.s3.boto").start()
