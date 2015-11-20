@@ -19,13 +19,13 @@ import logging
 
 
 class Resource(object):
-    def __init__(self, resource, resource_type, resource_id, creation_date, region=None):
+    def __init__(self, resource, resource_type, resource_id, creation_date,
+                 region=None):
         self.wrapped = resource
         self.region = region
         self.resource_type = resource_type
         self.resource_id = resource_id
         self.creation_date = creation_date
-
 
 HANDLER_PREFIX = "monocyte.handler."
 
