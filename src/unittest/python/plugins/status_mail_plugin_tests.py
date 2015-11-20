@@ -7,33 +7,53 @@ import boto
 from monocyte.plugins.status_mail_plugin import StatusMailPlugin, UsofaStatusMailPlugin
 from monocyte.handler import Resource
 
-EXPECTED_BODY = '''Dear AWS User,
+EXPECTED_PART_HEADER = """Dear AWS User,
 
 our Compliance checker found some AWS resources outside of Europe in your account.
-Please check and delete the following resources:
-
+"""
+EXPECTED_PART_DRY_RUN = "Please check and delete the following resources:\n"
+EXPECTED_PART_NO_DRY_RUN = "Please check the following deleted resources:\n"
+EXPECTED_PART_UNWANTED_FILLED = """
 Account: test-account
 Region: us
-\tec2 instance instance with identifier 12345, created date1
-\tec2 volume instance with identifier 3312345, created date2
-
+\tec2 instance with identifier 12345, created date1
+\tec2 volume with identifier 3312345, created date2
+"""
+EXPECTED_PART_UNWANTED_EMPTY = """
+Account: test-account
+\tNone
+"""
+EXPECTED_PART_PROBLEMATIC_FILLED = """
+Additionally we had issues checking the following resource, please ensure that they are in the proper region:
+Region: us
+\tec2 instance with identifier 67890, created date1
+\tec2 volume with identifier 1112345, created date2
+"""
+EXPECTED_PART_PROBLEMATIC_EMPTY = ""
+EXPECTED_PART_FOOTER = """
  Kind regards.
-\tYour Compliance Team'''
+\tYour Compliance Team"""
 
 os.environ['http_proxy'] = ''
 os.environ['https_proxy'] = ''
 os.environ['no_proxy'] = ''
 
+
 class StatusMailPluginTest(TestCase):
     def setUp(self):
         self.test_recipients = ["test_de@test.invalid", "test_com@test.invalid"]
-        self.test_resources = [
+        self.unwanted_resources = [
             Resource(42, "ec2 instance", "12345", "date1", "us"),
             Resource(42, "ec2 volume", "3312345", "date2", "us")]
+        self.problematic_resources = [
+            Resource(23, "ec2 instance", "67890", "date1", "us"),
+            Resource(23, "ec2 volume", "1112345", "date2", "us")]
+        self.dry_run = True
         self.test_region = "eu-west-1"
         self.test_sender = "sender@test.invalid"
-        self.expected_body = EXPECTED_BODY
-        self.test_status_mail_plugin = StatusMailPlugin(self.test_resources,
+        self.test_status_mail_plugin = StatusMailPlugin(self.unwanted_resources,
+                                                        self.problematic_resources,
+                                                        self.dry_run,
                                                         region=self.test_region,
                                                         sender=self.test_sender,
                                                         recipients=self.test_recipients)
@@ -43,12 +63,75 @@ class StatusMailPluginTest(TestCase):
     def test_of_email_body_in_case_of_action(self, mock_get_account_alias):
         mock_get_account_alias.return_value = "test-account"
         body = self.test_status_mail_plugin.body
+        expected_body = (EXPECTED_PART_HEADER +
+                         EXPECTED_PART_DRY_RUN +
+                         EXPECTED_PART_UNWANTED_FILLED +
+                         EXPECTED_PART_PROBLEMATIC_FILLED +
+                         EXPECTED_PART_FOOTER)
 
         self.maxDiff = None
-        self.assertEqual(body, self.expected_body)
+        self.assertEqual(body, expected_body)
+
+    @patch('monocyte.plugins.status_mail_plugin.StatusMailPlugin._get_account_alias')
+    def test_of_email_body_no_problematic_resources(self, mock_get_account_alias):
+        mock_get_account_alias.return_value = "test-account"
+        test_status_mail_plugin = StatusMailPlugin(self.unwanted_resources,
+                                                   [],
+                                                   self.dry_run,
+                                                   region=self.test_region,
+                                                   sender=self.test_sender,
+                                                   recipients=self.test_recipients)
+        body = test_status_mail_plugin.body
+        expected_body = (EXPECTED_PART_HEADER +
+                         EXPECTED_PART_DRY_RUN +
+                         EXPECTED_PART_UNWANTED_FILLED +
+                         EXPECTED_PART_PROBLEMATIC_EMPTY +
+                         EXPECTED_PART_FOOTER)
+
+        self.maxDiff = None
+        self.assertEqual(body, expected_body)
+
+    @patch('monocyte.plugins.status_mail_plugin.StatusMailPlugin._get_account_alias')
+    def test_of_email_body_no_unwanted_resources(self, mock_get_account_alias):
+        mock_get_account_alias.return_value = "test-account"
+        test_status_mail_plugin = StatusMailPlugin([],
+                                                   self.problematic_resources,
+                                                   self.dry_run,
+                                                   region=self.test_region,
+                                                   sender=self.test_sender,
+                                                   recipients=self.test_recipients)
+        body = test_status_mail_plugin.body
+        expected_body = (EXPECTED_PART_HEADER +
+                         EXPECTED_PART_DRY_RUN +
+                         EXPECTED_PART_UNWANTED_EMPTY +
+                         EXPECTED_PART_PROBLEMATIC_FILLED +
+                         EXPECTED_PART_FOOTER)
+
+        self.maxDiff = None
+        self.assertEqual(body, expected_body)
+
+    @patch('monocyte.plugins.status_mail_plugin.StatusMailPlugin._get_account_alias')
+    def test_of_email_body_no_dry_run(self, mock_get_account_alias):
+        mock_get_account_alias.return_value = "test-account"
+        test_status_mail_plugin = StatusMailPlugin(self.unwanted_resources,
+                                                   self.problematic_resources,
+                                                   False,
+                                                   region=self.test_region,
+                                                   sender=self.test_sender,
+                                                   recipients=self.test_recipients)
+        body = test_status_mail_plugin.body
+        expected_body = (EXPECTED_PART_HEADER +
+                         EXPECTED_PART_NO_DRY_RUN +
+                         EXPECTED_PART_UNWANTED_FILLED +
+                         EXPECTED_PART_PROBLEMATIC_FILLED +
+                         EXPECTED_PART_FOOTER)
+
+        self.maxDiff = None
+        self.assertEqual(body, expected_body)
 
     def test_email_sending_only_if_resources_are_given(self):
-        self.test_status_mail_plugin.resources = []
+        self.test_status_mail_plugin.unwanted_resources = []
+        self.test_status_mail_plugin.problematic_resources = []
         self.test_status_mail_plugin.send_email = Mock()
 
         self.test_status_mail_plugin.run()
@@ -76,28 +159,40 @@ class StatusMailPluginTest(TestCase):
     def test_body_property_set_failure(self, mock_get_account_alias):
         mock_get_account_alias.return_value = "test-account"
         not_expected_body = 'CHANGED BODY'
-        test_status_mail_plugin = StatusMailPlugin(self.test_resources,
+        test_status_mail_plugin = StatusMailPlugin(self.unwanted_resources,
+                                                   self.problematic_resources,
+                                                   self.dry_run,
                                                    region=self.test_region,
                                                    sender=self.test_sender,
                                                    recipients=self.test_recipients,
                                                    body=not_expected_body)
 
+        expected_body = (EXPECTED_PART_HEADER +
+                         EXPECTED_PART_DRY_RUN +
+                         EXPECTED_PART_UNWANTED_FILLED +
+                         EXPECTED_PART_PROBLEMATIC_FILLED +
+                         EXPECTED_PART_FOOTER)
         self.assertNotEqual(test_status_mail_plugin.body, not_expected_body)
-        self.assertEqual(test_status_mail_plugin.body, self.expected_body)
+        self.assertEqual(test_status_mail_plugin.body, expected_body)
 
 
 class UsofaStatusMailPluginTest(TestCase):
     def setUp(self):
         self.test_recipients = ["test_de@test.invalid", "test_com@test.invalid"]
-        self.test_resources = [
+        self.unwanted_resources = [
             Resource(42, "ec2 instance", "12345", "date1", "us"),
             Resource(42, "ec2 volume", "3312345", "date2", "us")]
+        self.problematic_resources = [
+            Resource(23, "ec2 instance", "67890", "date1", "us"),
+            Resource(23, "ec2 volume", "1112345", "date2", "us")]
+        self.dry_run = True
         self.test_region = "eu-west-1"
         self.test_sender = "sender@test.invalid"
-        self.expected_body = EXPECTED_BODY
         self.usofa_bucket_name = "usofbucket"
         self.test_status_mail_plugin = UsofaStatusMailPlugin(
-            self.test_resources,
+            self.unwanted_resources,
+            self.problematic_resources,
+            self.dry_run,
             region=self.test_region,
             sender=self.test_sender,
             recipients=self.test_recipients,
@@ -126,7 +221,9 @@ class UsofaStatusMailPluginTest(TestCase):
 
         # Do NOT pass a 'recipients' parameter!
         self.test_status_mail_plugin = UsofaStatusMailPlugin(
-            self.test_resources,
+            self.unwanted_resources,
+            self.problematic_resources,
+            self.dry_run,
             region=self.test_region,
             sender=self.test_sender,
             usofa_bucket_name=self.usofa_bucket_name)

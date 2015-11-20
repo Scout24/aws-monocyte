@@ -124,7 +124,8 @@ class Monocyte(object):
 
         for handler_name in self.handler_names:
             handler_prefix = handler_name.split('.')[0]
-            ignored_resources = self.ignored_resources[handler_prefix] if handler_prefix in self.ignored_resources.keys() else None
+            ignored_resources = (self.ignored_resources[handler_prefix]
+                                 if handler_prefix in self.ignored_resources.keys() else None)
 
             handler_class = handler_classes["monocyte.handler." + handler_name]
             handler = handler_class(self.is_region_handled,
@@ -158,7 +159,7 @@ class Monocyte(object):
             self.logger.debug("Starting plugin '%s.%s' with config %s  ", module_name, item_name, config)
 
             PluginClass = get_item_from_module(module_name, item_name)
-            plugin = PluginClass(self.unwanted_resources, **config)
+            plugin = PluginClass(self.unwanted_resources, self.problematic_resources, self.dry_run, **config)
 
             plugin.run()
             self.logger.debug("Plugin '%s.%s' finished successfully", module_name, item_name)

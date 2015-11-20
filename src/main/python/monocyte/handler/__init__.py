@@ -42,7 +42,8 @@ class Handler(object):
 
     @property
     def resource_type(self):
-        return "%s %s" % (self.__class__.__module__, self.__class__.__name__)
+        full_type = "%s %s" % (self.__class__.__module__, self.__class__.__name__)
+        return full_type.replace(HANDLER_PREFIX, "")
 
     @property
     def name(self):

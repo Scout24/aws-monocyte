@@ -10,15 +10,20 @@ os.environ['http_proxy'] = ''
 os.environ['https_proxy'] = ''
 os.environ['no_proxy'] = ''
 
+
 class AwsSesPluginTest(TestCase):
     def setUp(self):
-        self.resources = "42"
+        self.unwanted_resources = "42"
+        self.problematic_resources = "23"
+        self.dry_run = True
         self.region = "eu-west-1"
         self.sender = "test@test.invalid"
         self.subject = "AWS Monocyte"
         self.recipients = ["test@test.invalid"]
         self.body = "myEmailBody"
-        self.aws_ses_plugin = AwsSesPlugin(self.resources, self.region,
+        self.aws_ses_plugin = AwsSesPlugin(self.unwanted_resources,
+                                           self.problematic_resources,
+                                           self.dry_run, self.region,
                                            self.sender,
                                            self.subject, self.recipients,
                                            self.body)
@@ -44,7 +49,9 @@ class AwsSesPluginTest(TestCase):
     @mock_ses
     def test_send_mail_failure_non_verfied_email(self):
         non_verified_sender = 'non_verified_sender@test.invalid'
-        aws_ses_plugin = AwsSesPlugin(self.resources, self.region,
+        aws_ses_plugin = AwsSesPlugin(self.unwanted_resources,
+                                      self.problematic_resources,
+                                      self.dry_run, self.region,
                                       non_verified_sender, self.subject,
                                       self.recipients, self.body)
         self.assertRaises(boto.exception.BotoServerError,
@@ -52,7 +59,9 @@ class AwsSesPluginTest(TestCase):
 
     @mock_ses
     def test_send_mail_failure_no_sender(self):
-        aws_ses_plugin = AwsSesPlugin(self.resources, self.region,
+        aws_ses_plugin = AwsSesPlugin(self.unwanted_resources,
+                                      self.problematic_resources,
+                                      self.dry_run, self.region,
                                       None, self.subject,
                                       self.recipients, self.body)
         self.assertRaises(boto.exception.BotoServerError,

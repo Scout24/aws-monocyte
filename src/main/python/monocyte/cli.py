@@ -1,5 +1,4 @@
 from __future__ import print_function, absolute_import, division
-from collections import defaultdict
 import yamlreader
 import logging
 
