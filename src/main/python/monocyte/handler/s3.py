@@ -31,7 +31,7 @@ class Bucket(Handler):
     NR_KEYS_TO_SHOW = 4
 
     def __init__(self, *args, **kwargs):
-        self._old_match_hostname = ssl.match_hostname
+        self._old_match_hostname = getattr(ssl, 'match_hostname', None)
         ssl.match_hostname = self._new_match_hostname
         return super(Bucket, self).__init__(*args, **kwargs)
 
