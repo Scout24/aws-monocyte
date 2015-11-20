@@ -93,3 +93,4 @@ tags
 
 # configuration
 src/main/python/config/*.yaml
+config.yaml

@@ -14,64 +14,155 @@
 # limitations under the License.
 
 
+import ssl
+import os
+import xml.etree.ElementTree as ET
 import boto
+from boto import s3
 from boto.exception import S3ResponseError
-from monocyte.handler import Resource, Handler
 import boto.s3.connection
+from monocyte.handler import Resource, Handler
 
 US_STANDARD_REGION = "us-east-1"
+SIGV4_REGIONS = ['eu-central-1']
+AVAILABILITY_ZONES = {'EU': 'eu-west-1'}
 
 
 class Bucket(Handler):
     NR_KEYS_TO_SHOW = 4
 
+    def __init__(self, *args, **kwargs):
+        self._old_match_hostname = ssl.match_hostname
+        ssl.match_hostname = self._new_match_hostname
+        return super(Bucket, self).__init__(*args, **kwargs)
+
+    def _new_match_hostname(self, cert, hostname):
+        hostnames = ['.s3.{0}.amazonaws.com'.format(region.name) for region in
+                     self.regions]
+        hostnames.append('.s3.amazonaws.com')
+        for hname in hostnames:
+            if hostname.endswith(hname):
+                pos = hostname.find(hname)
+                hostname = hostname[:pos].replace('.', '') + hostname[pos:]
+        return self._old_match_hostname(cert, hostname)
+
+    def map_location(self, region):
+        return AVAILABILITY_ZONES.get(region, region)
+
     def fetch_regions(self):
-        return []
+        return s3.regions()
 
     def fetch_unwanted_resources(self):
-        for bucket in boto.connect_s3(calling_format=boto.s3.connection.OrdinaryCallingFormat()).get_all_buckets():
-            try:
-                region = bucket.get_location()
-            except S3ResponseError as exc:
-                # See https://github.com/boto/boto/issues/2741
-                if exc.status == 400:
-                    self.logger.error(
-                        "warning: get_location() crashed for %s, skipping" %
-                        bucket.name)
-                    continue
+        checked_buckets = []
+        for region in self.regions:
+            self.logger.info('Checking connected region %s', region.name)
+            conn = self.connect_to_region(region.name)
+            for bucket in conn.get_all_buckets():
+                result = self.check_if_unwanted_resource(conn, bucket,
+                                                         checked_buckets)
+                if result:
+                    yield result
+        # os.putenv('S3_USE_SIGV4', 'False')
+
+    def check_if_unwanted_resource(self, conn, bucket, checked_buckets):
+        if bucket.name in checked_buckets:
+            return
+        try:
+            region = bucket.get_location()
+        except S3ResponseError as exc:
+            if exc.status == 400:
+                if exc.error_code == 'AuthorizationHeaderMalformed':
+                    # Fix conn's region in case it was wrong
+                    # TODO: Check coverage; is this code really used?
+                    conn.auth_region_name = ET.fromstring(exc.body).find(
+                        './Region').text
+                    region = conn.auth_region_name
+                    self.logger.warn(
+                        "bucket %s wrong location -> location "
+                        "updated for connection: %s", bucket.name, region)
+                else:
+                    # See https://github.com/boto/boto/issues/2741
+                    self.logger.warn("get_location() crashed for %s, "
+                                     "skipping", bucket.name)
+                    return
+            else:
                 region = "__error__"
-            region = region if region else US_STANDARD_REGION
-            if self.region_filter(region):
-                resource_wrapper = Resource(resource=bucket,
-                                            resource_type=self.resource_type,
-                                            resource_id=bucket.name,
-                                            creation_date=bucket.creation_date,
-                                            region=region)
-                if bucket.name in self.ignored_resources:
-                    self.logger.info('IGNORE ' + self.to_string(resource_wrapper))
-                    continue
-                yield resource_wrapper
+        except ssl.CertificateError as exc:
+            # Bucket is in a SIGV4 Region but connection is not SIGV4
+            self.logger.warn('ssl.CertificateError for bucket %s with '
+                             'connecting region %s', bucket.name,
+                             conn.auth_region_name)
+            return
+        region = region if region else US_STANDARD_REGION
+        checked_buckets.append(bucket.name)
+        if self.region_filter(region):
+            resource_wrapper = Resource(resource=bucket,
+                                        resource_type=self.resource_type,
+                                        resource_id=bucket.name,
+                                        creation_date=bucket.creation_date,
+                                        region=self.map_location(
+                                            region))
+            if bucket.name in self.ignored_resources:
+                self.logger.info(
+                    'IGNORE ' + self.to_string(resource_wrapper))
+                return
+            return resource_wrapper
 
     def to_string(self, resource):
         return "s3 bucket found in {0}, with name {1}, created {2} and {3} entries".format(
             resource.region, resource.wrapped.name,
             resource.wrapped.creation_date,
-            len(resource.wrapped.get_all_keys()))
+            len(self.apply_bucket_function(resource, 'get_all_keys')))
+
+    def summary(self, resource):
+        num_keys = len(self.apply_bucket_function(resource, 'get_all_keys'))
+        skipped_keys = 0
+        key_summary = []
+        for nr, key in enumerate(self.apply_bucket_function(resource, 'list')):
+            if nr >= Bucket.NR_KEYS_TO_SHOW:
+                skipped_keys = num_keys - Bucket.NR_KEYS_TO_SHOW
+                break
+            key_summary.append(key.name)
+        return num_keys, ', '.join(key_summary), skipped_keys
 
     def delete(self, resource):
-        if self.dry_run:
-            nr_keys = len(resource.wrapped.get_all_keys())
-            if nr_keys:
-                keys_log = ["{0}: {1} entries would be removed:".format(resource.wrapped.name, nr_keys)]
-                for nr, key in enumerate(resource.wrapped.list()):
-                    if nr >= Bucket.NR_KEYS_TO_SHOW:
-                        keys_log.append("... ({0} keys omitted)".format(
-                            nr_keys - Bucket.NR_KEYS_TO_SHOW))
-                        break
-                    keys_log.append("'{0}', ".format(key.name))
-                self.logger.info("".join(keys_log))
-            return
-        resource.wrapped.delete_keys(resource.wrapped.list())
-        self.logger.info("Initiating deletion sequence for {name}.".format(**vars(resource.wrapped)))
+        if self.dry_run and resource.wrapped.name != 'mk11.eu-central':
+            num_keys, key_summary, skipped_keys = self.summary(resource)
+            msg = "%s: %s entries would be removed: %s" % (
+                    resource.wrapped.name, num_keys, key_summary)
+            if skipped_keys:
+                msg += "... %s keys omitted" % skipped_keys
+            self.logger.info(msg)
+        else:
+            keys_list = self.apply_bucket_function(resource, 'list')
+            self.apply_bucket_function(resource=resource,
+                                       function_name='delete_keys',
+                                       keys=keys_list)
+            self.logger.info("Initiating deletion of %s", resource.wrapped.name)
+            self.apply_s3_function(resource=resource,
+                                   function_name='delete_bucket',
+                                   bucket=resource.wrapped.name)
 
-        boto.connect_s3().delete_bucket(resource.wrapped.name)
+    def connect_to_region(self, region, bucket_name=''):
+        kwargs = {'region_name': region}
+        if region in SIGV4_REGIONS:
+            # os.putenv('S3_USE_SIGV4', 'True')
+            kwargs['host'] = 's3.{0}.amazonaws.com'.format(region)
+        else:
+            pass
+            # os.putenv('S3_USE_SIGV4', 'False')
+        if '.' in bucket_name:
+            kwargs[
+                'calling_format'] = boto.s3.connection.OrdinaryCallingFormat()
+        return s3.connect_to_region(**kwargs)
+
+    def apply_bucket_function(self, resource, function_name, **kwargs):
+        conn = self.connect_to_region(resource.region,
+                                      resource.wrapped.name)
+        bucket = conn.get_bucket(resource.wrapped.name)
+        return getattr(bucket, function_name)(**kwargs)
+
+    def apply_s3_function(self, resource, function_name, **kwargs):
+        conn = self.connect_to_region(resource.region,
+                                      resource.wrapped.name)
+        return getattr(conn, function_name)(**kwargs)
