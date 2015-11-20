@@ -16,8 +16,8 @@ EXPECTED_PART_NO_DRY_RUN = "Please check the following deleted resources:\n"
 EXPECTED_PART_UNWANTED_FILLED = """
 Account: test-account
 Region: us
-\tec2 instance instance with identifier 12345, created date1
-\tec2 volume instance with identifier 3312345, created date2
+\tec2 instance with identifier 12345, created date1
+\tec2 volume with identifier 3312345, created date2
 """
 EXPECTED_PART_UNWANTED_EMPTY = """
 Account: test-account
@@ -26,8 +26,8 @@ Account: test-account
 EXPECTED_PART_PROBLEMATIC_FILLED = """
 Additionally we had issues checking the following resource, please ensure that they are in the proper region:
 Region: us
-\tec2 instance instance with identifier 67890, created date1
-\tec2 volume instance with identifier 1112345, created date2
+\tec2 instance with identifier 67890, created date1
+\tec2 volume with identifier 1112345, created date2
 """
 EXPECTED_PART_PROBLEMATIC_EMPTY = ""
 EXPECTED_PART_FOOTER = """
