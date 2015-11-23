@@ -18,10 +18,10 @@ class S3Tests(unittest2.TestCase):
             def new_function(*args):
                 conn, bucket, checked_buckets = args
                 if not bucket.name.startswith(self.prefix):
-                    print("skipping bucket {}".format(bucket.name))
+                    print("skipping bucket {0}".format(bucket.name))
                     return
                 else:
-                    print("processing {}".format(bucket.name))
+                    print("processing {0}".format(bucket.name))
                 checked_buckets = []
                 return old_function(conn, bucket, checked_buckets)
 
@@ -33,7 +33,7 @@ class S3Tests(unittest2.TestCase):
 
     def tearDown(self):
         for resource in self.our_buckets:
-            print("to be deleted {}".format(resource.wrapped.name))
+            print("to be deleted {0}".format(resource.wrapped.name))
             self.s3_handler.dry_run = False
             self.s3_handler.delete(resource)
 
