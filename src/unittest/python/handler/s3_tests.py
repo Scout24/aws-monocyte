@@ -188,46 +188,46 @@ class S3BucketNewTest(unittest2.TestCase):
 
     @mock_s3
     def test_fetch_unwanted_resources_one_resource(self):
-        bucket_mock = self._given_bucket_mock('test_bucket', 'eu-west-1')
+        bucket_mock = self._given_bucket_mock('test-bucket', 'eu-west-1')
         resources = list(self.s3_handler.fetch_unwanted_resources())
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0].wrapped.name, bucket_mock.name)
 
     @mock_s3
     def test_fetch_unwanted_resources_two_resources(self):
-        self._given_bucket_mock('test_bucket', 'eu-west-1')
-        self._given_bucket_mock('bucket_eu', 'eu-central-1')
+        self._given_bucket_mock('test-bucket', 'eu-west-1')
+        self._given_bucket_mock('bucket-eu', 'eu-central-1')
         resources = list(self.s3_handler.fetch_unwanted_resources())
         self.assertEqual(len(resources), 2)
-        bucket_names_in = {'bucket_eu', 'test_bucket'}
+        bucket_names_in = set(['bucket-eu', 'test-bucket'])
         bucket_names_out = set([resource.wrapped.name for resource in
                                 resources])
         self.assertEqual(bucket_names_out, bucket_names_in)
 
     @mock_s3
     def test_fetch_unwanted_resources_three_resources(self):
-        self._given_bucket_mock('test.ap_bucket', 'ap-southeast-1')
+        self._given_bucket_mock('test.ap-bucket', 'ap-southeast-1')
         self._given_bucket_mock('test.bucket', 'us-east-1')
         self._given_bucket_mock('bucket.eu', 'eu-central-1')
         resources = list(self.s3_handler.fetch_unwanted_resources())
         self.assertEqual(len(resources), 3)
-        bucket_names_in = {'bucket.eu', 'test.bucket', 'test.ap_bucket'}
+        bucket_names_in = set(['bucket.eu', 'test.bucket', 'test.ap-bucket'])
         bucket_names_out = set([resource.wrapped.name for resource in
                                 resources])
         self.assertEqual(bucket_names_out, bucket_names_in)
 
     @mock_s3
     def test_bucket_to_string(self):
-        self._given_bucket_mock('test_bucket', 'eu-central-1')
+        self._given_bucket_mock('test-bucket', 'eu-central-1')
         resources = list(self.s3_handler.fetch_unwanted_resources())
         self.assertEqual(len(resources), 1)
         bucket_str = self.s3_handler.to_string(resources[0])
-        self.assertIn('test_bucket', bucket_str)
+        self.assertIn('test-bucket', bucket_str)
         self.assertIn('us-east-1', bucket_str)
 
     @mock_s3
     def test_bucket_delete_dry_run(self):
-        self._given_bucket_mock('test_bucket', 'eu-west-1')
+        self._given_bucket_mock('test-bucket', 'eu-west-1')
         self.s3_handler.dry_run = True
         resources = list(self.s3_handler.fetch_unwanted_resources())
         self.assertEqual(len(resources), 1)
@@ -237,7 +237,7 @@ class S3BucketNewTest(unittest2.TestCase):
 
     @mock_s3
     def test_bucket_delete_no_dry_run(self):
-        self._given_bucket_mock('test_bucket', 'eu-west-1')
+        self._given_bucket_mock('test-bucket', 'eu-west-1')
         self.s3_handler.dry_run = False
         resources = list(self.s3_handler.fetch_unwanted_resources())
         self.assertEqual(len(resources), 1)

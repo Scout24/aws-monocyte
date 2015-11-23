@@ -9,6 +9,7 @@ use_plugin('python.unittest')
 use_plugin('python.coverage')
 use_plugin('copy_resources')
 use_plugin('python.pytddmon')
+use_plugin('python.integrationtest')
 
 default_task = ['analyze', 'publish']
 
@@ -48,6 +49,8 @@ def set_properties(project):
     project.set_property('copy_resources_target', '$dir_dist')
     project.get_property('copy_resources_glob').append('setup.cfg')
     project.set_property('dir_dist_scripts', 'scripts')
+    project.set_property('integrationtest_inherit_environment', True)
+    project.set_property('integrationtest_always_verbose', True)
 
     project.set_property('distutils_classifiers', [
         'Development Status :: 4 - Beta',
