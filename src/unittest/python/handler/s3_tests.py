@@ -48,10 +48,6 @@ class S3BucketTest(unittest2.TestCase):
     def tearDown(self):
         patch.stopall()
 
-    def test_fetch_unwanted_resources(self):
-        only_resource = list(self.s3_handler.fetch_unwanted_resources())[0]
-        self.assertEqual(only_resource.wrapped, self.bucket_mock)
-
     def test_fetch_unwanted_resources_400_exception(self):
         self.bucket_mock.get_location.side_effect = boto.exception.S3ResponseError(400, 'boom')
         list(self.s3_handler.fetch_unwanted_resources())
@@ -141,13 +137,13 @@ class S3BucketNewTest(unittest2.TestCase):
 
     def setUp(self):
         # self.boto_mock = patch("monocyte.handler.s3.boto").start()
-        # self.bucket_mock = self._given_bucket_mock()
         # self.key_mock = self._given_key_mock()
-        self.resource_type = "s3 Bucket"
-        self.negative_fake_region = Mock(boto.regioninfo.RegionInfo)
-        self.negative_fake_region.name = "forbidden_region"
+        # self.resource_type = "s3 Bucket"
+        # self.negative_fake_region = Mock(boto.regioninfo.RegionInfo)
+        # self.negative_fake_region.name = "forbidden_region"
         self.logger_mock = patch("monocyte.handler.logging").start()
-        self.s3_handler = s3.Bucket(lambda region_name: True)
+        self.s3_handler = s3.Bucket(lambda region_name: region_name not in [
+            'cn-north-1', 'us-gov-west-1'])
 
     def tearDown(self):
         patch.stopall()
@@ -159,6 +155,7 @@ class S3BucketNewTest(unittest2.TestCase):
             self.assertIn(region, conn.host)
             self.assertIsInstance(conn.calling_format, SubdomainCallingFormat)
             self.assertEqual(conn.get_all_buckets(), [])
+
 
     @mock_s3
     def test_connect_to_region_sigv4_region_eu_central_1(self):
@@ -182,3 +179,72 @@ class S3BucketNewTest(unittest2.TestCase):
         self.assertIsInstance(conn.calling_format, OrdinaryCallingFormat)
         self.assertIn('eu-central-1', conn.host)
         self.assertEqual(conn.get_all_buckets(), [])
+
+    @mock_s3
+    def test_fetch_unwanted_resources_no_resources(self):
+        # self.bucket_mock = self._given_bucket_mock()
+        resources = list(self.s3_handler.fetch_unwanted_resources())
+        self.assertEqual(resources, [])
+
+    @mock_s3
+    def test_fetch_unwanted_resources_one_resource(self):
+        bucket_mock = self._given_bucket_mock('test_bucket', 'eu-west-1')
+        resources = list(self.s3_handler.fetch_unwanted_resources())
+        self.assertEqual(len(resources), 1)
+        self.assertEqual(resources[0].wrapped.name, bucket_mock.name)
+
+    @mock_s3
+    def test_fetch_unwanted_resources_two_resources(self):
+        self._given_bucket_mock('test_bucket', 'eu-west-1')
+        self._given_bucket_mock('bucket_eu', 'eu-central-1')
+        resources = list(self.s3_handler.fetch_unwanted_resources())
+        self.assertEqual(len(resources), 2)
+        bucket_names_in = {'bucket_eu', 'test_bucket'}
+        bucket_names_out = set([resource.wrapped.name for resource in
+                                resources])
+        self.assertEqual(bucket_names_out, bucket_names_in)
+
+    @mock_s3
+    def test_fetch_unwanted_resources_three_resources(self):
+        self._given_bucket_mock('test.ap_bucket', 'ap-southeast-1')
+        self._given_bucket_mock('test.bucket', 'us-east-1')
+        self._given_bucket_mock('bucket.eu', 'eu-central-1')
+        resources = list(self.s3_handler.fetch_unwanted_resources())
+        self.assertEqual(len(resources), 3)
+        bucket_names_in = {'bucket.eu', 'test.bucket', 'test.ap_bucket'}
+        bucket_names_out = set([resource.wrapped.name for resource in
+                                resources])
+        self.assertEqual(bucket_names_out, bucket_names_in)
+
+    @mock_s3
+    def test_bucket_to_string(self):
+        self._given_bucket_mock('test_bucket', 'eu-central-1')
+        resources = list(self.s3_handler.fetch_unwanted_resources())
+        self.assertEqual(len(resources), 1)
+        bucket_str = self.s3_handler.to_string(resources[0])
+        self.assertIn('test_bucket', bucket_str)
+        self.assertIn('us-east-1', bucket_str)
+
+    @mock_s3
+    def test_bucket_delete_dry_run(self):
+        self._given_bucket_mock('test_bucket', 'eu-west-1')
+        self.s3_handler.dry_run = True
+        resources = list(self.s3_handler.fetch_unwanted_resources())
+        self.assertEqual(len(resources), 1)
+        self.s3_handler.delete(resources[0])
+        resources = list(self.s3_handler.fetch_unwanted_resources())
+        self.assertEqual(len(resources), 1)
+
+    @mock_s3
+    def test_bucket_delete_no_dry_run(self):
+        self._given_bucket_mock('test_bucket', 'eu-west-1')
+        self.s3_handler.dry_run = False
+        resources = list(self.s3_handler.fetch_unwanted_resources())
+        self.assertEqual(len(resources), 1)
+        self.s3_handler.delete(resources[0])
+        resources = list(self.s3_handler.fetch_unwanted_resources())
+        self.assertEqual(len(resources), 0)
+
+    def _given_bucket_mock(self, bucket_name, region_name):
+        conn = self.s3_handler.connect_to_region(region_name)
+        return conn.create_bucket(bucket_name, location=region_name)

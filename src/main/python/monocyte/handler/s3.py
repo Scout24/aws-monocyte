@@ -14,6 +14,7 @@
 # limitations under the License.
 
 
+import os
 import ssl
 import xml.etree.ElementTree as ET
 import boto
@@ -61,7 +62,7 @@ class Bucket(Handler):
                                                          checked_buckets)
                 if result:
                     yield result
-        # os.putenv('S3_USE_SIGV4', 'False')
+        os.putenv('S3_USE_SIGV4', 'False')
 
     def check_if_unwanted_resource(self, conn, bucket, checked_buckets):
         if bucket.name in checked_buckets:
@@ -89,8 +90,8 @@ class Bucket(Handler):
         except ssl.CertificateError as exc:
             # Bucket is in a SIGV4 Region but connection is not SIGV4
             self.logger.warn('ssl.CertificateError for bucket %s with '
-                             'connecting region %s', bucket.name,
-                             conn.auth_region_name)
+                             'connected host %s', bucket.name,
+                             conn.host)
             return
         region = region if region else US_STANDARD_REGION
         checked_buckets.append(bucket.name)
@@ -145,11 +146,10 @@ class Bucket(Handler):
     def connect_to_region(self, region, bucket_name=''):
         kwargs = {'region_name': region}
         if region in SIGV4_REGIONS:
-            # os.putenv('S3_USE_SIGV4', 'True')
+            os.putenv('S3_USE_SIGV4', 'True')
             kwargs['host'] = 's3.{0}.amazonaws.com'.format(region)
         else:
-            pass
-            # os.putenv('S3_USE_SIGV4', 'False')
+            os.putenv('S3_USE_SIGV4', 'False')
         if '.' in bucket_name:
             kwargs[
                 'calling_format'] = boto.s3.connection.OrdinaryCallingFormat()
