@@ -10,7 +10,7 @@ class S3Tests(unittest2.TestCase):
     def setUp(self):
         self.s3_handler = s3_handler.Bucket(lambda region_name: region_name not in [
             'cn-north-1', 'us-gov-west-1'])
-        self.prefix = 'test-' + hex(random.randint(0, 2**48)) + '-'
+        self.prefix = 'test-' + hex(random.randint(0, 2**48))[2:] + '-'
         self.our_buckets = []
 
         def my_filter(old_function):
