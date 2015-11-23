@@ -14,9 +14,9 @@
 # limitations under the License.
 
 
-import os
+#import os
 import ssl
-import xml.etree.ElementTree as ET
+#import xml.etree.ElementTree as ET
 import boto
 from boto import s3
 from boto.exception import S3ResponseError
@@ -62,7 +62,7 @@ class Bucket(Handler):
                                                          checked_buckets)
                 if result:
                     yield result
-        os.putenv('S3_USE_SIGV4', 'False')
+        #os.putenv('S3_USE_SIGV4', 'False')
 
     def check_if_unwanted_resource(self, conn, bucket, checked_buckets):
         if bucket.name in checked_buckets:
@@ -71,20 +71,20 @@ class Bucket(Handler):
             region = bucket.get_location()
         except S3ResponseError as exc:
             if exc.status == 400:
-                if exc.error_code == 'AuthorizationHeaderMalformed':
-                    # Fix conn's region in case it was wrong
-                    # TODO: Check coverage; is this code really used?
-                    conn.auth_region_name = ET.fromstring(exc.body).find(
-                        './Region').text
-                    region = conn.auth_region_name
-                    self.logger.warn(
-                        "bucket %s wrong location -> location "
-                        "updated for connection: %s", bucket.name, region)
-                else:
-                    # See https://github.com/boto/boto/issues/2741
-                    self.logger.warn("get_location() crashed for %s, "
-                                     "skipping", bucket.name)
-                    return
+                #if exc.error_code == 'AuthorizationHeaderMalformed':
+                #    # Fix conn's region in case it was wrong
+                #    # TODO: Check coverage; is this code really used?
+                #    conn.auth_region_name = ET.fromstring(exc.body).find(
+                #        './Region').text
+                #    region = conn.auth_region_name
+                #    self.logger.warn(
+                #        "bucket %s wrong location -> location "
+                #        "updated for connection: %s", bucket.name, region)
+                #else:
+                # See https://github.com/boto/boto/issues/2741
+                self.logger.warn("get_location() crashed for %s, "
+                                 "skipping", bucket.name)
+                return
             else:
                 region = "__error__"
         except ssl.CertificateError as exc:
@@ -146,10 +146,10 @@ class Bucket(Handler):
     def connect_to_region(self, region, bucket_name=''):
         kwargs = {'region_name': region}
         if region in SIGV4_REGIONS:
-            os.putenv('S3_USE_SIGV4', 'True')
+            #os.putenv('S3_USE_SIGV4', 'True')
             kwargs['host'] = 's3.{0}.amazonaws.com'.format(region)
-        else:
-            os.putenv('S3_USE_SIGV4', 'False')
+        #else:
+        #    os.putenv('S3_USE_SIGV4', 'False')
         if '.' in bucket_name:
             kwargs[
                 'calling_format'] = boto.s3.connection.OrdinaryCallingFormat()
