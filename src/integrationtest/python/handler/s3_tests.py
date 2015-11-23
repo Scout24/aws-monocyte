@@ -51,6 +51,20 @@ class S3Tests(unittest2.TestCase):
         uniq_resources = self._uniq(resources)
         self.assertEqual(len(uniq_resources), 1)
 
+    def test_search_unwanted_resources_dry_run_with_dot_name_default_region(self):
+        self._given_bucket_mock('test.bucket', 'us-east-1')
+        self.s3_handler.dry_run = True
+
+        resources = self.s3_handler.fetch_unwanted_resources()
+        uniq_resources = self._uniq(resources)
+        self.assertEqual(len(uniq_resources), 1)
+
+        self.s3_handler.delete(uniq_resources[0])
+
+        resources = self.s3_handler.fetch_unwanted_resources()
+        uniq_resources = self._uniq(resources)
+        self.assertEqual(len(uniq_resources), 1)
+
     def test_search_unwanted_resources_no_dry_run(self):
         self._given_bucket_mock('test-bucket', 'eu-west-1')
         self.s3_handler.dry_run = False
@@ -70,8 +84,11 @@ class S3Tests(unittest2.TestCase):
 
     def _given_bucket_mock(self, bucket_name, region_name, create_key=False):
         conn = self.s3_handler.connect_to_region(region_name)
-        bucket = conn.create_bucket(self.prefix + bucket_name,
-                                    location=region_name)
+        if region_name == 'us-east-1':
+            bucket = conn.create_bucket(self.prefix + bucket_name)
+        else:
+            bucket = conn.create_bucket(self.prefix + bucket_name,
+                                        location=region_name)
         resource = Resource(resource=bucket,
                             resource_type='s3.Bucket',
                             resource_id='42',
