@@ -1,7 +1,6 @@
 import unittest2
 import random
 from functools import wraps
-from boto import s3
 from monocyte.handler import s3 as s3_handler
 from monocyte.handler import Resource
 
@@ -66,7 +65,6 @@ class S3Tests(unittest2.TestCase):
         uniq_resources = self._uniq(resources)
         self.assertEqual(len(uniq_resources), 1)
 
-
     def _given_bucket_mock(self, bucket_name, region_name, create_key=False):
         conn = self.s3_handler.connect_to_region(region_name)
         bucket = conn.create_bucket(self.prefix + bucket_name,
@@ -76,7 +74,7 @@ class S3Tests(unittest2.TestCase):
                             resource_id='42',
                             creation_date='2015-11-23',
                             region=self.s3_handler.map_location(
-                                            region_name))
+                                region_name))
         self.our_buckets.append(resource)
         return bucket
 
@@ -91,7 +89,6 @@ class S3Tests(unittest2.TestCase):
             found_names.append(name)
 
         return uniq_resources
-
 
 
 if __name__ == "__main__":

@@ -156,7 +156,6 @@ class S3BucketNewTest(unittest2.TestCase):
             self.assertIsInstance(conn.calling_format, SubdomainCallingFormat)
             self.assertEqual(conn.get_all_buckets(), [])
 
-
     @mock_s3
     def test_connect_to_region_sigv4_region_eu_central_1(self):
         conn = self.s3_handler.connect_to_region('eu-central-1')
