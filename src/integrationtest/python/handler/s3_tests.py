@@ -51,6 +51,48 @@ class S3Tests(unittest2.TestCase):
         uniq_resources = self._uniq(resources)
         self.assertEqual(len(uniq_resources), 1)
 
+    def test_search_unwanted_resources_dry_run_with_dot_name(self):
+        self._given_bucket_mock('test.bucket', 'eu-west-1')
+        self.s3_handler.dry_run = True
+
+        resources = self.s3_handler.fetch_unwanted_resources()
+        uniq_resources = self._uniq(resources)
+        self.assertEqual(len(uniq_resources), 1)
+
+        self.s3_handler.delete(uniq_resources[0])
+
+        resources = self.s3_handler.fetch_unwanted_resources()
+        uniq_resources = self._uniq(resources)
+        self.assertEqual(len(uniq_resources), 1)
+
+    def test_search_unwanted_resources_dry_run_sigv4(self):
+        self._given_bucket_mock('test-bucket', 'eu-central-1')
+        self.s3_handler.dry_run = True
+
+        resources = self.s3_handler.fetch_unwanted_resources()
+        uniq_resources = self._uniq(resources)
+        self.assertEqual(len(uniq_resources), 1)
+
+        self.s3_handler.delete(uniq_resources[0])
+
+        resources = self.s3_handler.fetch_unwanted_resources()
+        uniq_resources = self._uniq(resources)
+        self.assertEqual(len(uniq_resources), 1)
+
+    def test_search_unwanted_resources_dry_run_with_dot_name_sigv4(self):
+        self._given_bucket_mock('test.bucket', 'eu-central-1')
+        self.s3_handler.dry_run = True
+
+        resources = self.s3_handler.fetch_unwanted_resources()
+        uniq_resources = self._uniq(resources)
+        self.assertEqual(len(uniq_resources), 1)
+
+        self.s3_handler.delete(uniq_resources[0])
+
+        resources = self.s3_handler.fetch_unwanted_resources()
+        uniq_resources = self._uniq(resources)
+        self.assertEqual(len(uniq_resources), 1)
+
     def test_search_unwanted_resources_dry_run_with_dot_name_default_region(self):
         self._given_bucket_mock('test.bucket', 'us-east-1')
         self.s3_handler.dry_run = True
