@@ -53,7 +53,7 @@ class S3Tests(unittest2.TestCase):
 
     def test_search_unwanted_resources_no_dry_run(self):
         self._given_bucket_mock('test-bucket', 'eu-west-1')
-        # self.s3_handler.dry_run = False
+        self.s3_handler.dry_run = False
 
         resources = self.s3_handler.fetch_unwanted_resources()
         uniq_resources = self._uniq(resources)
@@ -63,7 +63,10 @@ class S3Tests(unittest2.TestCase):
 
         resources = self.s3_handler.fetch_unwanted_resources()
         uniq_resources = self._uniq(resources)
-        self.assertEqual(len(uniq_resources), 1)
+        self.assertEqual(len(uniq_resources), 0)
+
+        # Prevent self.tearDown() from failing with "404 Not Found".
+        self.our_buckets = []
 
     def _given_bucket_mock(self, bucket_name, region_name, create_key=False):
         conn = self.s3_handler.connect_to_region(region_name)
