@@ -124,6 +124,42 @@ class S3Tests(unittest2.TestCase):
         # Prevent self.tearDown() from failing with "404 Not Found".
         self.our_buckets = []
 
+    def test_bucket_to_string_dry_run_no_sigv4(self):
+        self._given_bucket_mock('test-bucket', 'eu-west-1')
+        self.s3_handler.dry_run = True
+
+        resources = self.s3_handler.fetch_unwanted_resources()
+        uniq_resources = self._uniq(resources)
+        self.assertEqual(len(uniq_resources), 1)
+
+        bucket_str = self.s3_handler.to_string(uniq_resources[0])
+        self.assertIn('test-bucket', bucket_str)
+        self.assertIn('eu-west-1', bucket_str)
+
+    def test_bucket_to_string_dry_run_sigv4(self):
+        self._given_bucket_mock('test-bucket', 'eu-central-1')
+        self.s3_handler.dry_run = True
+
+        resources = self.s3_handler.fetch_unwanted_resources()
+        uniq_resources = self._uniq(resources)
+        self.assertEqual(len(uniq_resources), 1)
+
+        bucket_str = self.s3_handler.to_string(uniq_resources[0])
+        self.assertIn('test-bucket', bucket_str)
+        self.assertIn('eu-central-1', bucket_str)
+
+    def test_bucket_to_string_dry_run_sigv4_with_dot_name(self):
+        self._given_bucket_mock('test.bucket', 'eu-central-1')
+        self.s3_handler.dry_run = True
+
+        resources = self.s3_handler.fetch_unwanted_resources()
+        uniq_resources = self._uniq(resources)
+        self.assertEqual(len(uniq_resources), 1)
+
+        bucket_str = self.s3_handler.to_string(uniq_resources[0])
+        self.assertIn('test.bucket', bucket_str)
+        self.assertIn('eu-central-1', bucket_str)
+
     def _given_bucket_mock(self, bucket_name, region_name, create_key=False):
         conn = self.s3_handler.connect_to_region(region_name)
         if region_name == 'us-east-1':
