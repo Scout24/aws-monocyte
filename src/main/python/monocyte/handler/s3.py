@@ -86,7 +86,9 @@ class Bucket(Handler):
                                  "skipping", bucket.name)
                 return
             else:
-                region = "__error__"
+                self.logger.exception("Failed to get location for bucket "
+                                      "{0}".format(bucket.name))
+                return
         except ssl.CertificateError as exc:
             # Bucket is in a SIGV4 Region but connection is not SIGV4
             self.logger.warn('ssl.CertificateError for bucket %s with '
