@@ -37,9 +37,9 @@ class Bucket(Handler):
         return super(Bucket, self).__init__(*args, **kwargs)
 
     def _new_match_hostname(self, cert, hostname):
-        hostnames = ['.s3.{0}.amazonaws.com'.format(region.name) for region in
-                     self.regions]
-        hostnames.append('.s3.amazonaws.com')
+        hostnames = ['.s3{0}{1}.amazonaws.com'.format(separator, region.name)
+                     for separator in ['.', '-'] for region in self.regions]
+        hostnames.extend(['.s3.amazonaws.com', '.s3-amazonaws.com'])
         for hname in hostnames:
             if hostname.endswith(hname):
                 pos = hostname.find(hname)

@@ -224,7 +224,6 @@ class S3BucketNewTest(unittest2.TestCase):
         # wrong region cause by moto. Therefore region not asserted.
         self.assertIn('test-bucket', bucket_str)
 
-
     @mock_s3
     def test_bucket_delete_dry_run(self):
         self._given_bucket_mock('test-bucket', 'eu-west-1')
