@@ -151,7 +151,7 @@ class Monocyte(object):
         return handler_classes
 
     def start_plugins(self):
-        for plugin in self.config.get("plugins", []):
+        for plugin in self.config.get("plugins") or []:
             module_name = plugin["module"]
             item_name = plugin["item"]
             config = plugin.get("config", {})
