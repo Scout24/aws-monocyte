@@ -18,7 +18,7 @@ class S3Tests(unittest2.TestCase):
             def new_function(*args):
                 conn, bucket, checked_buckets = args
                 if not bucket.name.startswith(self.prefix):
-                    print("skipping bucket {0}".format(bucket.name))
+                    # print("skipping bucket {0}".format(bucket.name))
                     return
                 else:
                     print("processing {0}".format(bucket.name))
@@ -38,12 +38,31 @@ class S3Tests(unittest2.TestCase):
             self.s3_handler.delete(resource)
 
     def test_search_unwanted_resources_dry_run(self):
-        self._given_bucket_mock('test-bucket', 'eu-west-1')
+        self._create_bucket('test-bucket1', 'eu-west-1')
         self.s3_handler.dry_run = True
 
         resources = self.s3_handler.fetch_unwanted_resources()
         uniq_resources = self._uniq(resources)
         self.assertEqual(len(uniq_resources), 1)
+
+        self.s3_handler.delete(uniq_resources[0])
+
+        resources = self.s3_handler.fetch_unwanted_resources()
+        uniq_resources = self._uniq(resources)
+        self.assertEqual(len(uniq_resources), 1)
+
+    def test_search_unwanted_resources_dry_run_with_key(self):
+        self._create_bucket('test-bucket2', 'eu-west-1', create_key=True)
+        self.s3_handler.dry_run = True
+
+        resources = self.s3_handler.fetch_unwanted_resources()
+        uniq_resources = self._uniq(resources)
+        self.assertEqual(len(uniq_resources), 1)
+        conn = self.s3_handler.connect_to_region(uniq_resources[0].region,
+                                                 uniq_resources[0].wrapped.name)
+        bucket = conn.get_bucket(uniq_resources[0].wrapped.name)
+        all_keys = bucket.get_all_keys()
+        self.assertEqual(len(all_keys), 1)
 
         self.s3_handler.delete(uniq_resources[0])
 
@@ -52,12 +71,31 @@ class S3Tests(unittest2.TestCase):
         self.assertEqual(len(uniq_resources), 1)
 
     def test_search_unwanted_resources_dry_run_with_dot_name(self):
-        self._given_bucket_mock('test.bucket', 'eu-west-1')
+        self._create_bucket('test.bucket3', 'eu-west-1')
         self.s3_handler.dry_run = True
 
         resources = self.s3_handler.fetch_unwanted_resources()
         uniq_resources = self._uniq(resources)
         self.assertEqual(len(uniq_resources), 1)
+
+        self.s3_handler.delete(uniq_resources[0])
+
+        resources = self.s3_handler.fetch_unwanted_resources()
+        uniq_resources = self._uniq(resources)
+        self.assertEqual(len(uniq_resources), 1)
+
+    def test_search_unwanted_resources_dry_run_with_dot_name_with_key(self):
+        self._create_bucket('test.bucket3', 'eu-west-1', create_key=True)
+        self.s3_handler.dry_run = True
+
+        resources = self.s3_handler.fetch_unwanted_resources()
+        uniq_resources = self._uniq(resources)
+        self.assertEqual(len(uniq_resources), 1)
+        conn = self.s3_handler.connect_to_region(uniq_resources[0].region,
+                                                 uniq_resources[0].wrapped.name)
+        bucket = conn.get_bucket(uniq_resources[0].wrapped.name)
+        all_keys = bucket.get_all_keys()
+        self.assertEqual(len(all_keys), 1)
 
         self.s3_handler.delete(uniq_resources[0])
 
@@ -66,7 +104,7 @@ class S3Tests(unittest2.TestCase):
         self.assertEqual(len(uniq_resources), 1)
 
     def test_search_unwanted_resources_dry_run_sigv4(self):
-        self._given_bucket_mock('test-bucket', 'eu-central-1')
+        self._create_bucket('test-bucket4', 'eu-central-1')
         self.s3_handler.dry_run = True
 
         resources = self.s3_handler.fetch_unwanted_resources()
@@ -78,9 +116,29 @@ class S3Tests(unittest2.TestCase):
         resources = self.s3_handler.fetch_unwanted_resources()
         uniq_resources = self._uniq(resources)
         self.assertEqual(len(uniq_resources), 1)
+
+    def test_search_unwanted_resources_dry_run_sigv4_with_key(self):
+        self._create_bucket('test-bucket4', 'eu-central-1', create_key=True)
+        self.s3_handler.dry_run = True
+
+        resources = self.s3_handler.fetch_unwanted_resources()
+        uniq_resources = self._uniq(resources)
+        self.assertEqual(len(uniq_resources), 1)
+        conn = self.s3_handler.connect_to_region(uniq_resources[0].region,
+                                                 uniq_resources[0].wrapped.name)
+        bucket = conn.get_bucket(uniq_resources[0].wrapped.name)
+        all_keys = bucket.get_all_keys()
+        self.assertEqual(len(all_keys), 1)
+
+        self.s3_handler.delete(uniq_resources[0])
+
+        resources = self.s3_handler.fetch_unwanted_resources()
+        uniq_resources = self._uniq(resources)
+        self.assertEqual(len(uniq_resources), 1)
+
 
     def test_search_unwanted_resources_dry_run_with_dot_name_sigv4(self):
-        self._given_bucket_mock('test.bucket', 'eu-central-1')
+        self._create_bucket('test.bucket5', 'eu-central-1')
         self.s3_handler.dry_run = True
 
         resources = self.s3_handler.fetch_unwanted_resources()
@@ -93,13 +151,55 @@ class S3Tests(unittest2.TestCase):
         uniq_resources = self._uniq(resources)
         self.assertEqual(len(uniq_resources), 1)
 
+    def test_search_unwanted_resources_no_dry_run_with_dot_name_sigv4_with_key(
+            self):
+        self.s3_handler.dry_run = False
+        self._create_bucket('test.bucket6', 'eu-central-1', create_key=True)
+
+        resources = self.s3_handler.fetch_unwanted_resources()
+        uniq_resources = self._uniq(resources)
+        self.assertEqual(len(uniq_resources), 1)
+        conn = self.s3_handler.connect_to_region(uniq_resources[0].region,
+                                                 uniq_resources[0].wrapped.name)
+        bucket = conn.get_bucket(uniq_resources[0].wrapped.name)
+        all_keys = bucket.get_all_keys()
+        self.assertEqual(len(all_keys), 1)
+
+        self.s3_handler.delete(uniq_resources[0])
+
+        resources = self.s3_handler.fetch_unwanted_resources()
+        uniq_resources = self._uniq(resources)
+        self.assertEqual(len(uniq_resources), 0)
+
+        # Prevent self.tearDown() from failing with "404 Not Found".
+        self.our_buckets = []
+
     def test_search_unwanted_resources_dry_run_with_dot_name_default_region(self):
-        self._given_bucket_mock('test.bucket', 'us-east-1')
+        self._create_bucket('test.bucket7', 'us-east-1')
         self.s3_handler.dry_run = True
 
         resources = self.s3_handler.fetch_unwanted_resources()
         uniq_resources = self._uniq(resources)
         self.assertEqual(len(uniq_resources), 1)
+
+        self.s3_handler.delete(uniq_resources[0])
+
+        resources = self.s3_handler.fetch_unwanted_resources()
+        uniq_resources = self._uniq(resources)
+        self.assertEqual(len(uniq_resources), 1)
+
+    def test_search_unwanted_resources_dry_run_with_dot_name_default_region_with_key(self):
+        self._create_bucket('test.bucket7', 'us-east-1', create_key=True)
+        self.s3_handler.dry_run = True
+
+        resources = self.s3_handler.fetch_unwanted_resources()
+        uniq_resources = self._uniq(resources)
+        self.assertEqual(len(uniq_resources), 1)
+        conn = self.s3_handler.connect_to_region(uniq_resources[0].region,
+                                                 uniq_resources[0].wrapped.name)
+        bucket = conn.get_bucket(uniq_resources[0].wrapped.name)
+        all_keys = bucket.get_all_keys()
+        self.assertEqual(len(all_keys), 1)
 
         self.s3_handler.delete(uniq_resources[0])
 
@@ -108,8 +208,8 @@ class S3Tests(unittest2.TestCase):
         self.assertEqual(len(uniq_resources), 1)
 
     def test_search_unwanted_resources_no_dry_run(self):
-        self._given_bucket_mock('test-bucket', 'eu-west-1')
         self.s3_handler.dry_run = False
+        self._create_bucket('test-bucket8', 'eu-west-1', create_key=False)
 
         resources = self.s3_handler.fetch_unwanted_resources()
         uniq_resources = self._uniq(resources)
@@ -124,8 +224,30 @@ class S3Tests(unittest2.TestCase):
         # Prevent self.tearDown() from failing with "404 Not Found".
         self.our_buckets = []
 
+    def test_search_unwanted_resources_no_dry_run_with_key(self):
+        self.s3_handler.dry_run = False
+        self._create_bucket('test-bucket9', 'eu-west-1', create_key=True)
+
+        resources = self.s3_handler.fetch_unwanted_resources()
+        uniq_resources = self._uniq(resources)
+        self.assertEqual(len(uniq_resources), 1)
+        conn = self.s3_handler.connect_to_region(uniq_resources[0].region,
+                                                 uniq_resources[0].wrapped.name)
+        bucket = conn.get_bucket(uniq_resources[0].wrapped.name)
+        all_keys = bucket.get_all_keys()
+        self.assertEqual(len(all_keys), 1)
+
+        self.s3_handler.delete(uniq_resources[0])
+
+        resources = self.s3_handler.fetch_unwanted_resources()
+        uniq_resources = self._uniq(resources)
+        self.assertEqual(len(uniq_resources), 0)
+
+        # Prevent self.tearDown() from failing with "404 Not Found".
+        self.our_buckets = []
+
     def test_bucket_to_string_dry_run_no_sigv4(self):
-        self._given_bucket_mock('test-bucket', 'eu-west-1')
+        self._create_bucket('test-bucket10', 'eu-west-1')
         self.s3_handler.dry_run = True
 
         resources = self.s3_handler.fetch_unwanted_resources()
@@ -133,11 +255,11 @@ class S3Tests(unittest2.TestCase):
         self.assertEqual(len(uniq_resources), 1)
 
         bucket_str = self.s3_handler.to_string(uniq_resources[0])
-        self.assertIn('test-bucket', bucket_str)
+        self.assertIn('test-bucket10', bucket_str)
         self.assertIn('eu-west-1', bucket_str)
 
     def test_bucket_to_string_dry_run_sigv4(self):
-        self._given_bucket_mock('test-bucket', 'eu-central-1')
+        self._create_bucket('test-bucket11', 'eu-central-1')
         self.s3_handler.dry_run = True
 
         resources = self.s3_handler.fetch_unwanted_resources()
@@ -145,11 +267,11 @@ class S3Tests(unittest2.TestCase):
         self.assertEqual(len(uniq_resources), 1)
 
         bucket_str = self.s3_handler.to_string(uniq_resources[0])
-        self.assertIn('test-bucket', bucket_str)
+        self.assertIn('test-bucket11', bucket_str)
         self.assertIn('eu-central-1', bucket_str)
 
     def test_bucket_to_string_dry_run_sigv4_with_dot_name(self):
-        self._given_bucket_mock('test.bucket', 'eu-central-1')
+        self._create_bucket('test.bucket12', 'eu-central-1')
         self.s3_handler.dry_run = True
 
         resources = self.s3_handler.fetch_unwanted_resources()
@@ -157,10 +279,10 @@ class S3Tests(unittest2.TestCase):
         self.assertEqual(len(uniq_resources), 1)
 
         bucket_str = self.s3_handler.to_string(uniq_resources[0])
-        self.assertIn('test.bucket', bucket_str)
+        self.assertIn('test.bucket12', bucket_str)
         self.assertIn('eu-central-1', bucket_str)
 
-    def _given_bucket_mock(self, bucket_name, region_name, create_key=False):
+    def _create_bucket(self, bucket_name, region_name, create_key=False):
         conn = self.s3_handler.connect_to_region(region_name)
         if region_name == 'us-east-1':
             bucket = conn.create_bucket(self.prefix + bucket_name)
@@ -174,6 +296,9 @@ class S3Tests(unittest2.TestCase):
                             region=self.s3_handler.map_location(
                                 region_name))
         self.our_buckets.append(resource)
+        if create_key:
+            key = bucket.new_key(key_name='mytestkey')
+            key.set_contents_from_string('test')
         return bucket
 
     def _uniq(self, resources):

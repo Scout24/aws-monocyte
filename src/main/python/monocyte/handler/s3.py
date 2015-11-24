@@ -84,9 +84,10 @@ class Bucket(Handler):
                 # See https://github.com/boto/boto/issues/2741
                 self.logger.warn("get_location() crashed for %s, "
                                  "skipping", bucket.name)
-                return
+
             else:
                 region = "__error__"
+            return
         except ssl.CertificateError as exc:
             # Bucket is in a SIGV4 Region but connection is not SIGV4
             self.logger.warn('ssl.CertificateError for bucket %s with '
