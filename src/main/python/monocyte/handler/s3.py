@@ -84,11 +84,18 @@ class Bucket(Handler):
                 # See https://github.com/boto/boto/issues/2741
                 self.logger.warn("get_location() crashed for %s, "
                                  "skipping", bucket.name)
-                return
+            elif exc.status == 404:
+                # This can happen due to race conditions (bucket being deleted
+                # just now).
+                # Also, local testing showed the curious case of a deleted
+                # bucket that was still listed in four regions.
+                self.logger.warn(
+                    "Bucket '%s' was found by get_all_buckets(), but "
+                    "get_location() failed with 404 Not Found", bucket.name)
             else:
                 self.logger.exception("Failed to get location for bucket "
                                       "{0}".format(bucket.name))
-                return
+            return
         except ssl.CertificateError as exc:
             # Bucket is in a SIGV4 Region but connection is not SIGV4
             self.logger.warn('ssl.CertificateError for bucket %s with '
