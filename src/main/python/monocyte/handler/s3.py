@@ -93,7 +93,7 @@ class Bucket(Handler):
                     "Bucket '%s' was found by get_all_buckets(), but "
                     "get_location() failed with 404 Not Found", bucket.name)
             else:
-                self.logger.exception("Failed to get location for bucket "
+                self.logger.error("Failed to get location for bucket "
                                       "{0}".format(bucket.name))
             return
         except ssl.CertificateError as exc:

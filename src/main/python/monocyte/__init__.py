@@ -92,7 +92,7 @@ class Monocyte(object):
                 self.handle_service(specific_handler)
             except Exception as exc:
                 self.logger.error("Error while trying to fetch resources from "
-                               "%s" % specific_handler.name)
+                               "%s\n%s" % (specific_handler.name, str(exc)))
             else:
                 self.logger.info("Finished handling %s resources" % specific_handler.name)
 
@@ -118,7 +118,8 @@ class Monocyte(object):
                     self.logger.info(str(warn))
                     self.unwanted_resources.append(resource)
                 except Exception as exc:
-                    self.logger.exception("Error while trying to delete resource")
+                    self.logger.error("Error while trying to delete "
+                                      "resource\n%s" % str(exc))
                     self.problematic_resources.append((resource, specific_handler, exc))
                 else:
                     self.unwanted_resources.append(resource)
