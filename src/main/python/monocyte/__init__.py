@@ -88,8 +88,12 @@ class Monocyte(object):
 
         for specific_handler in specific_handlers:
             self.logger.info("Start handling %s resources" % specific_handler.name)
-            self.handle_service(specific_handler)
-            self.logger.info("Finished handling %s resources" % specific_handler.name)
+            try:
+                self.handle_service(specific_handler)
+            except Exception as exc:
+                self.logger.exception("Error while trying to fetch resources")
+            else:
+                self.logger.info("Finished handling %s resources" % specific_handler.name)
 
         self.start_plugins()
 
