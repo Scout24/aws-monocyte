@@ -1,8 +1,19 @@
-cloudwatchlogs:
-  region: eu-west-1
-  log_level: info
-  groupname: monocytelogs
+# In which regions resources are allowed to exist. All other regions are
+# assumed to be forbidden.
+# Setting it to 'eu' will allow 'eu-west-1', 'eu-central-1', and any future
+# regions that start with 'eu'.
+allowed_regions_prefixes:
+  - eu
+
+# With dry_run set to false, Monocyte will delete resources in
+# regions that are not explicitly permitted.
 dry_run: true
+
+# Which handlers to run. Each handler takes care of a different type
+# of AWS resource.
+# When Monocyte deletes resources (i.e. dry_run is false), the order of the
+# handlers is important. For example, ec2.Instance resources must be shut down
+# before the attached ec2.Volume resources can be deleted.
 handler_names:
   - cloudformation.Stack
   - ec2.Instance
@@ -11,15 +22,42 @@ handler_names:
   - rds2.Snapshot
   - dynamodb.Table
   - s3.Bucket
-allowed_regions_prefixes:
-  - eu
+
+# Which CloudWatch target to use for logging. Valid log levels are "debug",
+# "info", "warning", and "error".
+# Remove this section to disable logging to CloudWatch.
+cloudwatchlogs:
+  region: eu-west-1
+  log_level: info
+  groupname: monocytelogs
+
+# Regions that are totally ignored by Monocyte. This means Monocyte does not
+# even attempt to connect there. Currently, these are the Chinese and US
+# government parts of AWS, since most users do not have access to them.
 ignored_regions:
   - cn-north-1
   - us-gov-west-1
+
 ignored_resources:
   cloudformation:
     - cloudtrail-logging
+
+# The plugins that are run after all the resource-specific handlers have run.
+
+# 'module' and 'item' specify from where a plugin is loaded. This follows
+# standard python notation used for importing.
+# You can write your own plugin, put it into your own Python package and
+# configure Monocyte to use it, e.g. with
+#       - module: my_cool_plugin
+#         item: MyPluginClass
+# For this to succeed, your plugin needs to be importable like
+#       from my_cool_plugin import MyPluginClass
+# Check the existing plugins for code examples and API. Currently, all you
+# need is matching __init__() and run() methods on your class.
 plugins:
+  # A plugin that sends an e-mail with a human-readable report of resources
+  # that need some attention. It uses SES to send mails, so you may need to
+  # validate your sender/receipient addresses before it can work.
   - module: monocyte.plugins.status_mail_plugin
     item: StatusMailPlugin
     config:
@@ -29,6 +67,15 @@ plugins:
         - recipient1@test.invalid
         - recipient2@test.invalid
       subject: Monocyte Status Report
+
+  # This plugin sends a short message to an SQS queue. The message contains
+  # the accounts name, which allows you to keep track if Monocyte is running
+  # in all your accounts.
+  # Since plugins are executed in the order they are configured, this module
+  # should be the last in the list. If, for example, the status_mail_plugin
+  # fails to send an e-mail, it throws an exception and Monocyte aborts before
+  # running this plugin. By checking your central SQS queue you can detect
+  # this problem without having to check the logs in each AWS account.
   - module: monocyte.plugins.sqs_plugin
     item: AwsSQSPlugin
     config:

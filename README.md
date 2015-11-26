@@ -37,15 +37,13 @@ usage:
 
 options:
     --dry-run=bool valid values "True" or "False" [default: True]
-    --handler-names=HANDLER1,HANDLER2,...    aws handlers to use (order might be important)
-        [default: cloudformation.Stack, ec2.Instance, ec2.Volume, rds2.Instance, rds2.Snapshot, dynamodb.Table, s3.Bucket]
-    --allowed-regions-prefixes=PREFIX1,PREFIX2,...  allowed regions start with these prefixes [default: eu]
-    --ignored-regions=REGION1,REGION2,...  regions to be ignored [default: cn-north-1, us-gov-west-1]
-    --ignored-resources=RESOURCE1,RESOURCE2,... resources to be ignored
-        [default: cloudformation.cloudtrail-logging]
-    --cwl-groupname=GROUPNAME  log events to CloudWatchLogs Group
     --config-path=PATH path to config yaml files
 ```
+When --dry-run is explicitly set to "False", Monocyte will delete unwanted resources.
+
+Configuration is done via YAML files. If the --config-path specify is a directory with multiple \*.yaml files, they are merged in alphabetical order. The (documentation of yamlreader)[https://github.com/ImmobilienScout24/yamlreader] contains more details.
+
+An example configuration file with documentation can be found on [GitHub](https://github.com/ImmobilienScout24/aws-monocyte/blob/master/src/main/config/config.yaml-dist).
 
 ## Licensing 
 Monocyte is licensed under [Apache License, Version 2.0](https://github.com/ImmobilienScout24/aws-monocyte/blob/master/LICENSE.txt).
