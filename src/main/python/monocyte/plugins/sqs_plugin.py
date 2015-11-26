@@ -1,6 +1,6 @@
 from __future__ import print_function, absolute_import, division
 
-import boto
+import boto.sqs.message
 import json
 import logging
 
