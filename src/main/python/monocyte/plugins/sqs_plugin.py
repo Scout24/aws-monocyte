@@ -46,7 +46,7 @@ class AwsSQSPlugin(object):
 
     def send_message(self, body):
         self._connect_to_queue()
-        message = boto.sqs.message.Message()
+        message = boto.sqs.message.RawMessage()
         message.set_body(body)
         self.queue.write(message)
 
