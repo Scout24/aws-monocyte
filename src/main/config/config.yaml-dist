@@ -29,3 +29,9 @@ plugins:
         - recipient1@test.invalid
         - recipient2@test.invalid
       subject: Monocyte Status Report
+  - module: monocyte.plugins.sqs_plugin
+    item: AwsSQSPlugin
+    config:
+      queue_account: "1234567890"
+      queue_name: "monocyte"
+      queue_region: "eu-west-1"
