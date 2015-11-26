@@ -21,6 +21,9 @@ class AwsSQSPlugin(object):
     def _connect_to_queue(self):
         conn = boto.sqs.connect_to_region(self.queue_region)
         self.queue = conn.get_queue(self.queue_name, owner_acct_id=self.queue_account)
+        if self.queue is None:
+            raise "No queue '{0}' found in account '{1}', region '{2}'".format(
+                  self.queue_name, self.queue_account, self.queue_region)
 
     def _get_account_alias(self):
         iam = boto.connect_iam()
