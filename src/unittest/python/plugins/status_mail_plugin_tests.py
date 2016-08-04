@@ -152,7 +152,7 @@ class StatusMailPluginTest(TestCase):
         sent_count = int(
             send_quota['GetSendQuotaResponse']['GetSendQuotaResult'][
                 'SentLast24Hours'])
-        self.assertEqual(sent_count, 1)
+        self.assertEqual(sent_count, 2)
 
     @mock_ses
     @patch('monocyte.plugins.status_mail_plugin.StatusMailPlugin._get_account_alias')
