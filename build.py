@@ -38,7 +38,7 @@ def set_properties(project):
     project.depends_on("pils")
 
     project.build_depends_on("mock")
-    project.build_depends_on("unittest2")
+    project.build_depends_on("unittest2>=0.7")
     project.build_depends_on("moto")
 
     project.set_property("flake8_include_test_sources", True)
