@@ -62,7 +62,7 @@ class AwsSesPluginTest(TestCase):
         aws_ses_plugin = AwsSesPlugin(self.unwanted_resources,
                                       self.problematic_resources,
                                       self.dry_run, self.region,
-                                      None, self.subject,
+                                      "sender@test.invalid", self.subject,
                                       self.recipients, self.body)
         self.assertRaises(boto.exception.BotoServerError,
                           aws_ses_plugin.send_email)
