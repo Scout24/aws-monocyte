@@ -64,4 +64,8 @@ def main(arguments):
 
     monocyte = Monocyte(**config)
 
-    return monocyte.search_and_destroy_unwanted_resources()
+    try:
+        return monocyte.search_and_destroy_unwanted_resources()
+    except Exception:
+        monocyte.logger.exception("Error while running monocyte:")
+        return 1
