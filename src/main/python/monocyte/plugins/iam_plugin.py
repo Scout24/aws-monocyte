@@ -3,7 +3,7 @@ from __future__ import print_function, absolute_import, division
 import boto3
 
 
-class AwsSesPlugin(object):
+class AwsIamPlugin(object):
     def get_users(self):
         client = boto3.client('iam')
         user_response = client.list_users()
