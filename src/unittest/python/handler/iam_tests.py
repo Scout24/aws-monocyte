@@ -2,34 +2,46 @@ from __future__ import print_function, absolute_import, division
 
 import os
 import unittest2
-from monocyte.handler.iam import AwsIamPlugin
-from moto import mock_iam
+from monocyte.handler import Resource
+from mock import patch, Mock, MagicMock
+from monocyte.handler.iam import User
 
 os.environ['http_proxy'] = ''
 os.environ['https_proxy'] = ''
 os.environ['no_proxy'] = ''
 
 
-class AwsIamPluginTest(unittest2.TestCase):
+class AwsIamHandlerTest(unittest2.TestCase):
     def setUp(self):
-        self.dry_run = True
-        self.aws_iam_plugin = AwsIamPlugin(self.dry_run)
+        self.user_handler = User([])
+        self.boto3Mock = patch("monocyte.handler.iam.boto3").start()
+        self.iamMock = MagicMock()
+        self.iamMock.list_users.return_value = {'Users': []}
+        self.boto3Mock.resource.return_value = self.iamMock
 
-    @mock_iam
-    def test_check_users_user_found(self):
-        test_user = [{'UserName': 'test1', 'Path': '/',
-                      'UserId': 'QWERTZU', 'Arn': 'arn:aws:iam::123456789:user/test1'}]
-        self.assertFalse(self.aws_iam_plugin.check_users(test_user))
+    def test_fetch_region_should_return_empty_array(self):
+        self.assertEqual(self.user_handler.fetch_regions(), [])
 
-    @mock_iam
-    def test_check_users_users_found(self):
-        test_user = [{'UserName': 'test1', 'Path': '/',
-                      'UserId': 'QWERTZU', 'Arn': 'arn:aws:iam::123456789:user/test1'},
-                     {'UserName': 'test2', 'Path': '/',
-                      'UserId': 'ASDFGHJ', 'Arn': 'arn:aws:iam::123456789:user/test1'}]
-        self.assertFalse(self.aws_iam_plugin.check_users(test_user))
+    def test_get_users_users_returns_users(self):
+        self.iamMock.list_users.return_value = {'Users': ['Klaus']}
+        self.assertEqual(self.user_handler.get_users(), ['Klaus'])
 
-    @mock_iam
-    def test_check_users_no_user_found(self):
-        test_user = []
-        self.assertTrue(self.aws_iam_plugin.check_users(test_user))
+    def test_fetch_unwanted_resources_returns_None_if_users_are_empty(self):
+        self.assertEqual(self.user_handler.fetch_unwanted_resources(), None)
+
+    def test_fetch_unwanted_resources_returns_resource_wrapper_if_users_are_not_emtpy(self):
+        user = {
+            'UserName': 'test1',
+            'Arn': 'arn:aws:iam::123456789:user/test1',
+            'CreateDate': '2016-11-29'
+        }
+
+        self.iamMock.list_users.return_value = {'Users': [user]}
+        iam_user = 'iam User'
+        expected_unwanted_user = Resource(resource=user,
+                                          resource_type=iam_user,
+                                          resource_id=user['Arn'],
+                                          creation_date=user['CreateDate'])
+
+        unwanted_users = self.user_handler.fetch_unwanted_resources()
+        self.assertEqual(unwanted_users, [expected_unwanted_user])

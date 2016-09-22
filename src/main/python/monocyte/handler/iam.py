@@ -1,25 +1,25 @@
 from __future__ import print_function, absolute_import, division
 
-import boto3
-import logging
 from monocyte.handler import Resource, Handler
-
+import boto3
 
 class User(Handler):
 
+    def fetch_regions(self):
+        return []
+
     def get_users(self):
-        client = boto3.client('iam')
-        user_response = client.list_users()
+        iam = boto3.resource('iam')
+        user_response = iam.list_users()
         users = user_response['Users']
         return users
 
-    def check_users(self, users):
-        if not users:
-            return True
-        blacklist = {'arn:aws:iam::123456789:user/test1', 'arn:aws:iam::123456789:user/test3',
-                     'arn:aws:iam::123456789:user/test5'}
-        for user in users:
-            if user['Arn'] not in blacklist:
-                return False
-        return False
+    def fetch_unwanted_resources(self):
+        unwanted_resources = []
+        for user in self.get_users():
+            unwanted_resources.append(Resource(resource=user,
+                                        resource_type=self.resource_type,
+                                        resource_id=user['Arn'],
+                                        creation_date=user['CreateDate']))
+        return unwanted_resources if unwanted_resources else None
 
