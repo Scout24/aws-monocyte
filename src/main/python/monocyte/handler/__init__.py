@@ -27,6 +27,15 @@ class Resource(object):
         self.resource_id = resource_id
         self.creation_date = creation_date
 
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.__dict__ == other.__dict__
+
+        return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
 HANDLER_PREFIX = "monocyte.handler."
 
 
