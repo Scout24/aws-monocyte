@@ -2,13 +2,10 @@ from __future__ import print_function, absolute_import, division
 
 import boto3
 import logging
+from monocyte.handler import Resource, Handler
 
 
-class AwsIamPlugin(object):
-
-    def __init__(self, dry_run):
-        self.dry_run = dry_run
-        self.logger = logging.getLogger(__name__)
+class User(Handler):
 
     def get_users(self):
         client = boto3.client('iam')
