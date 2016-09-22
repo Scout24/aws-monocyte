@@ -25,3 +25,4 @@ class AwsIamPlugin(object):
             if user['Arn'] not in blacklist:
                 return False
         return False
+
