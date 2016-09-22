@@ -2,7 +2,7 @@ from __future__ import print_function, absolute_import, division
 
 import os
 import unittest2
-from monocyte.plugins.iam_plugin import AwsIamPlugin
+from monocyte.handler.iam import AwsIamPlugin
 from moto import mock_iam
 
 os.environ['http_proxy'] = ''
