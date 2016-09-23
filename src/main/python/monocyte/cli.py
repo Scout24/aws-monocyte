@@ -12,7 +12,7 @@ def read_config(path):
 def convert_arguments_to_config(arguments):
     dry_run = (arguments["--dry-run"] != "False")
     config_path = arguments["--config-path"]
-    whitelist = arguments['--whitelist']
+    whitelist = arguments.get('--whitelist', None)
 
     config = {
         "dry_run": dry_run,
