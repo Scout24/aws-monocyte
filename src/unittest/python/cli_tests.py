@@ -89,24 +89,27 @@ class CliTest(TestCase):
 
 class ArgumentsToConfigTest(TestCase):
     def setUp(self):
+        self.whitelist = 's3://bucket/whitelist.yaml'
         self.arguments = {
             # Only an explicit 'False' may trigger deletion of resources.
-            '--dry-run': "something",
-            '--config-path': "/foo/bar/batz",
+            '--dry-run': 'something',
+            '--config-path': '/foo/bar/batz',
+            '--whitelist': self.whitelist
         }
         self.expected_config = {
             'dry_run': True
         }
 
     def test_basic_translation(self):
-        config_path, config = cli.convert_arguments_to_config(self.arguments)
+        config_path, config, whitelist = cli.convert_arguments_to_config(self.arguments)
 
         self.assertEqual(config_path, "/foo/bar/batz")
+        self.assertEqual(whitelist, self.whitelist)
         self.assertEqual(config, self.expected_config)
 
     def test_dry_run_can_be_deactivated(self):
         self.arguments['--dry-run'] = 'False'
         self.expected_config['dry_run'] = False
 
-        _, config = cli.convert_arguments_to_config(self.arguments)
+        _, config, _ = cli.convert_arguments_to_config(self.arguments)
         self.assertEqual(config, self.expected_config)

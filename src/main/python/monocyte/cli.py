@@ -12,12 +12,13 @@ def read_config(path):
 def convert_arguments_to_config(arguments):
     dry_run = (arguments["--dry-run"] != "False")
     config_path = arguments["--config-path"]
+    whitelist = arguments['--whitelist']
 
     config = {
         "dry_run": dry_run,
     }
 
-    return config_path, config
+    return config_path, config, whitelist
 
 
 def apply_default_config(config):
@@ -57,7 +58,7 @@ def apply_default_config(config):
 
 
 def main(arguments):
-    path, cli_config = convert_arguments_to_config(arguments)
+    path, cli_config, whitelist = convert_arguments_to_config(arguments)
     file_config = read_config(path)
     config = yamlreader.data_merge(file_config, cli_config)
     apply_default_config(config)
