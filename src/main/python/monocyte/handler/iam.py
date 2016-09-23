@@ -11,15 +11,12 @@ class User(Handler):
     def get_users(self):
         iam = boto3.resource('iam')
         user_response = iam.list_users()
-        users = user_response['Users']
-        return users
+        return user_response['Users']
 
     def fetch_unwanted_resources(self):
-        unwanted_resources = []
         for user in self.get_users():
-            unwanted_resources.append(Resource(resource=user,
+            unwanted_resource = Resource(resource=user,
                                         resource_type=self.resource_type,
                                         resource_id=user['Arn'],
-                                        creation_date=user['CreateDate']))
-        return unwanted_resources if unwanted_resources else None
-
+                                        creation_date=user['CreateDate'])
+            yield unwanted_resource

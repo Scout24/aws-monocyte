@@ -12,6 +12,7 @@ os.environ['no_proxy'] = ''
 
 
 class AwsIamHandlerTest(unittest2.TestCase):
+
     def setUp(self):
         self.user_handler = User([])
         self.boto3Mock = patch("monocyte.handler.iam.boto3").start()
@@ -26,8 +27,9 @@ class AwsIamHandlerTest(unittest2.TestCase):
         self.iamMock.list_users.return_value = {'Users': ['Klaus']}
         self.assertEqual(self.user_handler.get_users(), ['Klaus'])
 
-    def test_fetch_unwanted_resources_returns_None_if_users_are_empty(self):
-        self.assertEqual(self.user_handler.fetch_unwanted_resources(), None)
+    def test_fetch_unwanted_resources_returns_empty_generator_if_users_are_empty(self):
+        unwanted_users = self.user_handler.fetch_unwanted_resources()
+        self.assertEqual(len(list(unwanted_users)), 0)
 
     def test_fetch_unwanted_resources_returns_resource_wrapper_if_users_are_not_emtpy(self):
         user = {
@@ -44,4 +46,5 @@ class AwsIamHandlerTest(unittest2.TestCase):
                                           creation_date=user['CreateDate'])
 
         unwanted_users = self.user_handler.fetch_unwanted_resources()
-        self.assertEqual(unwanted_users, [expected_unwanted_user])
+        self.assertEqual(list(unwanted_users)[0], expected_unwanted_user)
+        self.assertEqual(len(list(unwanted_users)), 0)
