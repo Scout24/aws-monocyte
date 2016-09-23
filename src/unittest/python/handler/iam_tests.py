@@ -48,3 +48,15 @@ class AwsIamHandlerTest(unittest2.TestCase):
         unwanted_users = self.user_handler.fetch_unwanted_resources()
         self.assertEqual(list(unwanted_users)[0], expected_unwanted_user)
         self.assertEqual(len(list(unwanted_users)), 0)
+
+    def test_unwanted_resources_does_omit_ignore_list(self):
+        user = {
+            'UserName': 'any user',
+            'Arn': 'any arn',
+            'CreateDate': '2016-11-29'
+        }
+
+        self.iamMock.list_users.return_value = {'Users': [user]}
+        self.user_handler.ignored_resources = ['any arn']
+        unwanted_users = self.user_handler.fetch_unwanted_resources()
+        self.assertEqual(len(list(unwanted_users)), 0)

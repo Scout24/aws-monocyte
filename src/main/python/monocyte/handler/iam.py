@@ -15,8 +15,13 @@ class User(Handler):
 
     def fetch_unwanted_resources(self):
         for user in self.get_users():
+            if user['Arn'] in self.ignored_resources:
+                self.logger.info('IGNORE user with {}'.format(user['Arn']))
+                continue
+
             unwanted_resource = Resource(resource=user,
-                                        resource_type=self.resource_type,
-                                        resource_id=user['Arn'],
-                                        creation_date=user['CreateDate'])
+                                         resource_type=self.resource_type,
+                                         resource_id=user['Arn'],
+                                         creation_date=user['CreateDate'])
             yield unwanted_resource
+
