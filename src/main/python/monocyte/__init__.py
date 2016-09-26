@@ -34,6 +34,7 @@ class Monocyte(object):
                  handler_names=None,
                  dry_run=True,
                  logger=None,
+                 whitelist=None,
                  **kwargs):
         self.allowed_regions_prefixes = allowed_regions_prefixes
         self.ignored_regions = ignored_regions
@@ -41,7 +42,7 @@ class Monocyte(object):
         self.cloudwatchlogs_config = cloudwatchlogs
         self.handler_names = handler_names
         self.dry_run = dry_run
-
+        self.whitelist = whitelist
         self.config = kwargs
 
         self.logger = logger or logging.getLogger(__name__)
@@ -135,7 +136,8 @@ class Monocyte(object):
             handler_class = handler_classes["monocyte.handler." + handler_name]
             handler = handler_class(self.is_region_handled,
                                     dry_run=self.dry_run,
-                                    ignored_resources=ignored_resources)
+                                    ignored_resources=ignored_resources,
+                                    whitelist=self.whitelist)
             handlers.append(handler)
 
         return handlers

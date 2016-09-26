@@ -41,13 +41,13 @@ HANDLER_PREFIX = "monocyte.handler."
 
 class Handler(object):
 
-    def __init__(self, region_filter, dry_run=True, logger=None, ignored_resources=[], whitelist={}):
+    def __init__(self, region_filter, dry_run=True, logger=None, ignored_resources=None, whitelist=None):
         warnings.filterwarnings('error')
         self.region_filter = region_filter
         self.regions = [region for region in self.fetch_regions() if self.region_filter(region.name)]
         self.dry_run = dry_run
-        self.ignored_resources = ignored_resources
-        self.whitelist = whitelist
+        self.ignored_resources = ignored_resources or []
+        self.whitelist = whitelist or {}
         self.logger = logger or logging.getLogger(__name__)
 
     @property
