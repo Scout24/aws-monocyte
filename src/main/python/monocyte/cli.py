@@ -60,10 +60,9 @@ def apply_default_config(config):
 
 
 def main(arguments):
-    path, cli_config, whitelist_uri = convert_arguments_to_config(arguments)
-    file_config = read_config(path)
-    whitelist = load_whitelist(whitelist_uri)
-    config = yamlreader.data_merge(file_config, cli_config)
+    config_path, cli_config, whitelist_uri = convert_arguments_to_config(arguments)
+    config = yamlreader.data_merge(read_config(config_path), cli_config)
+    config = yamlreader.data_merge(config, load_whitelist(whitelist_uri))
     apply_default_config(config)
 
     monocyte = Monocyte(**config)
