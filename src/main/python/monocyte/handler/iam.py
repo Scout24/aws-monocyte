@@ -14,8 +14,10 @@ class User(Handler):
         return user_response['Users']
 
     def fetch_unwanted_resources(self):
+
         for user in self.get_users():
-            if user['Arn'] in self.ignored_resources:
+
+            if(self.is_user_in_whitelist(user) or self.is_user_in_ignored_resources(user)):
                 self.logger.info('IGNORE user with {0}'.format(user['Arn']))
                 continue
 
@@ -25,3 +27,13 @@ class User(Handler):
                                          creation_date=user['CreateDate'])
             yield unwanted_resource
 
+    def is_user_in_whitelist(self, user):
+        whitelist_arns = self.get_whitelist().get('Arns', [])
+        for arn_with_reason in whitelist_arns:
+            if user['Arn'] == arn_with_reason['Arn']:
+                return True
+
+        return False
+
+    def is_user_in_ignored_resources(self, user):
+        return user['Arn'] in self.ignored_resources
