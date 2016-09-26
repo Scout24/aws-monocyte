@@ -2,7 +2,7 @@ from __future__ import print_function, absolute_import, division
 import yamlreader
 import boto3
 import logging
-import json
+import yaml
 from monocyte import Monocyte
 
 
@@ -82,5 +82,5 @@ def load_whitelist(whitelist_uri):
         s3 = boto3.resource('s3')
         whitelist_string = s3.Object(bucket_name, key).get()['Body'].read()
 
-        return json.loads(whitelist_string)
+        return yaml.load(whitelist_string)
     return {}

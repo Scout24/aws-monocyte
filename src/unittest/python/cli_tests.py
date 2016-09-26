@@ -125,7 +125,7 @@ class WhitelistLoadTest(TestCase):
         self.expected_whitelist = {'foo':'bar'}
         self.boto3_mock = patch('monocyte.cli.boto3').start()
         self.body_mock = MagicMock()
-        self.body_mock.read.return_value = '{"foo":"bar"}'
+        self.body_mock.read.return_value = "foo: bar"
         self.object_mock = MagicMock()
         self.object_mock.get.return_value = {'Body': self.body_mock}
 
