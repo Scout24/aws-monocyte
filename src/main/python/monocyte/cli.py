@@ -1,7 +1,8 @@
 from __future__ import print_function, absolute_import, division
 import yamlreader
+import boto3
 import logging
-
+import json
 from monocyte import Monocyte
 
 
@@ -9,16 +10,17 @@ def read_config(path):
     return {} if path is None else yamlreader.yaml_load(path)
 
 
+
 def convert_arguments_to_config(arguments):
     dry_run = (arguments["--dry-run"] != "False")
     config_path = arguments["--config-path"]
-    whitelist = arguments.get('--whitelist', None)
+    whitelist_path = arguments.get('--whitelist', None)
 
     config = {
         "dry_run": dry_run,
     }
 
-    return config_path, config, whitelist
+    return config_path, config, whitelist_path
 
 
 def apply_default_config(config):
@@ -58,8 +60,9 @@ def apply_default_config(config):
 
 
 def main(arguments):
-    path, cli_config, whitelist = convert_arguments_to_config(arguments)
+    path, cli_config, whitelist_uri = convert_arguments_to_config(arguments)
     file_config = read_config(path)
+    whitelist = load_whitelist(whitelist_uri)
     config = yamlreader.data_merge(file_config, cli_config)
     apply_default_config(config)
 
@@ -70,3 +73,14 @@ def main(arguments):
     except Exception:
         monocyte.logger.exception("Error while running monocyte:")
         return 1
+
+
+def load_whitelist(whitelist_uri):
+    if(whitelist_uri != None):
+        bucket_name = whitelist_uri.split('/', 4)[2]
+        key = whitelist_uri.split('/', 3)[3]
+        s3 = boto3.resource('s3')
+        whitelist_string = s3.Object(bucket_name, key).get()['Body'].read()
+
+        return json.loads(whitelist_string)
+    return {}

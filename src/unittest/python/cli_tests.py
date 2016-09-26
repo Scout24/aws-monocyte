@@ -1,6 +1,6 @@
 from __future__ import print_function, absolute_import, division
 from unittest import TestCase
-
+from mock import patch, MagicMock
 
 import monocyte.cli as cli
 
@@ -118,3 +118,29 @@ class ArgumentsToConfigTest(TestCase):
 
         _, config, _ = cli.convert_arguments_to_config(self.arguments)
         self.assertEqual(config, self.expected_config)
+
+
+class WhitelistLoadTest(TestCase):
+    def setUp(self):
+        self.expected_whitelist = {'foo':'bar'}
+        self.boto3_mock = patch('monocyte.cli.boto3').start()
+        self.body_mock = MagicMock()
+        self.body_mock.read.return_value = '{"foo":"bar"}'
+        self.object_mock = MagicMock()
+        self.object_mock.get.return_value = {'Body': self.body_mock}
+
+        def side_effect(bucket_name, key):
+            if(bucket_name == 'any_bucket' and key == 'any_key/test'):
+                return self.object_mock
+
+        self.s3_mock = MagicMock(side_effect=side_effect)
+        self.s3_mock.Object.side_effect = side_effect
+        self.boto3_mock.resource.return_value = self.s3_mock
+
+    def test_load_from_s3_bucket(self):
+        whitelist = cli.load_whitelist('s3://any_bucket/any_key/test')
+        self.assertEquals(self.expected_whitelist, whitelist)
+
+    def test_returns_empty_whitelist_if_uri_is_none(self):
+        whitelist = cli.load_whitelist(None)
+        self.assertEquals(whitelist, {})
