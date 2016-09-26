@@ -19,6 +19,7 @@ class AwsIamHandlerTest(unittest2.TestCase):
         self.iamMock = MagicMock()
         self.iamMock.list_users.return_value = {'Users': []}
         self.boto3Mock.resource.return_value = self.iamMock
+        self.user_arn = 'arn:aws:iam::123456789:user/test1'
         self.user = {
             'UserName': 'test1',
             'Arn': 'arn:aws:iam::123456789:user/test1',
@@ -57,41 +58,20 @@ class AwsIamHandlerTest(unittest2.TestCase):
         self.assertEqual(len(list(unwanted_users)), 0)
 
     def test_unwanted_resources_does_omit_ignore_list(self):
-        user = {
-            'UserName': 'any user',
-            'Arn': 'any arn',
-            'CreateDate': '2016-11-29'
-        }
-
-        self.iamMock.list_users.return_value = {'Users': [user]}
-        self.user_handler.ignored_resources = ['any arn']
+        self.user_handler.ignored_resources = [self.user_arn]
         unwanted_users = self.user_handler.fetch_unwanted_resources()
+
         self.assertEqual(len(list(unwanted_users)), 0)
 
     def test_whitelist_is_ignored_if_empty(self):
-        user = {
-            'UserName': 'test1',
-            'Arn': 'arn:aws:iam::123456789:user/test1',
-            'CreateDate': '2016-11-29'
-        }
-
-        self.iamMock.list_users.return_value = {'Users': [user]}
-
         unwanted_users = self.user_handler.fetch_unwanted_resources()
         self.assertEqual(len(list(unwanted_users)), 1)
 
     def test_unwanted_resources_does_omit_whitelist(self):
         def mock_whitelist():
-                return {'Arns': [{'Arn': 'any arn', 'Reason':'any reason'}]}
+                return {'Arns': [{'Arn': self.user_arn, 'Reason':'any reason'}]}
 
         self.user_handler.get_whitelist = mock_whitelist
-        user = {
-            'UserName': 'test1',
-            'Arn': 'any arn',
-            'CreateDate': '2016-11-29'
-        }
-
-        self.iamMock.list_users.return_value = {'Users': [user]}
 
         unwanted_users = self.user_handler.fetch_unwanted_resources()
         self.assertEqual(len(list(unwanted_users)), 0)
