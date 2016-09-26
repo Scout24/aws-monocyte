@@ -3,7 +3,7 @@ from __future__ import print_function, absolute_import, division
 import os
 import unittest2
 from monocyte.handler import Resource
-from mock import patch, Mock, MagicMock
+from mock import patch, MagicMock
 from monocyte.handler.iam import User
 
 os.environ['http_proxy'] = ''
