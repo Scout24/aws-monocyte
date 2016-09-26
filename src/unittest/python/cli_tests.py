@@ -100,23 +100,28 @@ class ArgumentsToConfigTest(TestCase):
             'dry_run': True
         }
 
-    def test_basic_translation(self):
-        config_path, config, whitelist = cli.convert_arguments_to_config(self.arguments)
+    def test_get_config_path(self):
+        config_path = cli.get_config_path_from_args({'--config-path':'/any/path'})
+        self.assertEquals(config_path, '/any/path')
 
-        self.assertEqual(config_path, "/foo/bar/batz")
-        self.assertEqual(whitelist, self.whitelist)
+    def test_get_whitelist_from_args(self):
+        whitelist = cli.get_whitelist_from_args({'--whitelist':'any_whitelist_resource'})
+        self.assertEquals(whitelist, 'any_whitelist_resource')
+
+
+    def test_basic_translation(self):
+        config = cli.convert_arguments_to_config(self.arguments)
         self.assertEqual(config, self.expected_config)
 
     def test_if_no_whitelist_is_configured_None_is_returned(self):
-        _, _, whitelist = cli.convert_arguments_to_config({'--dry-run':'foo','--config-path':'bar'})
-
-        self.assertEqual(whitelist, None)
+       whitelist = cli.get_whitelist_from_args({})
+       self.assertEqual(whitelist, None)
 
     def test_dry_run_can_be_deactivated(self):
         self.arguments['--dry-run'] = 'False'
         self.expected_config['dry_run'] = False
 
-        _, config, _ = cli.convert_arguments_to_config(self.arguments)
+        config = cli.convert_arguments_to_config(self.arguments)
         self.assertEqual(config, self.expected_config)
 
 

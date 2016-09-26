@@ -11,16 +11,19 @@ def read_config(path):
 
 
 
-def convert_arguments_to_config(arguments):
-    dry_run = (arguments["--dry-run"] != "False")
-    config_path = arguments["--config-path"]
-    whitelist_path = arguments.get('--whitelist', None)
+def get_config_path_from_args(args):
+   return args["--config-path"]
 
-    config = {
+def get_whitelist_from_args(args):
+    return args.get('--whitelist', None)
+
+def convert_arguments_to_config(args):
+    dry_run = (args["--dry-run"] != "False")
+    cli_config = {
         "dry_run": dry_run,
     }
 
-    return config_path, config, whitelist_path
+    return cli_config
 
 
 def apply_default_config(config):
@@ -60,7 +63,10 @@ def apply_default_config(config):
 
 
 def main(arguments):
-    config_path, cli_config, whitelist_uri = convert_arguments_to_config(arguments)
+    cli_config = convert_arguments_to_config(arguments)
+    config_path = get_config_path_from_args(arguments)
+    whitelist_uri = get_whitelist_from_args(arguments)
+
     config = yamlreader.data_merge(read_config(config_path), cli_config)
     config = yamlreader.data_merge(config, load_whitelist(whitelist_uri))
     apply_default_config(config)
