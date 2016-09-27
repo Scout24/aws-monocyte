@@ -20,6 +20,7 @@ import monocyte.handler.dynamodb
 import monocyte.handler.ec2
 import monocyte.handler.rds2
 import monocyte.handler.s3
+import monocyte.handler.iam
 from pils import get_item_from_module
 
 from cloudwatchlogs_logging import CloudWatchLogsHandler
@@ -145,6 +146,7 @@ class Monocyte(object):
     def get_all_handler_classes(self):
         handler_classes_list = [
             monocyte.handler.cloudformation.Stack,
+            monocyte.handler.iam.User,
             monocyte.handler.dynamodb.Table,
             monocyte.handler.ec2.Instance,
             monocyte.handler.ec2.Volume,
