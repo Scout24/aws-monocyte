@@ -3,8 +3,9 @@ from __future__ import print_function, absolute_import, division
 import os
 import unittest2
 from monocyte.handler import Resource
-from mock import patch, MagicMock
+from mock import patch, MagicMock, Mock
 from monocyte.handler.iam import User
+import boto
 
 os.environ['http_proxy'] = ''
 os.environ['https_proxy'] = ''
@@ -14,11 +15,13 @@ os.environ['no_proxy'] = ''
 class AwsIamHandlerTest(unittest2.TestCase):
 
     def setUp(self):
-        self.user_handler = User([])
+        def mock_region_filter(ignore):
+            return True
+        self.user_handler = User(mock_region_filter)
         self.boto3Mock = patch("monocyte.handler.iam.boto3").start()
         self.iamMock = MagicMock()
         self.iamMock.list_users.return_value = {'Users': []}
-        self.boto3Mock.resource.return_value = self.iamMock
+        self.boto3Mock.client.return_value = self.iamMock
         self.user_arn = 'arn:aws:iam::123456789:user/test1'
         self.user = {
             'UserName': 'test1',
@@ -32,9 +35,6 @@ class AwsIamHandlerTest(unittest2.TestCase):
             return {}
 
         self.user_handler.get_whitelist = mock_whitelist
-
-    def test_fetch_region_should_return_empty_array(self):
-        self.assertEqual(self.user_handler.fetch_regions(), [])
 
     def test_get_users_users_returns_users(self):
         self.iamMock.list_users.return_value = {'Users': ['Klaus']}
@@ -50,7 +50,8 @@ class AwsIamHandlerTest(unittest2.TestCase):
         expected_unwanted_user = Resource(resource=self.user,
                                           resource_type=iam_user,
                                           resource_id=self.user['Arn'],
-                                          creation_date=self.user['CreateDate'])
+                                          creation_date=self.user['CreateDate'],
+                                          region='eu-west-1')
 
         unwanted_users = self.user_handler.fetch_unwanted_resources()
 
