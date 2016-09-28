@@ -93,6 +93,7 @@ class Monocyte(object):
             try:
                 self.handle_service(specific_handler)
             except Exception as exc:
+                raise
                 self.logger.error("Error while trying to fetch resources from "
                                "%s\n%s" % (specific_handler.name, str(exc)))
             else:

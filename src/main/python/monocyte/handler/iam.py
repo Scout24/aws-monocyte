@@ -24,7 +24,7 @@ class User(Handler):
                                          resource_type=self.resource_type,
                                          resource_id=user['Arn'],
                                          creation_date=user['CreateDate'],
-                                         region='eu-west-1')
+                                         region='us-dummyvalue-1')
             yield unwanted_resource
 
     def is_user_in_whitelist(self, user):

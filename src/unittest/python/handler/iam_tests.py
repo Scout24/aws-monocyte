@@ -51,7 +51,7 @@ class AwsIamHandlerTest(unittest2.TestCase):
                                           resource_type=iam_user,
                                           resource_id=self.user['Arn'],
                                           creation_date=self.user['CreateDate'],
-                                          region='eu-west-1')
+                                          region='us-dummyvalue-1')
 
         unwanted_users = self.user_handler.fetch_unwanted_resources()
 

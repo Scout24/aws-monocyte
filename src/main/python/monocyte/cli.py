@@ -47,6 +47,7 @@ def apply_default_config(config):
 
     default_config = {
         "handler_names": [
+            "iam.User",
             "cloudformation.Stack",
             "ec2.Instance",
             "ec2.Volume",
