@@ -2,12 +2,12 @@ from __future__ import print_function, absolute_import, division
 
 from monocyte.handler import Resource, Handler
 import boto3
-from boto import ec2
+from boto import iam
 
 class User(Handler):
 
     def fetch_regions(self):
-        return ec2.regions()
+        return iam.regions()
 
     def get_users(self):
         iam = boto3.client('iam')
