@@ -20,6 +20,7 @@ import monocyte.handler.dynamodb
 import monocyte.handler.ec2
 import monocyte.handler.rds2
 import monocyte.handler.s3
+import monocyte.handler.iam
 from pils import get_item_from_module
 
 from cloudwatchlogs_logging import CloudWatchLogsHandler
@@ -34,6 +35,7 @@ class Monocyte(object):
                  handler_names=None,
                  dry_run=True,
                  logger=None,
+                 whitelist=None,
                  **kwargs):
         self.allowed_regions_prefixes = allowed_regions_prefixes
         self.ignored_regions = ignored_regions
@@ -41,7 +43,7 @@ class Monocyte(object):
         self.cloudwatchlogs_config = cloudwatchlogs
         self.handler_names = handler_names
         self.dry_run = dry_run
-
+        self.whitelist = whitelist
         self.config = kwargs
 
         self.logger = logger or logging.getLogger(__name__)
@@ -130,13 +132,13 @@ class Monocyte(object):
 
         for handler_name in self.handler_names:
             handler_prefix = handler_name.split('.')[0]
-            ignored_resources = (self.ignored_resources[handler_prefix]
-                                 if handler_prefix in self.ignored_resources.keys() else None)
+            ignored_resources = self.ignored_resources.get(handler_prefix, None)
 
             handler_class = handler_classes["monocyte.handler." + handler_name]
             handler = handler_class(self.is_region_handled,
                                     dry_run=self.dry_run,
-                                    ignored_resources=ignored_resources)
+                                    ignored_resources=ignored_resources,
+                                    whitelist=self.whitelist)
             handlers.append(handler)
 
         return handlers
@@ -144,6 +146,7 @@ class Monocyte(object):
     def get_all_handler_classes(self):
         handler_classes_list = [
             monocyte.handler.cloudformation.Stack,
+            monocyte.handler.iam.User,
             monocyte.handler.dynamodb.Table,
             monocyte.handler.ec2.Instance,
             monocyte.handler.ec2.Volume,

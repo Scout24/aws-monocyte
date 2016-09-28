@@ -16,6 +16,7 @@
 from __future__ import absolute_import
 import warnings
 import logging
+import boto3
 
 
 class Resource(object):
@@ -27,17 +28,27 @@ class Resource(object):
         self.resource_id = resource_id
         self.creation_date = creation_date
 
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.__dict__ == other.__dict__
+
+        return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+
 HANDLER_PREFIX = "monocyte.handler."
 
 
 class Handler(object):
-
-    def __init__(self, region_filter, dry_run=True, logger=None, ignored_resources=None):
+    def __init__(self, region_filter, dry_run=True, logger=None, ignored_resources=None, whitelist=None):
         warnings.filterwarnings('error')
         self.region_filter = region_filter
         self.regions = [region for region in self.fetch_regions() if self.region_filter(region.name)]
         self.dry_run = dry_run
         self.ignored_resources = ignored_resources or []
+        self.whitelist = whitelist or {}
         self.logger = logger or logging.getLogger(__name__)
 
     @property
@@ -49,6 +60,12 @@ class Handler(object):
     def name(self):
         full_name = "%s.%s" % (self.__class__.__module__, self.__class__.__name__)
         return full_name.replace(HANDLER_PREFIX, "")
+
+    def get_account_id(self):
+        return boto3.client('sts').get_caller_identity().get('Account')
+
+    def get_whitelist(self):
+        return self.whitelist.get(self.get_account_id(), {})
 
     def fetch_regions(self):
         raise NotImplementedError("Should have implemented this")

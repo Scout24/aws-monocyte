@@ -33,6 +33,7 @@ def set_properties(project):
 
     project.depends_on("docopt")
     project.depends_on("boto")
+    project.depends_on("boto3")
     project.depends_on("python-cloudwatchlogs-logging")
     project.depends_on("yamlreader")
     project.depends_on("pils")

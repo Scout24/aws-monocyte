@@ -21,6 +21,7 @@ usage:
 options:
     --dry-run=bool valid values "True" or "False"
     --config-path=PATH path to config yaml files
+    --whitelist=S3-URI uri to whitelist yaml file
 """
 
 import sys

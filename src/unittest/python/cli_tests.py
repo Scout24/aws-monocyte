@@ -1,6 +1,6 @@
 from __future__ import print_function, absolute_import, division
 from unittest import TestCase
-
+from mock import patch, MagicMock
 
 import monocyte.cli as cli
 
@@ -89,24 +89,63 @@ class CliTest(TestCase):
 
 class ArgumentsToConfigTest(TestCase):
     def setUp(self):
+        self.whitelist = 's3://bucket/whitelist.yaml'
         self.arguments = {
             # Only an explicit 'False' may trigger deletion of resources.
-            '--dry-run': "something",
-            '--config-path': "/foo/bar/batz",
+            '--dry-run': 'something',
+            '--config-path': '/foo/bar/batz',
+            '--whitelist': self.whitelist
         }
         self.expected_config = {
             'dry_run': True
         }
 
-    def test_basic_translation(self):
-        config_path, config = cli.convert_arguments_to_config(self.arguments)
+    def test_get_config_path(self):
+        config_path = cli.get_config_path_from_args({'--config-path':'/any/path'})
+        self.assertEquals(config_path, '/any/path')
 
-        self.assertEqual(config_path, "/foo/bar/batz")
+    def test_get_whitelist_from_args(self):
+        whitelist = cli.get_whitelist_from_args({'--whitelist':'any_whitelist_resource'})
+        self.assertEquals(whitelist, 'any_whitelist_resource')
+
+
+    def test_basic_translation(self):
+        config = cli.convert_arguments_to_config(self.arguments)
         self.assertEqual(config, self.expected_config)
+
+    def test_if_no_whitelist_is_configured_None_is_returned(self):
+       whitelist = cli.get_whitelist_from_args({})
+       self.assertEqual(whitelist, None)
 
     def test_dry_run_can_be_deactivated(self):
         self.arguments['--dry-run'] = 'False'
         self.expected_config['dry_run'] = False
 
-        _, config = cli.convert_arguments_to_config(self.arguments)
+        config = cli.convert_arguments_to_config(self.arguments)
         self.assertEqual(config, self.expected_config)
+
+
+class WhitelistLoadTest(TestCase):
+    def setUp(self):
+        self.expected_whitelist = {'foo':'bar'}
+        self.boto3_mock = patch('monocyte.cli.boto3').start()
+        self.body_mock = MagicMock()
+        self.body_mock.read.return_value = "foo: bar"
+        self.object_mock = MagicMock()
+        self.object_mock.get.return_value = {'Body': self.body_mock}
+
+        def side_effect(bucket_name, key):
+            if(bucket_name == 'any_bucket' and key == 'any_key/test'):
+                return self.object_mock
+
+        self.s3_mock = MagicMock(side_effect=side_effect)
+        self.s3_mock.Object.side_effect = side_effect
+        self.boto3_mock.resource.return_value = self.s3_mock
+
+    def test_load_from_s3_bucket(self):
+        whitelist = cli.load_whitelist('s3://any_bucket/any_key/test')
+        self.assertEquals(self.expected_whitelist, whitelist)
+
+    def test_returns_empty_whitelist_if_uri_is_none(self):
+        whitelist = cli.load_whitelist(None)
+        self.assertEquals(whitelist, {})
