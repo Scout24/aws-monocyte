@@ -37,3 +37,9 @@ class User(Handler):
 
     def is_user_in_ignored_resources(self, user):
         return user['Arn'] in self.ignored_resources
+
+    def to_string(self, resource):
+        return "iam user found {0}".format(resource.resource_id)
+
+    def delete(self, resource):
+        pass
