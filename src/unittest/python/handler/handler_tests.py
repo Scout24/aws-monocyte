@@ -17,12 +17,6 @@ class HandlerTest(unittest2.TestCase):
             return True
         self.handler = TestHandler(mock_region_filter)
 
-    def test_resource_type_is_correct(self):
-        self.assertEqual('handler_tests.TestHandler', self.handler.resource_type)
-
-    def test_name_is_correct(self):
-        self.assertEqual('handler_tests.TestHandler', self.handler.name)
-
     def test_get_account_id(self):
 
         account_id = self.handler.get_account_id()
