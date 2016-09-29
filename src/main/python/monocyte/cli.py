@@ -9,8 +9,6 @@ from monocyte import Monocyte
 def read_config(path):
     return {} if path is None else yamlreader.yaml_load(path)
 
-
-
 def get_config_path_from_args(args):
    return args["--config-path"]
 

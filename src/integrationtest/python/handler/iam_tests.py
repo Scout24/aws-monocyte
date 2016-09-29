@@ -2,11 +2,13 @@ import unittest2
 import boto3
 from monocyte.handler import iam as iam_handler
 from mock import MagicMock
+import logging
 
 
 class IamTests(unittest2.TestCase):
 
     def setUp(self):
+        logging.captureWarnings(True)
         self.iam_handler = iam_handler.User(MagicMock)
         self.iam_handler.dry_run = True
 
