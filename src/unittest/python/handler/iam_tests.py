@@ -45,7 +45,7 @@ class AwsIamHandlerTest(unittest2.TestCase):
         self.assertEqual(len(list(unwanted_users)), 0)
 
     def test_fetch_unwanted_resources_returns_resource_wrapper_if_users_are_not_emtpy(self):
-        iam_user = 'iam User'
+        iam_user = 'iam.User'
         expected_unwanted_user = Resource(resource=self.user,
                                           resource_type=iam_user,
                                           resource_id=self.user['Arn'],
@@ -53,7 +53,6 @@ class AwsIamHandlerTest(unittest2.TestCase):
                                           region='global')
 
         unwanted_users = self.user_handler.fetch_unwanted_resources()
-
         self.assertEqual(list(unwanted_users)[0], expected_unwanted_user)
         self.assertEqual(len(list(unwanted_users)), 0)
 
