@@ -37,7 +37,11 @@ class AwsIamHandlerTest(unittest2.TestCase):
 
     def test_get_users_returns_users(self):
         self.iamMock.list_users.return_value = {'Users': ['Klaus']}
-        self.assertEqual(self.user_handler.get_users(), ['Klaus'])
+
+        users = self.user_handler.get_users()
+
+        self.boto3Mock.client.assert_called_once_with('iam')
+        self.assertEqual(users, ['Klaus'])
 
     def test_fetch_unwanted_resources_returns_empty_generator_if_users_are_empty(self):
         self.iamMock.list_users.return_value = {'Users': []}
@@ -53,6 +57,7 @@ class AwsIamHandlerTest(unittest2.TestCase):
                                           region='global')
 
         unwanted_users = self.user_handler.fetch_unwanted_resources()
+
         self.assertEqual(list(unwanted_users)[0], expected_unwanted_user)
         self.assertEqual(len(list(unwanted_users)), 0)
 
@@ -69,9 +74,9 @@ class AwsIamHandlerTest(unittest2.TestCase):
     def test_unwanted_resources_does_omit_whitelist(self):
         def mock_whitelist():
                 return {'Arns': [{'Arn': self.user_arn, 'Reason':'any reason'}]}
-
         self.user_handler.get_whitelist = mock_whitelist
 
         unwanted_users = self.user_handler.fetch_unwanted_resources()
+
         self.assertEqual(len(list(unwanted_users)), 0)
 
