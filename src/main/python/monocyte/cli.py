@@ -15,7 +15,7 @@ def get_config_path_from_args(args):
    return args["--config-path"]
 
 def get_whitelist_from_args(args):
-    return args['--whitelist']
+    return args.get('--whitelist', None)
 
 def convert_arguments_to_config(args):
     dry_run = (args["--dry-run"] != "False")

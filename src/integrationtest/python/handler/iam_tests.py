@@ -1,9 +1,7 @@
 import unittest2
 import boto3
-from boto import iam
 from monocyte.handler import iam as iam_handler
 from mock import MagicMock
-from monocyte.handler import Resource
 
 
 class IamTests(unittest2.TestCase):
@@ -39,8 +37,10 @@ class IamTests(unittest2.TestCase):
         resources = self.iam_handler.fetch_unwanted_resources()
         username = 'integrationtest_user_1'
         self._create_user(username)
+
         unwanted_users = self._uniq(resources)
         self._delete_user(username)
+
         self.assertEqual(['integrationtest_user_1'], unwanted_users)
 
 

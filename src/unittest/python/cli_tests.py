@@ -36,7 +36,6 @@ class CliTest(TestCase):
 
         expected_config = {
             "handler_names": [
-                "iam.User",
                 "cloudformation.Stack",
                 "ec2.Instance",
                 "ec2.Volume",
