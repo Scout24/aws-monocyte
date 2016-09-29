@@ -16,7 +16,7 @@ class User(Handler):
 
     def fetch_unwanted_resources(self):
         for user in self.get_users():
-            if(self.is_user_in_whitelist(user) or self.is_user_in_ignored_resources(user)):
+            if self.is_user_in_whitelist(user) or self.is_user_in_ignored_resources(user):
                 self.logger.info('IGNORE user with {0}'.format(user['Arn']))
                 continue
 
@@ -24,7 +24,7 @@ class User(Handler):
                                          resource_type=self.resource_type,
                                          resource_id=user['Arn'],
                                          creation_date=user['CreateDate'],
-                                         region='us-dummyvalue-1')
+                                         region='global')
             yield unwanted_resource
 
     def is_user_in_whitelist(self, user):
@@ -40,6 +40,3 @@ class User(Handler):
 
     def to_string(self, resource):
         return "iam user found {0}".format(resource.resource_id)
-
-    def delete(self, resource):
-        pass

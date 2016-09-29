@@ -15,7 +15,7 @@ def get_config_path_from_args(args):
    return args["--config-path"]
 
 def get_whitelist_from_args(args):
-    return args.get('--whitelist', None)
+    return args['--whitelist']
 
 def convert_arguments_to_config(args):
     dry_run = (args["--dry-run"] != "False")
@@ -47,7 +47,6 @@ def apply_default_config(config):
 
     default_config = {
         "handler_names": [
-            "iam.User",
             "cloudformation.Stack",
             "ec2.Instance",
             "ec2.Volume",
@@ -82,11 +81,11 @@ def main(arguments):
 
 
 def load_whitelist(whitelist_uri):
-    if(whitelist_uri != None):
+    if whitelist_uri is not None:
         bucket_name = whitelist_uri.split('/', 4)[2]
         key = whitelist_uri.split('/', 3)[3]
         s3 = boto3.resource('s3')
         whitelist_string = s3.Object(bucket_name, key).get()['Body'].read()
 
-        return yaml.load(whitelist_string)
+        return yaml.safe_load(whitelist_string)
     return {}

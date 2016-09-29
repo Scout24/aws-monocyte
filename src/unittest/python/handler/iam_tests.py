@@ -3,9 +3,8 @@ from __future__ import print_function, absolute_import, division
 import os
 import unittest2
 from monocyte.handler import Resource
-from mock import patch, MagicMock, Mock
+from mock import patch, MagicMock
 from monocyte.handler.iam import User
-import boto
 
 os.environ['http_proxy'] = ''
 os.environ['https_proxy'] = ''
@@ -36,7 +35,7 @@ class AwsIamHandlerTest(unittest2.TestCase):
 
         self.user_handler.get_whitelist = mock_whitelist
 
-    def test_get_users_users_returns_users(self):
+    def test_get_users_returns_users(self):
         self.iamMock.list_users.return_value = {'Users': ['Klaus']}
         self.assertEqual(self.user_handler.get_users(), ['Klaus'])
 
@@ -51,7 +50,7 @@ class AwsIamHandlerTest(unittest2.TestCase):
                                           resource_type=iam_user,
                                           resource_id=self.user['Arn'],
                                           creation_date=self.user['CreateDate'],
-                                          region='us-dummyvalue-1')
+                                          region='global')
 
         unwanted_users = self.user_handler.fetch_unwanted_resources()
 
