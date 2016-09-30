@@ -40,3 +40,9 @@ class User(Handler):
 
     def to_string(self, resource):
         return "iam user found {0}".format(resource.resource_id)
+
+    def delete(self, resource):
+        if self.dry_run:
+            return
+        raise NotImplementedError("Should have implemented this")
+
