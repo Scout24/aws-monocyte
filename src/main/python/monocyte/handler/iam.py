@@ -46,3 +46,56 @@ class User(Handler):
             return
         raise NotImplementedError("Should have implemented this")
 
+
+class Policy(Handler):
+
+    def fetch_regions(self):
+        return iam.regions()
+
+    def get_policies(self):
+        client = boto3.client('iam')
+        return client.list_policies(Scope='Local')['Policies']
+
+    def get_policy_document(self, arn, version):
+        resource = boto3.resource('iam')
+        return resource.PolicyVersion(arn, version).document
+
+    def fetch_unwanted_resources(self):
+        for policy in self.get_policies():
+            if self.is_policy_in_whitelist(policy):
+                continue
+            if self.check_action(self.get_policy_document(policy['Arn'], policy['DefaultVersionId'])):
+                unwanted_resource = Resource(resource=policy,
+                                             resource_type=self.resource_type,
+                                             resource_id=policy['Arn'],
+                                             creation_date=policy['CreateDate'],
+                                             region='global')
+                yield unwanted_resource
+
+    def show_action(self, policy_document):
+        return policy_document['Statement'][0]['Action']
+
+    def check_action(self, policy_document):
+        for action in self.show_action(policy_document):
+            #print(action)
+            if action == "*.*":
+                return True
+        return False
+
+    def is_policy_in_whitelist(self, policy):
+        whitelist_arns = self.get_whitelist().get('Arns', [])
+        for arn_with_reason in whitelist_arns:
+            if policy['Arn'](policy) == arn_with_reason['Arn']:
+                return True
+        return False
+
+    def to_string(self, resource):
+        return "unallowed policy action found {0}".format(resource.resource_id)
+
+    def delete(self, resource):
+        if self.dry_run:
+            return
+        raise NotImplementedError("Should have implemented this")
+
+
+
