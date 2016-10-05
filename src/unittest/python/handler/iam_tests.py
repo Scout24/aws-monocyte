@@ -5,7 +5,7 @@ import unittest2
 from monocyte.handler import Resource
 from mock import patch, MagicMock
 from monocyte.handler.iam import User
-from monocyte.handler.iam import PolicyPolicy
+from monocyte.handler.iam import IamPolicy
 
 os.environ['http_proxy'] = ''
 os.environ['https_proxy'] = ''
@@ -91,7 +91,7 @@ class AwsIamPolicyHandlerTest(unittest2.TestCase):
         self.boto3Mock.client.return_value = self.iamClientMock
         self.iamResourceMock = MagicMock()
         self.boto3Mock.resource.return_value = self.iamResourceMock
-        self.policy_handler = PolicyPolicy(mock_region_filter)
+        self.policy_handler = IamPolicy(mock_region_filter)
         def mock_whitelist():
             return {}
 

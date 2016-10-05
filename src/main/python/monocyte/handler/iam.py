@@ -1,5 +1,8 @@
 from __future__ import print_function, absolute_import, division
 
+from builtins import len
+from builtins import range
+
 from monocyte.handler import Resource, Handler
 import boto3
 from boto import iam
@@ -46,6 +49,7 @@ class User(Handler):
             return
         raise NotImplementedError("Should have implemented this")
 
+
 class Policy(Handler):
     def fetch_regions(self):
         return iam.regions()
@@ -66,8 +70,6 @@ class Policy(Handler):
             if policy['Arn'](policy) == arn_with_reason['Arn']:
                 return True
         return False
-
-    def to_string(self, resource):
         return "unallowed policy action found {0}".format(resource.resource_id)
 
     def delete(self, resource):
@@ -76,8 +78,7 @@ class Policy(Handler):
         raise NotImplementedError("Should have implemented this")
 
 
-
-class PolicyPolicy(Policy):
+class IamPolicy(Policy):
 
     def get_policies(self):
         client = boto3.client('iam')
@@ -98,4 +99,22 @@ class PolicyPolicy(Policy):
                                              creation_date=policy['CreateDate'],
                                              region='global')
                 yield unwanted_resource
+
+
+class InlinePolicy(Policy):
+
+    def get_iam_policie_names(self):
+        client = boto3.client('iam')
+        roles_response = client.list_roles()
+        role_names = []
+        for i in range(0, len(roles_response['Roles'])):
+            role_names.append(roles_response['Roles'][i]['RoleName'])
+        return role_names
+
+    def get_inline_policy_document(self):
+        iam = boto3.resource('iam')
+        for role_name in self.get_iam_policie_names():
+            return iam.RolePolicy(role_name, 'name') #  <-- name = ?
+
+
 
