@@ -1,7 +1,5 @@
 from __future__ import print_function, absolute_import, division
 
-from builtins import len
-from builtins import range
 
 from monocyte.handler import Resource, Handler
 import boto3
