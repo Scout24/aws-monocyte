@@ -46,31 +46,9 @@ class User(Handler):
             return
         raise NotImplementedError("Should have implemented this")
 
-
 class Policy(Handler):
-
     def fetch_regions(self):
         return iam.regions()
-
-    def get_policies(self):
-        client = boto3.client('iam')
-        return client.list_policies(Scope='Local')['Policies']
-
-    def get_policy_document(self, arn, version):
-        resource = boto3.resource('iam')
-        return resource.PolicyVersion(arn, version).document
-
-    def fetch_unwanted_resources(self):
-        for policy in self.get_policies():
-            if self.is_policy_in_whitelist(policy):
-                continue
-            if self.check_action(self.get_policy_document(policy['Arn'], policy['DefaultVersionId'])):
-                unwanted_resource = Resource(resource=policy,
-                                             resource_type=self.resource_type,
-                                             resource_id=policy['Arn'],
-                                             creation_date=policy['CreateDate'],
-                                             region='global')
-                yield unwanted_resource
 
     def show_action(self, policy_document):
         return policy_document['Statement'][0]['Action']
@@ -98,4 +76,26 @@ class Policy(Handler):
         raise NotImplementedError("Should have implemented this")
 
 
+
+class PolicyPolicy(Policy):
+
+    def get_policies(self):
+        client = boto3.client('iam')
+        return client.list_policies(Scope='Local')['Policies']
+
+    def get_policy_document(self, arn, version):
+        resource = boto3.resource('iam')
+        return resource.PolicyVersion(arn, version).document
+
+    def fetch_unwanted_resources(self):
+        for policy in self.get_policies():
+            if self.is_policy_in_whitelist(policy):
+                continue
+            if self.check_action(self.get_policy_document(policy['Arn'], policy['DefaultVersionId'])):
+                unwanted_resource = Resource(resource=policy,
+                                             resource_type=self.resource_type,
+                                             resource_id=policy['Arn'],
+                                             creation_date=policy['CreateDate'],
+                                             region='global')
+                yield unwanted_resource
 

@@ -5,13 +5,14 @@ import unittest2
 from monocyte.handler import Resource
 from mock import patch, MagicMock
 from monocyte.handler.iam import User
+from monocyte.handler.iam import PolicyPolicy
 
 os.environ['http_proxy'] = ''
 os.environ['https_proxy'] = ''
 os.environ['no_proxy'] = ''
 
 
-class AwsIamHandlerTest(unittest2.TestCase):
+class AwsIamUserHandlerTest(unittest2.TestCase):
 
     def setUp(self):
         def mock_region_filter(ignore):
@@ -79,4 +80,33 @@ class AwsIamHandlerTest(unittest2.TestCase):
         unwanted_users = self.user_handler.fetch_unwanted_resources()
 
         self.assertEqual(len(list(unwanted_users)), 0)
+
+class AwsIamPolicyHandlerTest(unittest2.TestCase):
+
+    def setUp(self):
+        def mock_region_filter(ignore):
+            return True
+        self.boto3Mock = patch("monocyte.handler.iam.boto3").start()
+        self.iamClientMock = MagicMock()
+        self.boto3Mock.client.return_value = self.iamClientMock
+        self.iamResourceMock = MagicMock()
+        self.boto3Mock.resource.return_value = self.iamResourceMock
+        self.policy_handler = PolicyPolicy(mock_region_filter)
+        def mock_whitelist():
+            return {}
+
+        self.policy_handler.get_whitelist = mock_whitelist
+
+    def test_get_policies_return_policies(self):
+        self.iamClientMock.list_policies.return_value = {'IsTruncated': False, 'Policies': [{'Arn': 'arn:aws:iam:123456789'}]}
+        policies = self.policy_handler.get_policies()
+        self.boto3Mock.client.assert_called_once_with('iam')
+        self.assertEqual(policies, [{'Arn': 'arn:aws:iam:123456789'}])
+
+    def test_get_policy_document_return_document(self):
+        policyVersionMock = MagicMock(document = {'Statement':[{'Action': ['s3:test3', 's4:test4']}]})
+        self.iamResourceMock.PolicyVersion.return_value = policyVersionMock
+        document = self.policy_handler.get_policy_document('arn', 'version')
+        self.boto3Mock.resource.assert_called_once_with('iam')
+        self.assertEqual(document, {'Statement':[{'Action': ['s3:test3', 's4:test4']}]})
 
