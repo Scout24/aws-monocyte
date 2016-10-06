@@ -100,7 +100,7 @@ class IamPolicy(Policy):
 
 class InlinePolicy(Policy):
 
-    def get_iam_policie_names(self):
+    def get_iam_role_names(self):
         client = boto3.client('iam')
         roles_response = client.list_roles()
         role_names = []
@@ -108,10 +108,37 @@ class InlinePolicy(Policy):
             role_names.append(roles_response['Roles'][i]['RoleName'])
         return role_names
 
-    def get_inline_policy_document(self):
+    def get_inline_policy_all(self, role_name):
         iam = boto3.resource('iam')
-        for role_name in self.get_iam_policie_names():
-            return iam.RolePolicy(role_name, 'name') #  <-- name = ?
+        role_policies = []
+        role = iam.Role(role_name)
+        for role_policy in role.policies.all():
+            role_policies.append(role_policy)
+        return role_policies
+
+ #   def get_inline_policy_documents(self, role_policies):
+ #       policy_documents = []
+ #       for inline_policy in role_policies:
+ #           policy_documents.append(inline_policy.policy_document['Statement'][0])
+ #       return policy_documents
+
+
+    def check_inline_policy_action(self, policy_document):
+        if ('*:*' or '*:*') in policy_document:
+            return True
+
+    def fetch_unwanted_resources(self):
+        for role in self.get_iam_role_names():
+            policy_names = self.get_inline_policy_all(role)
+            for policy in policy_names:
+                if self.check_inline_policy_action(policy.policy_document['Statement'][0]):
+                    unwanted_resource = Resource(resource=role,
+                                             resource_type=self.resource_type,
+                                             resource_id=role['Arn'],
+                                             creation_date=role['CreateDate'],
+                                             region='global')
+                yield unwanted_resource
+
 
 
 
