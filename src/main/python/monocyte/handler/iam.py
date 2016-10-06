@@ -57,8 +57,7 @@ class Policy(Handler):
 
     def check_action(self, policy_document):
         for action in self.show_action(policy_document):
-            #print(action)
-            if action == "*.*":
+            if action == "*:*":
                 return True
         return False
 

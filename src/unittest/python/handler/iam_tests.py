@@ -104,9 +104,29 @@ class AwsIamPolicyHandlerTest(unittest2.TestCase):
         self.assertEqual(policies, [{'Arn': 'arn:aws:iam:123456789'}])
 
     def test_get_policy_document_return_document(self):
-        policyVersionMock = MagicMock(document = {'Statement':[{'Action': ['s3:test3', 's4:test4']}]})
+        policyVersionMock = MagicMock(document={'Statement':[{'Action': ['s3:test3', 's4:test4']}]})
         self.iamResourceMock.PolicyVersion.return_value = policyVersionMock
         document = self.policy_handler.get_policy_document('arn', 'version')
         self.boto3Mock.resource.assert_called_once_with('iam')
         self.assertEqual(document, {'Statement':[{'Action': ['s3:test3', 's4:test4']}]})
 
+    def test_fetch_unwanted_resources_returns_empty_if_no_policies(self):
+        policyVersionMock = MagicMock(document={})
+        self.iamResourceMock.PolicyVersion.return_value = policyVersionMock
+        self.iamClientMock.list_policies.return_value = {'IsTruncated': False, 'Policies': []}
+        self.assertEqual(len(list(self.policy_handler.fetch_unwanted_resources())), 0)
+
+    def test_fetch_unwanted_resources_returns_(self):
+        iam_policy = 'iam.IamPolicy'
+        policyVersionMock = MagicMock(document={'Statement':[{'Action': ['s3:test3', '*:*']}]})
+        self.iamResourceMock.PolicyVersion.return_value = policyVersionMock
+        policy = {'IsTruncated': False, 'Policies': [{'Arn': 'arn:aws:iam:123456789', 'DefaultVersionId': 'v1', 'CreateDate': '2012-06-12'}]}
+        expected_unwanted_user = Resource(resource=policy['Policies'][0],
+                                          resource_type=iam_policy,
+                                          resource_id=policy['Policies'][0]['Arn'],
+                                          creation_date=policy['Policies'][0]['CreateDate'],
+                                          region='global')
+
+        self.iamClientMock.list_policies.return_value = policy
+        unwanted_resource = self.policy_handler.fetch_unwanted_resources()
+        self.assertEqual(list(unwanted_resource)[0], expected_unwanted_user)
