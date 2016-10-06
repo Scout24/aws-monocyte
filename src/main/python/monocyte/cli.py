@@ -45,7 +45,13 @@ def apply_default_config(config):
 
     default_config = {
         "handler_names": [
-            "iam.Policy"],
+            "cloudformation.Stack",
+            "ec2.Instance",
+            "ec2.Volume",
+            "rds2.Instance",
+            "rds2.Snapshot",
+            "dynamodb.Table",
+            "s3.Bucket"],
         "ignored_resources": {"cloudformation": ["cloudtrail-logging"]},
         "ignored_regions": ["cn-north-1", "us-gov-west-1"],
         "allowed_regions_prefixes": ["eu"]
