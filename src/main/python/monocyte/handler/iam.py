@@ -63,7 +63,7 @@ class Policy(Handler):
                     actions.append(inner_action)
             else:
                 actions.append(action['Action'])
-        return policy_document['Statement'][0]['Action']
+        return actions
 
     def check_action_for_forbidden_string(self, policy_document):
         for action in self.gather_actions(policy_document):
@@ -71,7 +71,7 @@ class Policy(Handler):
                 return True
         return False
 
-    def check_inline_policy_resource_for_forbidden_string(self, actions, resources):
+    def check_policy_resource_for_forbidden_string(self, actions, resources):
         if isinstance(actions, string_types):
             actions = [actions]
         for action in actions:
@@ -79,7 +79,7 @@ class Policy(Handler):
                 return False
         if isinstance(actions, string_types):
             resources = [resources]
-        if '*' in resources:
+        if '*' ==  resources:
             return True
         return False
 
@@ -113,7 +113,7 @@ class IamPolicy(Policy):
             actions = self.gather_actions(policy_document)
             resources = policy_document['Statement'][0]['Resource']
             if self.check_action_for_forbidden_string(
-                    policy_document) or self.check_inline_policy_resource_for_forbidden_string(actions, resources):
+                    policy_document) or self.check_policy_resource_for_forbidden_string(actions, resources):
                 unwanted_resource = Resource(resource=policy,
                                              resource_type=self.resource_type,
                                              resource_id=policy['Arn'],
@@ -155,7 +155,7 @@ class InlinePolicy(Policy):
                 resources = policy.policy_document['Statement'][0]['Resource']
                 actions = policy.policy_document['Statement'][0]['Action']
                 if self.check_inline_policy_action_for_forbidden_string(
-                        actions) or self.check_inline_policy_resource_for_forbidden_string(actions, resources):
+                        actions) or self.check_policy_resource_for_forbidden_string(actions, resources):
                     unwanted_resource = Resource(resource=role,
                                                  resource_type=self.resource_type,
                                                  resource_id=role['Arn'],

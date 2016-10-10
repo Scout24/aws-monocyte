@@ -5,7 +5,7 @@ import unittest2
 from monocyte.handler import Resource
 from mock import patch, MagicMock
 from monocyte.handler.iam import User, InlinePolicy
-from monocyte.handler.iam import IamPolicy
+from monocyte.handler.iam import IamPolicy, Policy
 
 os.environ['http_proxy'] = ''
 os.environ['https_proxy'] = ''
@@ -82,6 +82,60 @@ class AwsIamUserHandlerTest(unittest2.TestCase):
 
         self.assertEqual(len(list(unwanted_users)), 0)
 
+class AwsPolicyHandler(unittest2.TestCase):
+    def setUp(self):
+        self.policy_handler = Policy(MagicMock)
+
+    def test_check_policy_resource_forbidden_returns_false_for_wildcard_in_resource_string(self):
+        actions = ['*:*', 's23:333']
+        resource = 'aws::s3:*'
+        self.assertFalse(self.policy_handler.check_policy_resource_for_forbidden_string(actions, resource))
+
+    def test_check_policy_resource_forbidden_returns_true_for_only_wildcard_in_resource_string(self):
+        actions = ['*:*', 's23:333']
+        resource = '*'
+        self.assertTrue(self.policy_handler.check_policy_resource_for_forbidden_string(actions, resource))
+
+    def test_check_policy_resource_forbidden_returns_false_for_only_wildcard_in_resource_string_but_elb(self):
+        actions = ['elsaticloadbalanacing:*', 's23:333']
+        resource = '*'
+        self.assertTrue(self.policy_handler.check_policy_resource_for_forbidden_string(actions, resource))
+
+    def test_check_policy_resource_forbidden_returns_false_for_no_wildcard_in_resource(self):
+        actions = ['*:*', 's23:333']
+        resource = 'aws::s3:dsdf'
+        self.assertFalse(self.policy_handler.check_policy_resource_for_forbidden_string(actions, resource))
+
+
+    def test_check_action_for_forbidden_string_returns_false_for_no_wildcard(self):
+        policy_document = {'Statement': [{'Action': ['logs:CreateLogGroup', 'logs:foobar'],
+                                          'Effect': 'Allow',
+                                          'Resource': 'arn:aws:logs::*'}]}
+        self.assertFalse(self.policy_handler.check_action_for_forbidden_string(policy_document))
+
+    def test_gather_actions_returns_list_for_action_list(self):
+        policy_document = {'Statement': [{'Action': ['logs:CreateLogGroup', 'logs:foobar'],
+                                            'Effect': 'Allow',
+                                            'Resource': 'arn:aws:logs::*'}]}
+        expected_list = ['logs:CreateLogGroup', 'logs:foobar']
+        self.assertEqual(expected_list, self.policy_handler.gather_actions(policy_document))
+
+    def test_gather_actions_returns_list_for_action_string(self):
+        policy_document = {'Statement': [{'Action': 'logs:CreateLogGroup',
+                                          'Effect': 'Allow',
+                                          'Resource': 'arn:aws:logs::*'}]}
+        expected_list = ['logs:CreateLogGroup']
+        self.assertEqual(expected_list, self.policy_handler.gather_actions(policy_document))
+
+    def test_gather_actions_returns_list_for_multiple_action_string(self):
+        policy_document = {'Statement': [{'Action': 'logs:CreateLogGroup',
+                                          'Effect': 'Allow',
+                                          'Resource': 'arn:aws:logs::*'},
+                                         {'Action': 'logs2:CreateLogGroup',
+                                          'Effect': 'Allow',
+                                          'Resource': 'arn:aws:logs::*'}]}
+        expected_list = ['logs:CreateLogGroup', 'logs2:CreateLogGroup']
+        self.assertEqual(expected_list, self.policy_handler.gather_actions(policy_document))
 
 class AwsIamPolicyHandlerTest(unittest2.TestCase):
     def setUp(self):
@@ -137,7 +191,6 @@ class AwsIamPolicyHandlerTest(unittest2.TestCase):
         self.assertEqual(list(unwanted_resource)[0], expected_unwanted_user)
 
     def test_fetch_unwanted_resources_returns_false_if_no_forbidden_action(self):
-        iam_policy = 'iam.IamPolicy'
         policyVersionMock = MagicMock(document={'Statement': [{'Action': ['s3:test3', 's*:s*'], 'Resource': 'aws:s2222'}]})
         self.iamResourceMock.PolicyVersion.return_value = policyVersionMock
         policy = {'IsTruncated': False,
@@ -146,6 +199,8 @@ class AwsIamPolicyHandlerTest(unittest2.TestCase):
         self.iamClientMock.list_policies.return_value = policy
         unwanted_resource = self.policy_handler.fetch_unwanted_resources()
         self.assertEqual(len(list(unwanted_resource)),0)
+
+
 
 class AwsInlinePolicyHandlerTest(unittest2.TestCase):
     def setUp(self):
