@@ -122,8 +122,16 @@ class AwsPolicyHandler(unittest2.TestCase):
 
 
     def test_check_action_for_forbidden_string_returns_false_for_no_wildcard(self):
-        actions = ['*:*', 's23:333']
+        actions = ['is3:s3', 's23:333']
         self.assertFalse(self.policy_handler.check_policy_action_for_forbidden_string(actions))
+
+    def test_check_action_for_forbidden_string_returns_true_for_one_wildcard(self):
+        actions = ['*', 's23:333']
+        self.assertTrue(self.policy_handler.check_policy_action_for_forbidden_string(actions))
+
+    def test_check_action_for_forbidden_string_returns_true_for_two_wildcard(self):
+        actions = ['*:*', 's23:333']
+        self.assertTrue(self.policy_handler.check_policy_action_for_forbidden_string(actions))
 
     def test_gather_actions_returns_list_for_action_list(self):
         policy_document = {'Statement': [{'Action': ['logs:CreateLogGroup', 'logs:foobar'],
