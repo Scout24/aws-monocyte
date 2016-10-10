@@ -65,10 +65,11 @@ class Policy(Handler):
                 actions.append(action['Action'])
         return actions
 
-    def check_action_for_forbidden_string(self, policy_document):
-        for action in self.gather_actions(policy_document):
-            if action == "*:*":
-                return True
+    def check_policy_action_for_forbidden_string(self, actions):
+        if isinstance(actions, string_types):
+            actions = [actions]
+        if '*:*' in actions or '*' in actions:
+            return True
         return False
 
     def check_policy_resource_for_forbidden_string(self, actions, resources):
@@ -95,6 +96,12 @@ class Policy(Handler):
             return
         raise NotImplementedError("Should have implemented this")
 
+    def get_policy_resource(self, policy_document):
+        statement = policy_document['Statement']
+        if not isinstance(statement, list):
+            resources = statement['Resource']
+            return resources
+        return statement[0]['Resource']
 
 class IamPolicy(Policy):
     def get_policies(self):
@@ -111,9 +118,8 @@ class IamPolicy(Policy):
                 continue
             policy_document = self.get_policy_document(policy['Arn'], policy['DefaultVersionId'])
             actions = self.gather_actions(policy_document)
-            resources = policy_document['Statement'][0]['Resource']
-            if self.check_action_for_forbidden_string(
-                    policy_document) or self.check_policy_resource_for_forbidden_string(actions, resources):
+            resources = self.get_policy_resource(policy_document)
+            if self.check_policy_action_for_forbidden_string(actions) or self.check_policy_resource_for_forbidden_string(actions, resources):
                 unwanted_resource = Resource(resource=policy,
                                              resource_type=self.resource_type,
                                              resource_id=policy['Arn'],
@@ -139,12 +145,6 @@ class InlinePolicy(Policy):
             role_policies.append(role_policy)
         return role_policies
 
-    def check_inline_policy_action_for_forbidden_string(self, actions):
-        if isinstance(actions, string_types):
-            actions = [actions]
-        if '*:*' in actions or '*' in actions:
-            return True
-        return False
 
     def fetch_unwanted_resources(self):
         for role in self.get_all_iam_roles_in_account():
@@ -152,9 +152,9 @@ class InlinePolicy(Policy):
                 continue
             policy_names = self.get_all_inline_policies_for_role(role['RoleName'])
             for policy in policy_names:
-                resources = policy.policy_document['Statement'][0]['Resource']
-                actions = policy.policy_document['Statement'][0]['Action']
-                if self.check_inline_policy_action_for_forbidden_string(
+                resources = self.get_policy_resource(policy.policy_document)
+                actions = self.gather_actions(policy.policy_document)
+                if self.check_policy_action_for_forbidden_string(
                         actions) or self.check_policy_resource_for_forbidden_string(actions, resources):
                     unwanted_resource = Resource(resource=role,
                                                  resource_type=self.resource_type,

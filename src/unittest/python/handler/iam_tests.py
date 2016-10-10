@@ -101,6 +101,20 @@ class AwsPolicyHandler(unittest2.TestCase):
         resource = '*'
         self.assertTrue(self.policy_handler.check_policy_resource_for_forbidden_string(actions, resource))
 
+    def test_get_policy_resource_get_statement_no_list(self):
+        policy_document = {'Statement': {'Action': 'logs:CreateLogGroup',
+                                          'Effect': 'Allow',
+                                          'Resource': 'arn:aws:logs::*'}}
+        expected_resource = 'arn:aws:logs::*'
+        self.assertEqual(expected_resource, self.policy_handler.get_policy_resource(policy_document))
+
+    def test_get_policy_resource_get_statement_list(self):
+        policy_document = {'Statement': [{'Action': 'logs:CreateLogGroup',
+                                         'Effect': 'Allow',
+                                         'Resource': 'arn:aws:logs::*'}]}
+        expected_resource = 'arn:aws:logs::*'
+        self.assertEqual(expected_resource, self.policy_handler.get_policy_resource(policy_document))
+
     def test_check_policy_resource_forbidden_returns_false_for_no_wildcard_in_resource(self):
         actions = ['*:*', 's23:333']
         resource = 'aws::s3:dsdf'
@@ -108,10 +122,8 @@ class AwsPolicyHandler(unittest2.TestCase):
 
 
     def test_check_action_for_forbidden_string_returns_false_for_no_wildcard(self):
-        policy_document = {'Statement': [{'Action': ['logs:CreateLogGroup', 'logs:foobar'],
-                                          'Effect': 'Allow',
-                                          'Resource': 'arn:aws:logs::*'}]}
-        self.assertFalse(self.policy_handler.check_action_for_forbidden_string(policy_document))
+        actions = ['*:*', 's23:333']
+        self.assertFalse(self.policy_handler.check_policy_action_for_forbidden_string(actions))
 
     def test_gather_actions_returns_list_for_action_list(self):
         policy_document = {'Statement': [{'Action': ['logs:CreateLogGroup', 'logs:foobar'],
@@ -290,22 +302,22 @@ class AwsInlinePolicyHandlerTest(unittest2.TestCase):
 
     def test_check_inline_policy_action_for_forbidden_string_returns_false_if_string_not_found(self):
         policy_document = "S3:foo"
-        return_value = self.policy_handler.check_inline_policy_action_for_forbidden_string(policy_document)
+        return_value = self.policy_handler.check_policy_action_for_forbidden_string(policy_document)
         self.assertFalse(return_value)
 
     def test_check_inline_policy_action_for_forbidden_string_returns_false_if_policiy_list_not_found(self):
         policy_document = ['S3:foo', 's3:bar']
-        return_value = self.policy_handler.check_inline_policy_action_for_forbidden_string(policy_document)
+        return_value = self.policy_handler.check_policy_action_for_forbidden_string(policy_document)
         self.assertFalse(return_value)
 
     def test_check_inline_policy_action_for_forbidden_string_returns_true_if_string_found(self):
         policy_document = "*:*"
-        return_value = self.policy_handler.check_inline_policy_action_for_forbidden_string(policy_document)
+        return_value = self.policy_handler.check_policy_action_for_forbidden_string(policy_document)
         self.assertTrue(return_value)
 
     def test_check_inline_policy_action_for_forbidden_string_returns_true_if_policy_list_found(self):
         policy_document = ['*:*', 's3:3']
-        return_value = self.policy_handler.check_inline_policy_action_for_forbidden_string(policy_document)
+        return_value = self.policy_handler.check_policy_action_for_forbidden_string(policy_document)
         self.assertTrue(return_value)
 
     def test_fetch_unwanted_resources_returns_empty_if_no_role_found(self):
