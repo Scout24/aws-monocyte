@@ -129,7 +129,7 @@ class IamPolicy(Policy):
                 yield unwanted_resource
 
     def to_string(self, resource):
-        return "Policy found {0}".format(resource.resource_id)
+        return "Not allowed policy found {0}".format(resource.resource_id)
 
 
 class InlinePolicy(Policy):
@@ -167,9 +167,9 @@ class InlinePolicy(Policy):
     def is_arn_in_whitelist(self, role):
         whitelist_arns = self.get_whitelist().get('Arns', [])
         for arn_with_reason in whitelist_arns:
-            if role.arn == arn_with_reason['Arn']:
+            if role['Arn'] == arn_with_reason['Arn']:
                 return True
         return False
 
     def to_string(self, resource):
-        return "User with not allowed inline policy found {0}".format(resource.resource_id)
+        return "Role with not allowed inline policy found {0}".format(resource.resource_id)
