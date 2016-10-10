@@ -78,10 +78,11 @@ class Policy(Handler):
         for action in actions:
             if action.startswith('elasticloadbalancing:'):
                 return False
-        if isinstance(actions, string_types):
+        if isinstance(resources, string_types):
             resources = [resources]
-        if '*' ==  resources:
-            return True
+        for resource in resources:
+            if '*' == resource:
+                return True
         return False
 
     def is_arn_in_whitelist(self, policy):

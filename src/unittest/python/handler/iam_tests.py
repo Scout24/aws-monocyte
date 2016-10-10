@@ -101,6 +101,11 @@ class AwsPolicyHandler(unittest2.TestCase):
         resource = '*'
         self.assertTrue(self.policy_handler.check_policy_resource_for_forbidden_string(actions, resource))
 
+    def test_check_policy_resource_forbidden_returns_false_for_only_wildcard_in_resource_string_but_elb(self):
+        actions = ['s3:*', 's23:333']
+        resource = ['*']
+        self.assertTrue(self.policy_handler.check_policy_resource_for_forbidden_string(actions, resource))
+
     def test_get_policy_resource_get_statement_no_list(self):
         policy_document = {'Statement': {'Action': 'logs:CreateLogGroup',
                                           'Effect': 'Allow',
