@@ -128,7 +128,9 @@ class InlinePolicy(Policy):
                 return False
         if isinstance(actions, string_types):
             resources = [resources]
-        return '*' in resources
+        if '*' in resources:
+            return True
+        return False
 
     def fetch_unwanted_resources(self):
         for role in self.get_all_iam_roles_in_account():
