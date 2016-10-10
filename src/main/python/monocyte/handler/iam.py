@@ -135,8 +135,6 @@ class InlinePolicy(Policy):
                 continue
             policy_names = self.get_inline_policy_all(role['RoleName'])
             for policy in policy_names:
-                #print(policy.policy_document['Statement'][0])
-
                 resources = policy.policy_document['Statement'][0]['Resource']
                 actions = policy.policy_document['Statement'][0]['Action']
                 if self.check_inline_policy_action(actions) or self.check_inline_policy_resource(actions, resources):
@@ -155,4 +153,4 @@ class InlinePolicy(Policy):
         return False
 
     def to_string(self, resource):
-        return " ----------> User with not allowed inline policy found {0}".format(resource.resource_id)
+        return "User with not allowed inline policy found {0}".format(resource.resource_id)

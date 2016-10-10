@@ -155,45 +155,45 @@ class AwsInlinePolicyHandlerTest(unittest2.TestCase):
         self.policy_handler.get_whitelist = mock_whitelist
 
     def test_get_iam_role_name_return_role_name(self):
-        self.iamClientMock.list_roles.return_value = {'Roles': [{u'Arn': 'arn:aws:iam::123456789101:role/foo-bar-file',
-                                                                 u'AssumeRolePolicyDocument': {
-                                                                     u'Statement': [{u'Action': u'sts:AssumeRole',
-                                                                                     u'Effect': u'Allow',
-                                                                                     u'Principal': {
-                                                                                         u'AWS': u'arn:aws:iam::9876543210:root'},
-                                                                                     u'Sid': u''}],
-                                                                     u'Version': u'2012-10-17'},
-                                                                 u'CreateDate': '01.01.1989',
-                                                                 u'Path': '/',
-                                                                 u'RoleId': 'FOOAJ4DHXC5V55TMCIBAR',
-                                                                 u'RoleName': 'foo-bar-file'}]}
+        self.iamClientMock.list_roles.return_value = {'Roles': [{'Arn': 'arn:aws:iam::123456789101:role/foo-bar-file',
+                                                                 'AssumeRolePolicyDocument': {
+                                                                     'Statement': [{'Action': 'sts:AssumeRole',
+                                                                                     'Effect': 'Allow',
+                                                                                     'Principal': {
+                                                                                         'AWS': 'arn:aws:iam::9876543210:root'},
+                                                                                     'Sid': ''}],
+                                                                     'Version': '2012-10-17'},
+                                                                 'CreateDate': '01.01.1989',
+                                                                 'Path': '/',
+                                                                 'RoleId': 'FOOAJ4DHXC5V55TMCIBAR',
+                                                                 'RoleName': 'foo-bar-file'}]}
         role = self.policy_handler.get_iam_roles()
         self.assertEqual(role[0]['RoleName'], 'foo-bar-file')
 
     def test_get_iam_role_names_return_role_names(self):
-        self.iamClientMock.list_roles.return_value = {'Roles': [{u'Arn': 'arn:aws:iam::123456789101:role/foo-bar-file',
-                                                                 u'AssumeRolePolicyDocument': {
-                                                                     u'Statement': [{u'Action': u'sts:AssumeRole',
-                                                                                     u'Effect': u'Allow',
-                                                                                     u'Principal': {
-                                                                                         u'AWS': u'arn:aws:iam::9876543210:root'},
-                                                                                     u'Sid': u''}],
-                                                                     u'Version': u'2012-10-17'},
-                                                                 u'CreateDate': '01.01.1989',
-                                                                 u'Path': '/',
-                                                                 u'RoleId': 'FOOAJ4DHXC5V55TMCIBAR',
-                                                                 u'RoleName': 'foo-bar-file'},
-                                                                {u'Arn': 'arn:aws:iam::66666666666:role/foo-foo-foo',
-                                                                 u'AssumeRolePolicyDocument': {
-                                                                     u'Statement': [{u'Action': u'sts:AssumeRole',
-                                                                                     u'Effect': u'Allow',
-                                                                                     u'Principal': {
-                                                                                         u'Service': u'lambda.amazonaws.com'}}],
-                                                                     u'Version': u'2012-10-17'},
-                                                                 u'CreateDate': '01.01.1970',
-                                                                 u'Path': '/',
-                                                                 u'RoleId': 'HSKASODO2S80SDDAD',
-                                                                 u'RoleName': 'foo-foo-key'}]}
+        self.iamClientMock.list_roles.return_value = {'Roles': [{'Arn': 'arn:aws:iam::123456789101:role/foo-bar-file',
+                                                                 'AssumeRolePolicyDocument': {
+                                                                     'Statement': [{'Action': 'sts:AssumeRole',
+                                                                                     'Effect': 'Allow',
+                                                                                     'Principal': {
+                                                                                         'AWS': 'arn:aws:iam::9876543210:root'},
+                                                                                     'Sid': ''}],
+                                                                     'Version': '2012-10-17'},
+                                                                 'CreateDate': '01.01.1989',
+                                                                 'Path': '/',
+                                                                 'RoleId': 'FOOAJ4DHXC5V55TMCIBAR',
+                                                                 'RoleName': 'foo-bar-file'},
+                                                                {'Arn': 'arn:aws:iam::66666666666:role/foo-foo-foo',
+                                                                 'AssumeRolePolicyDocument': {
+                                                                     'Statement': [{'Action': 'sts:AssumeRole',
+                                                                                     'Effect': 'Allow',
+                                                                                     'Principal': {
+                                                                                         'Service': 'lambda.amazonaws.com'}}],
+                                                                     'Version': '2012-10-17'},
+                                                                 'CreateDate': '01.01.1970',
+                                                                 'Path': '/',
+                                                                 'RoleId': 'HSKASODO2S80SDDAD',
+                                                                 'RoleName': 'foo-foo-key'}]}
         role_names = self.policy_handler.get_iam_roles()
         roles = []
         for role in role_names:
@@ -218,7 +218,6 @@ class AwsInlinePolicyHandlerTest(unittest2.TestCase):
     def test_get_inline_policy_all_return_role_policies(self):
         role_name = 'foo-bar-file'
         role_mock = MagicMock()
-        role_policy_object = MagicMock()
         self.iamResourceMock.Role.return_value = role_mock
         role_mock.policies.all.return_value = [42]
 
@@ -239,32 +238,94 @@ class AwsInlinePolicyHandlerTest(unittest2.TestCase):
 
         self.assertEqual(len(list(self.policy_handler.fetch_unwanted_resources())), 0)
 
-    def test_fetch_unwanted_resources_returns_empty_if_no_role_found(self):
-        inline_policy = 'iam.Inlineolicy'
+    def test_fetch_unwanted_resources_return_false_if_elb_in_action(self):
         role_mock = MagicMock(arn='arn:aws:iam::123456789101:role/foo-bar-file',create_date='01.01.1989', role_name='foo-bar-file')
-        sample_role = {u'Arn': 'arn:aws:iam::123456789101:role/foo-bar-file',
-                                                                 u'AssumeRolePolicyDocument': {
-                                                                     u'Statement': [{u'Action': u'sts:AssumeRole',
-                                                                                     u'Effect': u'Allow',
-                                                                                     u'Principal': {
-                                                                                         u'AWS': u'arn:aws:iam::9876543210:root'},
-                                                                                     u'Sid': u''}],
-                                                                     u'Version': u'2012-10-17'},
-                                                                 u'CreateDate': '01.01.1989',
-                                                                 u'Path': '/',
-                                                                 u'RoleId': 'FOOAJ4DHXC5V55TMCIBAR',
-                                                                 u'RoleName': 'foo-bar-file'}
         list_role_mock = {'Roles': [role_mock]}
         self.iamClientMock.list_roles.return_value = list_role_mock
 
-        policy_mock = MagicMock(policy_document={'Statement': [{'Action': ['s3:test3', '*:*']}]})
+        policy_mock = MagicMock(policy_document={'Statement': [{'Action': ['elasticloadbalancing:test3', 's3:test1'], 'Resource': ['arn:aws:s3:::test3']}]})
         role_mock.policies.all.return_value = [policy_mock]
 
         self.iamResourceMock.Role.return_value = role_mock
-        expected_unwanted_role = Resource(resource=role_mock,
-                                          resource_type=inline_policy,
-                                          resource_id=role_mock.arn,
-                                          creation_date=role_mock.create_date,
-                                          region='global')
+
         unwanted_resource = self.policy_handler.fetch_unwanted_resources()
-        self.assertEqual(len(list(unwanted_resource)), 1)
+        self.assertEqual(len(list(unwanted_resource)), 0)
+
+    def test_fetch_unwanted_resources_return_false_if_string_not_found(self):
+        role_mock = MagicMock(arn='arn:aws:iam::123456789101:role/foo-bar-file',create_date='01.01.1989', role_name='foo-bar-file')
+        list_role_mock = {'Roles': [role_mock]}
+        self.iamClientMock.list_roles.return_value = list_role_mock
+
+        policy_mock = MagicMock(policy_document={'Statement': [{'Action': ['s4:test3', 's*:s*'], 'Resource': ['arn:aws:s3:::test3']}]})
+        role_mock.policies.all.return_value = [policy_mock]
+
+        self.iamResourceMock.Role.return_value = role_mock
+
+        unwanted_resource = self.policy_handler.fetch_unwanted_resources()
+        self.assertEqual(len(list(unwanted_resource)), 0)
+
+    def test_fetch_unwanted_resources_return_true_if_action_string_found(self):
+        inline_policy = 'iam.InlinePolicy'
+        role_mock = MagicMock()
+        sample_role = {'Arn': 'arn:aws:iam::123456789101:role/foo-bar-file',
+                       'AssumeRolePolicyDocument': {
+                           'Statement': [{'Action': 'sts:AssumeRole',
+                                          'Effect': 'Allow',
+                                          'Principal': {
+                                              'AWS': 'arn:aws:iam::9876543210:root'},
+                                          'Sid': ''}],
+                           'Version': '2012-10-17'},
+                       'CreateDate': '01.01.1989',
+                       'Path': '/',
+                       'RoleId': 'FOOAJ4DHXC5V55TMCIBAR',
+                       'RoleName': 'foo-bar-file'}
+        list_role_mock = {'Roles': [sample_role]}
+        self.iamClientMock.list_roles.return_value = list_role_mock
+
+        policy_mock = MagicMock(policy_document={'Statement': [{'Action': ['s4:test3', '*:*'], 'Resource': ['arn:aws:s3:::test3']}]})
+        role_mock.policies.all.return_value = [policy_mock]
+
+        self.iamResourceMock.Role.return_value = role_mock
+        expected_unwanted_role = Resource(resource=sample_role,
+                                          resource_type=inline_policy,
+                                          resource_id=sample_role['Arn'],
+                                          creation_date=sample_role['CreateDate'],
+                                          region='global')
+
+        unwanted_resource = self.policy_handler.fetch_unwanted_resources()
+        unwanted_resource_list = list(unwanted_resource)
+        self.assertEqual(len(list(unwanted_resource_list)), 1)
+        self.assertEqual(expected_unwanted_role, unwanted_resource_list[0])
+
+    def test_fetch_unwanted_resources_return_true_if_action_and_resource_string_found(self):
+        inline_policy = 'iam.InlinePolicy'
+        role_mock = MagicMock()
+        sample_role = {'Arn': 'arn:aws:iam::123456789101:role/foo-bar-file',
+                       'AssumeRolePolicyDocument': {
+                           'Statement': [{'Action': 'sts:AssumeRole',
+                                          'Effect': 'Allow',
+                                          'Principal': {
+                                              'AWS': 'arn:aws:iam::9876543210:root'},
+                                          'Sid': ''}],
+                           'Version': '2012-10-17'},
+                       'CreateDate': '01.01.1989',
+                       'Path': '/',
+                       'RoleId': 'FOOAJ4DHXC5V55TMCIBAR',
+                       'RoleName': 'foo-bar-file'}
+        list_role_mock = {'Roles': [sample_role]}
+        self.iamClientMock.list_roles.return_value = list_role_mock
+
+        policy_mock = MagicMock(policy_document={'Statement': [{'Action': ['elasticloadbalancing:test3', '*:*'], 'Resource': ['arn:aws:s3:::test3']}]})
+        role_mock.policies.all.return_value = [policy_mock]
+
+        self.iamResourceMock.Role.return_value = role_mock
+        expected_unwanted_role = Resource(resource=sample_role,
+                                          resource_type=inline_policy,
+                                          resource_id=sample_role['Arn'],
+                                          creation_date=sample_role['CreateDate'],
+                                          region='global')
+
+        unwanted_resource = self.policy_handler.fetch_unwanted_resources()
+        unwanted_resource_list = list(unwanted_resource)
+        self.assertEqual(len(list(unwanted_resource_list)), 1)
+        self.assertEqual(expected_unwanted_role, unwanted_resource_list[0])
