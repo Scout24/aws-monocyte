@@ -1,8 +1,8 @@
 from __future__ import print_function, absolute_import, division
 
-from monocyte.handler import Resource, Handler
 import boto3
 from boto import iam
+from monocyte.handler import Resource, Handler
 
 
 class User(Handler):
@@ -51,11 +51,11 @@ class Policy(Handler):
     def fetch_regions(self):
         return iam.regions()
 
-    def show_action(self, policy_document):
+    def gather_actions(self, policy_document):
         return policy_document['Statement'][0]['Action']
 
-    def check_action(self, policy_document):
-        for action in self.show_action(policy_document):
+    def check_action_for_forbidden_string(self, policy_document):
+        for action in self.gather_actions(policy_document):
             if action == "*:*":
                 return True
         return False
@@ -86,7 +86,8 @@ class IamPolicy(Policy):
         for policy in self.get_policies():
             if self.is_arn_in_whitelist(policy):
                 continue
-            if self.check_action(self.get_policy_document(policy['Arn'], policy['DefaultVersionId'])):
+            if self.check_action_for_forbidden_string(
+                    self.get_policy_document(policy['Arn'], policy['DefaultVersionId'])):
                 unwanted_resource = Resource(resource=policy,
                                              resource_type=self.resource_type,
                                              resource_id=policy['Arn'],
@@ -99,12 +100,12 @@ class IamPolicy(Policy):
 
 
 class InlinePolicy(Policy):
-    def get_iam_roles(self):
+    def get_all_iam_roles_in_account(self):
         client = boto3.client('iam')
         roles_response = client.list_roles()['Roles']
         return roles_response
 
-    def get_inline_policy_all(self, role_name):
+    def get_all_inline_policies_for_role(self, role_name):
         iam = boto3.resource('iam')
         role_policies = []
         role = iam.Role(role_name)
@@ -112,14 +113,14 @@ class InlinePolicy(Policy):
             role_policies.append(role_policy)
         return role_policies
 
-    def check_inline_policy_action(self, actions):
+    def check_inline_policy_action_for_forbidden_string(self, actions):
         if isinstance(actions, basestring):
             actions = [actions]
         if '*:*' in actions or '*' in actions:
             return True
         return False
 
-    def check_inline_policy_resource(self, actions, resources):
+    def check_inline_policy_resource_for_forbidden_string(self, actions, resources):
         if isinstance(actions, basestring):
             actions = [actions]
         for action in actions:
@@ -130,14 +131,15 @@ class InlinePolicy(Policy):
         return '*' in resources
 
     def fetch_unwanted_resources(self):
-        for role in self.get_iam_roles():
+        for role in self.get_all_iam_roles_in_account():
             if self.is_arn_in_whitelist(role):
                 continue
-            policy_names = self.get_inline_policy_all(role['RoleName'])
+            policy_names = self.get_all_inline_policies_for_role(role['RoleName'])
             for policy in policy_names:
                 resources = policy.policy_document['Statement'][0]['Resource']
                 actions = policy.policy_document['Statement'][0]['Action']
-                if self.check_inline_policy_action(actions) or self.check_inline_policy_resource(actions, resources):
+                if self.check_inline_policy_action_for_forbidden_string(
+                        actions) or self.check_inline_policy_resource_for_forbidden_string(actions, resources):
                     unwanted_resource = Resource(resource=role,
                                                  resource_type=self.resource_type,
                                                  resource_id=role['Arn'],

@@ -167,7 +167,7 @@ class AwsInlinePolicyHandlerTest(unittest2.TestCase):
                                                                  'Path': '/',
                                                                  'RoleId': 'FOOAJ4DHXC5V55TMCIBAR',
                                                                  'RoleName': 'foo-bar-file'}]}
-        role = self.policy_handler.get_iam_roles()
+        role = self.policy_handler.get_all_iam_roles_in_account()
         self.assertEqual(role[0]['RoleName'], 'foo-bar-file')
 
     def test_get_iam_role_names_return_role_names(self):
@@ -194,20 +194,20 @@ class AwsInlinePolicyHandlerTest(unittest2.TestCase):
                                                                  'Path': '/',
                                                                  'RoleId': 'HSKASODO2S80SDDAD',
                                                                  'RoleName': 'foo-foo-key'}]}
-        role_names = self.policy_handler.get_iam_roles()
+        role_names = self.policy_handler.get_all_iam_roles_in_account()
         roles = []
         for role in role_names:
             roles.append(role['RoleName'])
         self.assertEqual(roles, ['foo-bar-file', 'foo-foo-key'])
 
-    def test_get_inline_policy_all_return_role_policies_no_roles(self):
+    def test_get_all_inline_policies_for_role_returns_empty_list_for_no_inline_policies(self):
         role_name = ''
         role_object = MagicMock()
         role_policy_object = MagicMock()
         self.iamResourceMock.Role.return_value = role_object
         role_object.policies.all.return_value = role_policy_object
 
-        role_policies = self.policy_handler.get_inline_policy_all(role_name)
+        role_policies = self.policy_handler.get_all_inline_policies_for_role(role_name)
         role_object.policies.all.assert_called_once()
         self.iamResourceMock.Role.assert_called_once()
         role_policy_object.assert_not_called()
@@ -215,27 +215,26 @@ class AwsInlinePolicyHandlerTest(unittest2.TestCase):
         self.assertEqual(role_policies, [])
 
 
-    def test_get_inline_policy_all_return_role_policies(self):
+    def test_get_all_inline_policies_for_role_returns_inline_policy(self):
         role_name = 'foo-bar-file'
         role_mock = MagicMock()
         self.iamResourceMock.Role.return_value = role_mock
         role_mock.policies.all.return_value = [42]
 
-        role_policies = self.policy_handler.get_inline_policy_all(role_name)
+        role_policies = self.policy_handler.get_all_inline_policies_for_role(role_name)
         self.assertEqual(role_policies, [42])
 
-    def test_check_inline_policy_action_returns_false(self):
+    def test_check_inline_policy_action_for_forbidden_string_returns_false_if_string_not_found(self):
         policy_document = "S3:foo"
-        return_value = self.policy_handler.check_inline_policy_action(policy_document)
+        return_value = self.policy_handler.check_inline_policy_action_for_forbidden_string(policy_document)
         self.assertFalse(return_value)
 
-    def test_check_inline_policy_action_returns_true(self):
+    def test_check_inline_policy_action_for_forbidden_string_returns_true_if_string_found(self):
         policy_document = "*:*"
-        return_value = self.policy_handler.check_inline_policy_action(policy_document)
+        return_value = self.policy_handler.check_inline_policy_action_for_forbidden_string(policy_document)
         self.assertTrue(return_value)
 
     def test_fetch_unwanted_resources_returns_empty_if_no_role_found(self):
-
         self.assertEqual(len(list(self.policy_handler.fetch_unwanted_resources())), 0)
 
     def test_fetch_unwanted_resources_return_false_if_elb_in_action(self):
@@ -251,7 +250,7 @@ class AwsInlinePolicyHandlerTest(unittest2.TestCase):
         unwanted_resource = self.policy_handler.fetch_unwanted_resources()
         self.assertEqual(len(list(unwanted_resource)), 0)
 
-    def test_fetch_unwanted_resources_return_false_if_string_not_found(self):
+    def test_fetch_unwanted_resources_return_false_if_action_string_not_found(self):
         role_mock = MagicMock(arn='arn:aws:iam::123456789101:role/foo-bar-file',create_date='01.01.1989', role_name='foo-bar-file')
         list_role_mock = {'Roles': [role_mock]}
         self.iamClientMock.list_roles.return_value = list_role_mock
