@@ -1,12 +1,13 @@
-import unittest2
-import boto3
-from monocyte.handler import iam as iam_handler
-from mock import MagicMock
 import logging
+import time
+import json
+import boto3
+import unittest2
+from mock import MagicMock
+from monocyte.handler import iam as iam_handler
 
 
-class IamTests(unittest2.TestCase):
-
+class IamUserTests(unittest2.TestCase):
     def setUp(self):
         logging.captureWarnings(True)
         self.iam_handler = iam_handler.User(MagicMock)
@@ -46,12 +47,59 @@ class IamTests(unittest2.TestCase):
         self.assertEqual(['integrationtest_user_1'], unwanted_users)
 
 
+class IamAwsPolicyTests(unittest2.TestCase):
+    def setUp(self):
+        logging.captureWarnings(True)
+        self.iam_handler = iam_handler.IamPolicy(MagicMock)
+        self.iam_handler.dry_run = True
 
+    def _create_policy(self, policy):
+        iam = boto3.client('iam')
+        policy_response = iam.create_policy(PolicyName='monocyteIntegrationTest', PolicyDocument=json.dumps(policy))
+        return policy_response['Policy']['Arn']
 
+    def _delete_policy(self, arn):
+       iam = boto3.client('iam')
+       iam.delete_policy(PolicyArn=arn)
 
+    def _uniq(self, resources):
+        uniq_names = []
+        for resource in resources:
+            name = resource.wrapped['PolicyName']
+            if not name.startswith('monocyteIntegrationTest'):
+                continue
+            uniq_names.append(name)
 
+        return uniq_names
 
+    def test_right_policy_returns_no_failure(self):
+        policy = {
+            "Version": "2012-10-17",
+            "Statement": {
+                "Effect": "Allow",
+                "Action": "s3:testaction",
+                "Resource": "arn:aws:s3:::example_bucket"
+            }
+        }
+        arn = self._create_policy(policy)
 
+        unwanted_resource = self.iam_handler.fetch_unwanted_resources()
+        self.assertEqual([], self._uniq(unwanted_resource))
+        self._delete_policy(arn)
+
+    def test_wildcard_policy_returns_failure(self):
+        policy = {
+            "Version": "2012-10-17",
+            "Statement": {
+                "Effect": "Allow",
+                "Action": "*",
+                "Resource": "arn:aws:s3:::example_bucket"
+            }
+        }
+        arn = self._create_policy(policy)
+        unwanted_resource = self.iam_handler.fetch_unwanted_resources()
+        self.assertEqual(['monocyteIntegrationTest'], self._uniq(unwanted_resource))
+        self._delete_policy(arn)
 
 
 if __name__ == "__main__":
