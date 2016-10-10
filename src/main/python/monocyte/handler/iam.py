@@ -1,8 +1,9 @@
 from __future__ import print_function, absolute_import, division
-from six import string_types
+
 import boto3
 from boto import iam
 from monocyte.handler import Resource, Handler
+from six import string_types
 
 
 class User(Handler):
@@ -52,12 +53,34 @@ class Policy(Handler):
         return iam.regions()
 
     def gather_actions(self, policy_document):
+        if not isinstance(policy_document['Statement'], list):
+            return [policy_document['Statement']['Action']]
+        statement = policy_document['Statement']
+        actions = []
+        for action in statement:
+            if isinstance(action['Action'], list):
+                for inner_action in action['Action']:
+                    actions.append(inner_action)
+            else:
+                actions.append(action['Action'])
         return policy_document['Statement'][0]['Action']
 
     def check_action_for_forbidden_string(self, policy_document):
         for action in self.gather_actions(policy_document):
             if action == "*:*":
                 return True
+        return False
+
+    def check_inline_policy_resource_for_forbidden_string(self, actions, resources):
+        if isinstance(actions, string_types):
+            actions = [actions]
+        for action in actions:
+            if action.startswith('elasticloadbalancing:'):
+                return False
+        if isinstance(actions, string_types):
+            resources = [resources]
+        if '*' in resources:
+            return True
         return False
 
     def is_arn_in_whitelist(self, policy):
@@ -86,8 +109,11 @@ class IamPolicy(Policy):
         for policy in self.get_policies():
             if self.is_arn_in_whitelist(policy):
                 continue
+            policy_document = self.get_policy_document(policy['Arn'], policy['DefaultVersionId'])
+            actions = self.gather_actions(policy_document)
+            resources = policy_document['Statement'][0]['Resource']
             if self.check_action_for_forbidden_string(
-                    self.get_policy_document(policy['Arn'], policy['DefaultVersionId'])):
+                    policy_document) or self.check_inline_policy_resource_for_forbidden_string(actions, resources):
                 unwanted_resource = Resource(resource=policy,
                                              resource_type=self.resource_type,
                                              resource_id=policy['Arn'],
@@ -117,18 +143,6 @@ class InlinePolicy(Policy):
         if isinstance(actions, string_types):
             actions = [actions]
         if '*:*' in actions or '*' in actions:
-            return True
-        return False
-
-    def check_inline_policy_resource_for_forbidden_string(self, actions, resources):
-        if isinstance(actions, string_types):
-            actions = [actions]
-        for action in actions:
-            if action.startswith('elasticloadbalancing:'):
-                return False
-        if isinstance(actions, string_types):
-            resources = [resources]
-        if '*' in resources:
             return True
         return False
 

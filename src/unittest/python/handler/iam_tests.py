@@ -122,7 +122,7 @@ class AwsIamPolicyHandlerTest(unittest2.TestCase):
 
     def test_fetch_unwanted_resources_returns_true_if_forbidden_action(self):
         iam_policy = 'iam.IamPolicy'
-        policyVersionMock = MagicMock(document={'Statement': [{'Action': ['s3:test3', '*:*']}]})
+        policyVersionMock = MagicMock(document={'Statement': [{'Action': ['s3:test3', '*:*'],'Resource': 'aws:s2222'}]})
         self.iamResourceMock.PolicyVersion.return_value = policyVersionMock
         policy = {'IsTruncated': False,
                   'Policies': [{'Arn': 'arn:aws:iam:123456789', 'DefaultVersionId': 'v1', 'CreateDate': '2012-06-12'}]}
@@ -138,7 +138,7 @@ class AwsIamPolicyHandlerTest(unittest2.TestCase):
 
     def test_fetch_unwanted_resources_returns_false_if_no_forbidden_action(self):
         iam_policy = 'iam.IamPolicy'
-        policyVersionMock = MagicMock(document={'Statement': [{'Action': ['s3:test3', 's*:s*']}]})
+        policyVersionMock = MagicMock(document={'Statement': [{'Action': ['s3:test3', 's*:s*'], 'Resource': 'aws:s2222'}]})
         self.iamResourceMock.PolicyVersion.return_value = policyVersionMock
         policy = {'IsTruncated': False,
                   'Policies': [{'Arn': 'arn:aws:iam:123456789', 'DefaultVersionId': 'v1', 'CreateDate': '2012-06-12'}]}
