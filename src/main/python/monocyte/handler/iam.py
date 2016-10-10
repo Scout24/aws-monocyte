@@ -1,5 +1,5 @@
 from __future__ import print_function, absolute_import, division
-
+from six import string_types
 import boto3
 from boto import iam
 from monocyte.handler import Resource, Handler
@@ -114,19 +114,19 @@ class InlinePolicy(Policy):
         return role_policies
 
     def check_inline_policy_action_for_forbidden_string(self, actions):
-        if isinstance(actions, basestring):
+        if isinstance(actions, string_types):
             actions = [actions]
         if '*:*' in actions or '*' in actions:
             return True
         return False
 
     def check_inline_policy_resource_for_forbidden_string(self, actions, resources):
-        if isinstance(actions, basestring):
+        if isinstance(actions, string_types):
             actions = [actions]
         for action in actions:
             if action.startswith('elasticloadbalancing:'):
                 return False
-        if isinstance(resources, basestring):
+        if isinstance(actions, string_types):
             resources = [resources]
         return '*' in resources
 

@@ -214,7 +214,6 @@ class AwsInlinePolicyHandlerTest(unittest2.TestCase):
 
         self.assertEqual(role_policies, [])
 
-
     def test_get_all_inline_policies_for_role_returns_inline_policy(self):
         role_name = 'foo-bar-file'
         role_mock = MagicMock()
@@ -229,8 +228,18 @@ class AwsInlinePolicyHandlerTest(unittest2.TestCase):
         return_value = self.policy_handler.check_inline_policy_action_for_forbidden_string(policy_document)
         self.assertFalse(return_value)
 
+    def test_check_inline_policy_action_for_forbidden_string_returns_false_if_policiy_list_not_found(self):
+        policy_document = ['S3:foo', 's3:bar']
+        return_value = self.policy_handler.check_inline_policy_action_for_forbidden_string(policy_document)
+        self.assertFalse(return_value)
+
     def test_check_inline_policy_action_for_forbidden_string_returns_true_if_string_found(self):
         policy_document = "*:*"
+        return_value = self.policy_handler.check_inline_policy_action_for_forbidden_string(policy_document)
+        self.assertTrue(return_value)
+
+    def test_check_inline_policy_action_for_forbidden_string_returns_true_if_policy_list_found(self):
+        policy_document = ['*:*', 's3:3']
         return_value = self.policy_handler.check_inline_policy_action_for_forbidden_string(policy_document)
         self.assertTrue(return_value)
 
