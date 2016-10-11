@@ -147,6 +147,8 @@ class Monocyte(object):
         handler_classes_list = [
             monocyte.handler.cloudformation.Stack,
             monocyte.handler.iam.User,
+            monocyte.handler.iam.InlinePolicy,
+            monocyte.handler.iam.IamPolicy,
             monocyte.handler.dynamodb.Table,
             monocyte.handler.ec2.Instance,
             monocyte.handler.ec2.Volume,
