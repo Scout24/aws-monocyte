@@ -54,6 +54,8 @@ class Policy(Handler):
 
     def gather_actions(self, policy_document):
         if not isinstance(policy_document['Statement'], list):
+            if isinstance(policy_document['Statement']['Action'], list):
+                return policy_document['Statement']['Action']
             return [policy_document['Statement']['Action']]
         statement = policy_document['Statement']
         actions = []

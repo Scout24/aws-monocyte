@@ -162,6 +162,13 @@ class AwsPolicyHandler(unittest2.TestCase):
         expected_list = ['logs:CreateLogGroup', 'logs2:CreateLogGroup']
         self.assertEqual(expected_list, self.policy_handler.gather_actions(policy_document))
 
+    def test_gather_actions_returns_list_for_statement_no_list_but_action(self):
+        policy_document = {'Statement': {'Action':['logs:CreateLogGroup', 'ec2:Attache'],
+                                          'Effect': 'Allow',
+                                          'Resource': 'arn:aws:logs::*'}}
+        expected_list = ['logs:CreateLogGroup', 'ec2:Attache']
+        self.assertEqual(expected_list, self.policy_handler.gather_actions(policy_document))
+
 class AwsIamPolicyHandlerTest(unittest2.TestCase):
     def setUp(self):
         def mock_region_filter(ignore):
