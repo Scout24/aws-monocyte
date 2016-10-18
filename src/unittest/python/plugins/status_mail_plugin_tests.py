@@ -9,9 +9,9 @@ from monocyte.handler import Resource
 
 EXPECTED_PART_HEADER = """Dear AWS User,
 
-our Compliance checker found some AWS resources outside of Europe in your account.
+our Compliance checker found some issues in your account.
 """
-EXPECTED_PART_DRY_RUN = "Please check and delete the following resources:\n"
+EXPECTED_PART_DRY_RUN = "Please check the following resources:\n"
 EXPECTED_PART_NO_DRY_RUN = "Please check the following deleted resources:\n"
 EXPECTED_PART_UNWANTED_FILLED = """
 Account: test-account

@@ -16,7 +16,7 @@ class StatusMailPlugin(AwsSesPlugin):
         if self.dry_run:
             unwanted_resources_info = "Please check the following resources:"
         else:
-            unwanted_resources_info = "Please check the following resources:"
+            unwanted_resources_info = "Please check the following deleted resources:"
         email_body = '''Dear AWS User,
 
 our Compliance checker found some issues in your account.
