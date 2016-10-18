@@ -14,12 +14,12 @@ class StatusMailPlugin(AwsSesPlugin):
     @property
     def body(self):
         if self.dry_run:
-            unwanted_resources_info = "Please check and delete the following resources:"
+            unwanted_resources_info = "Please check the following resources:"
         else:
-            unwanted_resources_info = "Please check the following deleted resources:"
+            unwanted_resources_info = "Please check the following resources:"
         email_body = '''Dear AWS User,
 
-our Compliance checker found some AWS resources outside of Europe in your account.
+our Compliance checker found some issues in your account.
 {0}
 
 Account: {1}\n'''.format(unwanted_resources_info, self._get_account_alias())
