@@ -159,7 +159,7 @@ class IamInlinePolicyTests(unittest2.TestCase):
         }
         self._put_inline_role_policy(inline_policy)
         unwanted_resource = self.iam_handler.fetch_unwanted_resources()
-        self.assertEqual(['integrationtest_role'], self._uniq(unwanted_resource))
+        self.assertEqual([], self._uniq(unwanted_resource))
 
     def test_wildcard_in_inline_policy_resource_and_action(self):
         self._create_role()
@@ -269,7 +269,7 @@ class IamAPolicyTests(unittest2.TestCase):
         }
         self.arn = self._create_policy(policy)
         unwanted_resource = self.iam_handler.fetch_unwanted_resources()
-        self.assertEqual(['monocyteIntegrationTest'], self._uniq(unwanted_resource))
+        self.assertEqual([], self._uniq(unwanted_resource))
 
     def test_resource_only_wildcard_list_returns_failure(self):
         policy = {
@@ -286,7 +286,7 @@ class IamAPolicyTests(unittest2.TestCase):
         }
         self.arn = self._create_policy(policy)
         unwanted_resource = self.iam_handler.fetch_unwanted_resources()
-        self.assertEqual(['monocyteIntegrationTest'], self._uniq(unwanted_resource))
+        self.assertEqual([], self._uniq(unwanted_resource))
 
     def test_action_with_wildcard_returns_no_failure(self):
         policy = {
