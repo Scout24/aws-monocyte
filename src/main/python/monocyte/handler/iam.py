@@ -122,7 +122,7 @@ class IamPolicy(Policy):
             policy_document = self.get_policy_document(policy['Arn'], policy['DefaultVersionId'])
             actions = self.gather_actions(policy_document)
             resources = self.get_policy_resource(policy_document)
-            if self.check_policy_action_for_forbidden_string(actions) or self.check_policy_resource_for_forbidden_string(actions, resources):
+            if self.check_policy_action_for_forbidden_string(actions):
                 unwanted_resource = Resource(resource=policy,
                                              resource_type=self.resource_type,
                                              resource_id=policy['Arn'],
@@ -158,7 +158,7 @@ class InlinePolicy(Policy):
                 resources = self.get_policy_resource(policy.policy_document)
                 actions = self.gather_actions(policy.policy_document)
                 if self.check_policy_action_for_forbidden_string(
-                        actions) or self.check_policy_resource_for_forbidden_string(actions, resources):
+                        actions):
                     unwanted_resource = Resource(resource=role,
                                                  resource_type=self.resource_type,
                                                  resource_id=role['Arn'],
