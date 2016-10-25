@@ -53,11 +53,11 @@ class Policy(Handler):
         return iam.regions()
 
     def gather_actions(self, policy_document):
-        if not isinstance(policy_document['Statement'], list):
-            if isinstance(policy_document['Statement']['Action'], list):
-                return policy_document['Statement']['Action']
-            return [policy_document['Statement']['Action']]
         statement = policy_document['Statement']
+        if isinstance(statement, dict):
+            if isinstance(statement['Action'], list):
+                return statement['Action']
+            return [statement['Action']]
         actions = []
         for action in statement:
             if isinstance(action['Action'], list):
