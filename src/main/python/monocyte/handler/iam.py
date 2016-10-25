@@ -74,19 +74,6 @@ class Policy(Handler):
             return True
         return False
 
-    def check_policy_resource_for_forbidden_string(self, actions, resources):
-        if isinstance(actions, string_types):
-            actions = [actions]
-        for action in actions:
-            if action.startswith('elasticloadbalancing:'):
-                return False
-        if isinstance(resources, string_types):
-            resources = [resources]
-        for resource in resources:
-            if '*' == resource:
-                return True
-        return False
-
     def is_arn_in_whitelist(self, policy):
         whitelist_arns = self.get_whitelist().get('Arns', [])
         for arn_with_reason in whitelist_arns:
@@ -99,12 +86,6 @@ class Policy(Handler):
             return
         raise NotImplementedError("Should have implemented this")
 
-    def get_policy_resource(self, policy_document):
-        statement = policy_document['Statement']
-        if not isinstance(statement, list):
-            resources = statement['Resource']
-            return resources
-        return statement[0]['Resource']
 
 class IamPolicy(Policy):
     def get_policies(self):
@@ -121,7 +102,6 @@ class IamPolicy(Policy):
                 continue
             policy_document = self.get_policy_document(policy['Arn'], policy['DefaultVersionId'])
             actions = self.gather_actions(policy_document)
-            resources = self.get_policy_resource(policy_document)
             if self.check_policy_action_for_forbidden_string(actions):
                 unwanted_resource = Resource(resource=policy,
                                              resource_type=self.resource_type,
@@ -148,14 +128,12 @@ class InlinePolicy(Policy):
             role_policies.append(role_policy)
         return role_policies
 
-
     def fetch_unwanted_resources(self):
         for role in self.get_all_iam_roles_in_account():
             if self.is_arn_in_whitelist(role):
                 continue
             policy_names = self.get_all_inline_policies_for_role(role['RoleName'])
             for policy in policy_names:
-                resources = self.get_policy_resource(policy.policy_document)
                 actions = self.gather_actions(policy.policy_document)
                 if self.check_policy_action_for_forbidden_string(
                         actions):

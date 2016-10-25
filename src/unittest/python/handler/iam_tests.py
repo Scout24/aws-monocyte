@@ -86,46 +86,6 @@ class AwsPolicyHandler(unittest2.TestCase):
     def setUp(self):
         self.policy_handler = Policy(MagicMock)
 
-    def test_check_policy_resource_forbidden_returns_false_for_wildcard_in_resource_string(self):
-        actions = ['*:*', 's23:333']
-        resource = 'aws::s3:*'
-        self.assertFalse(self.policy_handler.check_policy_resource_for_forbidden_string(actions, resource))
-
-    def test_check_policy_resource_forbidden_returns_true_for_only_wildcard_in_resource_string(self):
-        actions = ['*:*', 's23:333']
-        resource = '*'
-        self.assertTrue(self.policy_handler.check_policy_resource_for_forbidden_string(actions, resource))
-
-    def test_check_policy_resource_forbidden_returns_false_for_only_wildcard_in_resource_string_but_elb(self):
-        actions = ['elsaticloadbalanacing:*', 's23:333']
-        resource = '*'
-        self.assertTrue(self.policy_handler.check_policy_resource_for_forbidden_string(actions, resource))
-
-    def test_check_policy_resource_forbidden_returns_false_for_only_wildcard_in_resource_string_but_elb(self):
-        actions = ['s3:*', 's23:333']
-        resource = ['*']
-        self.assertTrue(self.policy_handler.check_policy_resource_for_forbidden_string(actions, resource))
-
-    def test_get_policy_resource_get_statement_no_list(self):
-        policy_document = {'Statement': {'Action': 'logs:CreateLogGroup',
-                                          'Effect': 'Allow',
-                                          'Resource': 'arn:aws:logs::*'}}
-        expected_resource = 'arn:aws:logs::*'
-        self.assertEqual(expected_resource, self.policy_handler.get_policy_resource(policy_document))
-
-    def test_get_policy_resource_get_statement_list(self):
-        policy_document = {'Statement': [{'Action': 'logs:CreateLogGroup',
-                                         'Effect': 'Allow',
-                                         'Resource': 'arn:aws:logs::*'}]}
-        expected_resource = 'arn:aws:logs::*'
-        self.assertEqual(expected_resource, self.policy_handler.get_policy_resource(policy_document))
-
-    def test_check_policy_resource_forbidden_returns_false_for_no_wildcard_in_resource(self):
-        actions = ['*:*', 's23:333']
-        resource = 'aws::s3:dsdf'
-        self.assertFalse(self.policy_handler.check_policy_resource_for_forbidden_string(actions, resource))
-
-
     def test_check_action_for_forbidden_string_returns_false_for_no_wildcard(self):
         actions = ['is3:s3', 's23:333']
         self.assertFalse(self.policy_handler.check_policy_action_for_forbidden_string(actions))
