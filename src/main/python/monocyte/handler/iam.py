@@ -3,7 +3,6 @@ from __future__ import print_function, absolute_import, division
 import boto3
 from boto import iam
 from monocyte.handler import Resource, Handler
-from six import string_types
 
 
 class User(Handler):
@@ -61,18 +60,13 @@ class Policy(Handler):
         actions = []
         for action in statement:
             if isinstance(action['Action'], list):
-                for inner_action in action['Action']:
-                    actions.append(inner_action)
+                actions.extend(action['Action'])
             else:
                 actions.append(action['Action'])
         return actions
 
     def check_policy_action_for_forbidden_string(self, actions):
-        if isinstance(actions, string_types):
-            actions = [actions]
-        if '*:*' in actions or '*' in actions:
-            return True
-        return False
+        return '*:*' in actions or '*' in actions
 
     def is_arn_in_whitelist(self, policy):
         whitelist_arns = self.get_whitelist().get('Arns', [])
@@ -143,13 +137,6 @@ class InlinePolicy(Policy):
                                                  creation_date=role['CreateDate'],
                                                  region='global')
                     yield unwanted_resource
-
-    def is_arn_in_whitelist(self, role):
-        whitelist_arns = self.get_whitelist().get('Arns', [])
-        for arn_with_reason in whitelist_arns:
-            if role['Arn'] == arn_with_reason['Arn']:
-                return True
-        return False
 
     def to_string(self, resource):
         return "Role with not allowed inline policy found {0}".format(resource.resource_id)
