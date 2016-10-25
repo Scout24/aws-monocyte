@@ -82,9 +82,23 @@ class AwsIamUserHandlerTest(unittest2.TestCase):
 
         self.assertEqual(len(list(unwanted_users)), 0)
 
-class AwsPolicyHandler(unittest2.TestCase):
+class PolicyTests(unittest2.TestCase):
+    class_to_test = Policy
     def setUp(self):
-        self.policy_handler = Policy(MagicMock)
+        def mock_region_filter(ignore):
+            return True
+
+        self.boto3Mock = patch("monocyte.handler.iam.boto3").start()
+        self.iamClientMock = MagicMock()
+        self.boto3Mock.client.return_value = self.iamClientMock
+        self.iamResourceMock = MagicMock()
+        self.boto3Mock.resource.return_value = self.iamResourceMock
+        self.policy_handler = self.class_to_test(mock_region_filter)
+
+        def mock_whitelist():
+            return {}
+
+        self.policy_handler.get_whitelist = mock_whitelist
 
     def test_check_action_for_forbidden_string_returns_false_for_no_wildcard(self):
         actions = ['is3:s3', 's23:333']
@@ -123,29 +137,22 @@ class AwsPolicyHandler(unittest2.TestCase):
         self.assertEqual(expected_list, self.policy_handler.gather_actions(policy_document))
 
     def test_gather_actions_returns_list_for_statement_no_list_but_action(self):
-        policy_document = {'Statement': {'Action':['logs:CreateLogGroup', 'ec2:Attache'],
+        policy_document = {'Statement': {'Action':['logs:CreateLogGroup', 'ec2:Attach'],
                                           'Effect': 'Allow',
                                           'Resource': 'arn:aws:logs::*'}}
-        expected_list = ['logs:CreateLogGroup', 'ec2:Attache']
+        expected_list = ['logs:CreateLogGroup', 'ec2:Attach']
         self.assertEqual(expected_list, self.policy_handler.gather_actions(policy_document))
 
-class AwsIamPolicyHandlerTest(unittest2.TestCase):
-    def setUp(self):
-        def mock_region_filter(ignore):
-            return True
+    def test_gather_actions_returns_list_for_statement_no_list_and_action_no_list(self):
+        policy_document = {'Statement': {'Action': 'ec2:Attach',
+                                         'Effect': 'Allow',
+                                         'Resource': 'arn:aws:logs::*'}}
+        expected_list = ['ec2:Attach']
+        self.assertEqual(expected_list, self.policy_handler.gather_actions(policy_document))
 
-        self.boto3Mock = patch("monocyte.handler.iam.boto3").start()
-        self.iamClientMock = MagicMock()
-        self.boto3Mock.client.return_value = self.iamClientMock
-        self.iamResourceMock = MagicMock()
-        self.boto3Mock.resource.return_value = self.iamResourceMock
-        self.policy_handler = IamPolicy(mock_region_filter)
 
-        def mock_whitelist():
-            return {}
-
-        self.policy_handler.get_whitelist = mock_whitelist
-
+class IamPolicyTest(PolicyTests):
+    class_to_test = IamPolicy
     def test_get_policies_return_policies(self):
         self.iamClientMock.list_policies.return_value = {'IsTruncated': False,
                                                          'Policies': [{'Arn': 'arn:aws:iam:123456789'}]}
@@ -194,22 +201,8 @@ class AwsIamPolicyHandlerTest(unittest2.TestCase):
 
 
 
-class AwsInlinePolicyHandlerTest(unittest2.TestCase):
-    def setUp(self):
-        def mock_region_filter(ignore):
-            return True
-
-        self.boto3Mock = patch("monocyte.handler.iam.boto3").start()
-        self.iamClientMock = MagicMock()
-        self.boto3Mock.client.return_value = self.iamClientMock
-        self.iamResourceMock = MagicMock()
-        self.boto3Mock.resource.return_value = self.iamResourceMock
-        self.policy_handler = InlinePolicy(mock_region_filter)
-
-        def mock_whitelist():
-            return {}
-
-        self.policy_handler.get_whitelist = mock_whitelist
+class InlinePolicyTest(PolicyTests):
+    class_to_test = InlinePolicy
 
     def test_get_iam_role_name_return_role_name(self):
         self.iamClientMock.list_roles.return_value = {'Roles': [{'Arn': 'arn:aws:iam::123456789101:role/foo-bar-file',
