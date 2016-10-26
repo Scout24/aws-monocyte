@@ -52,6 +52,7 @@ def set_properties(project):
     project.set_property('dir_dist_scripts', 'scripts')
     project.set_property('integrationtest_inherit_environment', True)
     project.set_property('integrationtest_always_verbose', True)
+    project.set_property('integrationtest_parallel', True)
 
     project.set_property('distutils_classifiers', [
         'Development Status :: 4 - Beta',
