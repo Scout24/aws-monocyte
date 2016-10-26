@@ -150,6 +150,16 @@ class PolicyTests(unittest2.TestCase):
         expected_list = ['ec2:Attach']
         self.assertEqual(expected_list, self.policy_handler.gather_actions(policy_document))
 
+    def test_is_arn_in_whitelist_empty_whitelist(self):
+        self.policy_handler.whitelist = {}
+        self.assertFalse(self.policy_handler.is_arn_in_whitelist('somearn'))
+
+    def test_is_arn_in_whitelist_with_filled_whitelist(self):
+        self.policy_handler.get_account_id = lambda x:'123698745'
+        self.policy_handler.get_whitelist = lambda : {'Arns': [{'Arn': 'arn:to:whitelist'}]}
+        self.policy_handler.whitelist = {'123698745':{'Arns': [{'Arn': 'arn:to:whitelist'}]}}
+        self.assertFalse(self.policy_handler.is_arn_in_whitelist({'Arn': 'no:arn:to:whitelist'}))
+        self.assertTrue(self.policy_handler.is_arn_in_whitelist({'Arn': 'arn:to:whitelist'}))
 
 class IamPolicyTest(PolicyTests):
     class_to_test = IamPolicy
