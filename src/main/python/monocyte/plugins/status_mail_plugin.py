@@ -48,8 +48,11 @@ Account: {1}\n'''.format(unwanted_resources_info, self._get_account_alias())
                 selected_res = (resource for resource in resources
                                 if resource.region == region and resource.resource_type == res_type)
                 for resource in selected_res:
-                    res_text = "\t{0} with identifier {1}, created {2}\n".format(
+                    res_text = "\t{0} with identifier {1}, created {2}.".format(
                         res_type, resource.resource_id, resource.creation_date)
+                    if resource.reason:
+                        res_text += ' ' + resource.reason
+                    res_text += '\n'
                     return_text += res_text
         return return_text or "\tNone\n"
 
