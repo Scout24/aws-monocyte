@@ -1,11 +1,12 @@
 from __future__ import print_function, absolute_import, division
-import os
-from unittest2 import TestCase
-from mock import Mock, patch
-from moto import mock_ses, mock_s3
+
 import boto
-from monocyte.plugins.status_mail_plugin import StatusMailPlugin, UsofaStatusMailPlugin
+import os
+from mock import Mock, patch
 from monocyte.handler import Resource
+from monocyte.plugins.status_mail_plugin import StatusMailPlugin, UsofaStatusMailPlugin
+from moto import mock_ses, mock_s3
+from unittest2 import TestCase
 
 EXPECTED_PART_HEADER = """Dear AWS User,
 
@@ -23,12 +24,20 @@ EXPECTED_PART_UNWANTED_EMPTY = """
 Account: test-account
 \tNone
 """
+EXPECTED_PART_UNWANTED_FILLED_WITH_REASON = """
+Account: test-account
+Region: us
+\tec2 instance with identifier 12345, created date1. Please follow the principal of least privilege and do not use Action : *
+\tec2 volume with identifier 3312345, created date2.
+"""
+
 EXPECTED_PART_PROBLEMATIC_FILLED = """
 Additionally we had issues checking the following resource, please ensure that they are in the proper region:
 Region: us
 \tec2 instance with identifier 67890, created date1.
 \tec2 volume with identifier 1112345, created date2.
 """
+
 EXPECTED_PART_PROBLEMATIC_EMPTY = ""
 EXPECTED_PART_FOOTER = """
  Kind regards.
@@ -49,6 +58,7 @@ class StatusMailPluginTest(TestCase):
             Resource(23, "ec2 instance", "67890", "date1", "us"),
             Resource(23, "ec2 volume", "1112345", "date2", "us")]
         self.dry_run = True
+        self.reason = 'Do not do it'
         self.test_region = "eu-west-1"
         self.test_sender = "sender@test.invalid"
         self.test_status_mail_plugin = StatusMailPlugin(self.unwanted_resources,
@@ -69,6 +79,28 @@ class StatusMailPluginTest(TestCase):
                          EXPECTED_PART_PROBLEMATIC_FILLED +
                          EXPECTED_PART_FOOTER)
 
+        self.maxDiff = None
+        self.assertEqual(body, expected_body)
+
+    @patch('monocyte.plugins.status_mail_plugin.StatusMailPlugin._get_account_alias')
+    def test_of_email_body_problematic_resources_with_reason(self, mock_get_account_alias):
+        mock_get_account_alias.return_value = "test-account"
+        unwanted_resources = [
+            Resource(42, "ec2 instance", "12345", "date1", "us", reason='Please follow the principal of least privilege and do not use Action : *'),
+            Resource(42, "ec2 volume", "3312345", "date2", "us")]
+        problematic_resources = []
+        dry_run = False
+        test_status_mail_plugin = StatusMailPlugin(unwanted_resources,
+                                                   problematic_resources,
+                                                   dry_run,
+                                                   region=self.test_region,
+                                                   sender=self.test_sender,
+                                                   recipients=self.test_recipients)
+        body = test_status_mail_plugin.body
+        expected_body = (EXPECTED_PART_HEADER +
+                         EXPECTED_PART_NO_DRY_RUN +
+                         EXPECTED_PART_UNWANTED_FILLED_WITH_REASON +
+                         EXPECTED_PART_FOOTER)
         self.maxDiff = None
         self.assertEqual(body, expected_body)
 
@@ -150,8 +182,8 @@ class StatusMailPluginTest(TestCase):
 
         send_quota = conn.get_send_quota()
         sent_count = int(
-            send_quota['GetSendQuotaResponse']['GetSendQuotaResult'][
-                'SentLast24Hours'])
+                send_quota['GetSendQuotaResponse']['GetSendQuotaResult'][
+                    'SentLast24Hours'])
         self.assertEqual(sent_count, 2)
 
     @mock_ses
@@ -190,13 +222,13 @@ class UsofaStatusMailPluginTest(TestCase):
         self.test_sender = "sender@test.invalid"
         self.usofa_bucket_name = "usofbucket"
         self.test_status_mail_plugin = UsofaStatusMailPlugin(
-            self.unwanted_resources,
-            self.problematic_resources,
-            self.dry_run,
-            region=self.test_region,
-            sender=self.test_sender,
-            recipients=self.test_recipients,
-            usofa_bucket_name=self.usofa_bucket_name)
+                self.unwanted_resources,
+                self.problematic_resources,
+                self.dry_run,
+                region=self.test_region,
+                sender=self.test_sender,
+                recipients=self.test_recipients,
+                usofa_bucket_name=self.usofa_bucket_name)
 
     @patch('monocyte.plugins.status_mail_plugin.UsofaStatusMailPlugin._get_account_alias')
     @patch('monocyte.plugins.status_mail_plugin.UsofaStatusMailPlugin._get_usofa_data')
@@ -221,12 +253,12 @@ class UsofaStatusMailPluginTest(TestCase):
 
         # Do NOT pass a 'recipients' parameter!
         self.test_status_mail_plugin = UsofaStatusMailPlugin(
-            self.unwanted_resources,
-            self.problematic_resources,
-            self.dry_run,
-            region=self.test_region,
-            sender=self.test_sender,
-            usofa_bucket_name=self.usofa_bucket_name)
+                self.unwanted_resources,
+                self.problematic_resources,
+                self.dry_run,
+                region=self.test_region,
+                sender=self.test_sender,
+                usofa_bucket_name=self.usofa_bucket_name)
         recipients = self.test_status_mail_plugin.recipients
         expected_recipients = ['foo@test.invalid']
         self.assertEqual(recipients, expected_recipients)
