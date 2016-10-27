@@ -84,6 +84,7 @@ class AwsIamUserHandlerTest(unittest2.TestCase):
 
 class PolicyTests(unittest2.TestCase):
     class_to_test = Policy
+    reason = "Please follow the principal of least privilege and do not use Action : *"
     def setUp(self):
         def mock_region_filter(ignore):
             return True
@@ -193,7 +194,7 @@ class IamPolicyTest(PolicyTests):
                                           resource_type=iam_policy,
                                           resource_id=policy['Policies'][0]['Arn'],
                                           creation_date=policy['Policies'][0]['CreateDate'],
-                                          region='global')
+                                          region='global', reason = self.reason)
 
         self.iamClientMock.list_policies.return_value = policy
         unwanted_resource = self.policy_handler.fetch_unwanted_resources()
@@ -358,7 +359,7 @@ class InlinePolicyTest(PolicyTests):
                                           resource_type=inline_policy,
                                           resource_id=sample_role['Arn'],
                                           creation_date=sample_role['CreateDate'],
-                                          region='global')
+                                          region='global', reason=self.reason)
 
         unwanted_resource = self.policy_handler.fetch_unwanted_resources()
         unwanted_resource_list = list(unwanted_resource)
@@ -391,7 +392,7 @@ class InlinePolicyTest(PolicyTests):
                                           resource_type=inline_policy,
                                           resource_id=sample_role['Arn'],
                                           creation_date=sample_role['CreateDate'],
-                                          region='global')
+                                          region='global', reason=self.reason)
 
         unwanted_resource = self.policy_handler.fetch_unwanted_resources()
         unwanted_resource_list = list(unwanted_resource)

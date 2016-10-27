@@ -41,6 +41,9 @@ class User(Handler):
     def to_string(self, resource):
         return "iam user found {0}".format(resource.resource_id)
 
+    def email_string(self):
+        return "Do not use user with static credentials."
+
     def delete(self, resource):
         if self.dry_run:
             return
@@ -80,6 +83,9 @@ class Policy(Handler):
             return
         raise NotImplementedError("Should have implemented this")
 
+    def email_string(self):
+        return "Please follow the principal of least privilege and do not use Action : *"
+
 
 class IamPolicy(Policy):
     def get_policies(self):
@@ -101,11 +107,11 @@ class IamPolicy(Policy):
                                              resource_type=self.resource_type,
                                              resource_id=policy['Arn'],
                                              creation_date=policy['CreateDate'],
-                                             region='global')
+                                             region='global', reason=self.email_string())
                 yield unwanted_resource
 
     def to_string(self, resource):
-        return "Not allowed policy found {0}".format(resource.resource_id)
+        return "Not allowed policy found {0}.".format(resource.resource_id)
 
 
 class InlinePolicy(Policy):
@@ -135,8 +141,8 @@ class InlinePolicy(Policy):
                                                  resource_type=self.resource_type,
                                                  resource_id=role['Arn'],
                                                  creation_date=role['CreateDate'],
-                                                 region='global')
+                                                 region='global', reason=self.email_string())
                     yield unwanted_resource
 
     def to_string(self, resource):
-        return "Role with not allowed inline policy found {0}".format(resource.resource_id)
+        return "Role with not allowed inline policy found {0}.".format(resource.resource_id)
