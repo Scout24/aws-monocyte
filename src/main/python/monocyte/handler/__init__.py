@@ -21,12 +21,13 @@ import boto3
 
 class Resource(object):
     def __init__(self, resource, resource_type, resource_id, creation_date,
-                 region=None):
+                 region=None, reason=None):
         self.wrapped = resource
         self.region = region
         self.resource_type = resource_type
         self.resource_id = resource_id
         self.creation_date = creation_date
+        self.reason = reason
 
     def __eq__(self, other):
         if type(other) is type(self):
