@@ -55,7 +55,7 @@ class AwsIamUserHandlerTest(unittest2.TestCase):
                                           resource_type=iam_user,
                                           resource_id=self.user['Arn'],
                                           creation_date=self.user['CreateDate'],
-                                          region='global')
+                                          region='global', reason="Do not use user with static credentials.")
 
         unwanted_users = self.user_handler.fetch_unwanted_resources()
 
