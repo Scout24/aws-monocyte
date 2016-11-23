@@ -4,7 +4,7 @@
 [![Codacy Badge](https://www.codacy.com/project/badge/ab632d7511e14a7ebfd47a797ced7b62)](https://www.codacy.com/public/jan_1691/aws-monocyte_2)
 
 **Monocyte - Search and Destroy unwanted AWS Resources relentlessly.**
-Monocyte is a bot for destroying AWS resources in non-EU regions written in Python using Boto.
+Monocyte is a bot for searching (and optionally destroying) AWS resources in non-EU regions written in Python using Boto.
 It is especially useful for companies that are bound to European privacy laws and for that reason don't want to process user data in non-EU regions. Additional Monocyte can handle compliance issues e.g no users with static credentials or policies not following the least priviliges rules.
 
 The name [Monocyte](https://en.wikipedia.org/wiki/Monocyte) is related to a type of white blood cells that are part of a human's innate immune system, the first line of defense being responsible for searching and destroying alien organisms to prevent unwanted infections.
