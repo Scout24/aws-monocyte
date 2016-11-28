@@ -135,7 +135,7 @@ class WhitelistLoadTest(TestCase):
         self.object_mock.get.return_value = {'Body': self.body_mock}
 
         def side_effect(bucket_name, key):
-            if(bucket_name == 'any_bucket' and key == 'any_key/test'):
+            if bucket_name == 'any_bucket' and key == 'any_key/test':
                 return self.object_mock
 
         self.s3_mock = MagicMock(side_effect=side_effect)

@@ -34,7 +34,7 @@ class Bucket(Handler):
     def __init__(self, *args, **kwargs):
         self._old_match_hostname = getattr(ssl, 'match_hostname', None)
         ssl.match_hostname = self._new_match_hostname
-        return super(Bucket, self).__init__(*args, **kwargs)
+        super(Bucket, self).__init__(*args, **kwargs)
 
     def _new_match_hostname(self, cert, hostname):
         hostnames = ['.s3{0}{1}.amazonaws.com'.format(separator, region.name)
