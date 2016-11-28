@@ -114,8 +114,8 @@ class ArgumentsToConfigTest(TestCase):
         self.assertEqual(config, self.expected_config)
 
     def test_if_no_whitelist_is_configured_None_is_returned(self):
-       whitelist = cli.get_whitelist_from_args({})
-       self.assertEqual(whitelist, None)
+        whitelist = cli.get_whitelist_from_args({})
+        self.assertEqual(whitelist, None)
 
     def test_dry_run_can_be_deactivated(self):
         self.arguments['--dry-run'] = 'False'

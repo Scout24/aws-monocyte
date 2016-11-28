@@ -88,7 +88,7 @@ class IamInlinePolicyTests(unittest2.TestCase):
         )
 
     def _delete_role(self):
-       self.client.delete_role(
+        self.client.delete_role(
            RoleName='integrationtest_role'
        )
 
