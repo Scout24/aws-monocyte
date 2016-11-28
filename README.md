@@ -20,7 +20,7 @@ On the one hand we want our teams to work with AWS and manage their own accounts
 On the other hand we are bound to EU and German privacy laws and for that reason want to search and destroy 
 unwanted AWS resources relentlessly. Therefore, we started implementing our own basic AWS immune system layer: Monocyte.
 
-**Also read [AWS Monocyte - Let’s Build a Cloud Immune System](http://www.datahack.it/cloud-privacy-aws-monocyte/) or 
+**Also read [AWS Monocyte - Let’s Build a Cloud Immune System](http://jan.brennenstuhl.me/2015/03/18/cloud-privacy-aws-monocyte.html) or 
 check out [the presentation](https://dl.dropboxusercontent.com/u/1874278/datahackit/AWS-Monocyte.pdf) we did for the AWS UserGroup Meetup in March 2015 at the Immobilien Scout HQ in Berlin.**
 
 ## Prerequisites
