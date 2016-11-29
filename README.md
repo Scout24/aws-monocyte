@@ -41,7 +41,7 @@ options:
 ```
 When --dry-run is explicitly set to "False", Monocyte will delete unwanted resources.
 
-Configuration is done via YAML files. If the --config-path specify is a directory with multiple \*.yaml files, they are merged in alphabetical order. The (documentation of yamlreader)[https://github.com/ImmobilienScout24/yamlreader] contains more details.
+Configuration is done via YAML files. If the --config-path specify is a directory with multiple \*.yaml files, they are merged in alphabetical order. The [documentation of yamlreader](https://github.com/ImmobilienScout24/yamlreader) contains more details.
 
 An example configuration file with documentation can be found on [GitHub](https://github.com/ImmobilienScout24/aws-monocyte/blob/master/src/main/config/config.yaml-dist).
 
