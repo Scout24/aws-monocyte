@@ -93,9 +93,9 @@ class Monocyte(object):
             self.logger.info("Start handling %s resources" % specific_handler.name)
             try:
                 self.handle_service(specific_handler)
-            except Exception as exc:
-                self.logger.error("Error while trying to fetch resources from "
-                               "%s\n%s" % (specific_handler.name, str(exc)))
+            except Exception:
+                self.logger.exception("Error while trying to fetch resources "
+                                      "from %s:", specific_handler.name)
             else:
                 self.logger.info("Finished handling %s resources" % specific_handler.name)
 
