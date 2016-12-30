@@ -71,7 +71,7 @@ class Monocyte(object):
         return not self.is_region_allowed(region) and not self.is_region_ignored(region)
 
     def search_and_destroy_unwanted_resources(self):
-        self.logger.warn("Monocyte - Search and Destroy unwanted AWS Resources relentlessly.")
+        self.logger.warning("Monocyte - Search and Destroy unwanted AWS Resources relentlessly.")
         if self.cloudwatchlogs_config:
             cloudwatch_handler = CloudWatchLogsHandler(self.cloudwatchlogs_config["region"],
                                                        self.cloudwatchlogs_config["groupname"],
@@ -104,7 +104,7 @@ class Monocyte(object):
         if self.problematic_resources:
             self.logger.info("Problems encountered while deleting the following resources.")
             for resource, service_handler, exception in self.problematic_resources:
-                self.logger.warn("{0:10s} {1}: {2}".format(
+                self.logger.warning("{0:10s} {1}: {2}".format(
                     resource.region, service_handler.name, exception))
             return 1
         return 0
@@ -112,7 +112,7 @@ class Monocyte(object):
     def handle_service(self, specific_handler):
         for resource in specific_handler.fetch_unwanted_resources():
             if not self.is_region_allowed(resource.region):
-                self.logger.warn(specific_handler.to_string(resource))
+                self.logger.warning(specific_handler.to_string(resource))
                 try:
                     specific_handler.delete(resource)
                 except Warning as warn:

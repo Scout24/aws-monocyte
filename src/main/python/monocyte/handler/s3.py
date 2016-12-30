@@ -77,19 +77,19 @@ class Bucket(Handler):
                 #    conn.auth_region_name = ET.fromstring(exc.body).find(
                 #        './Region').text
                 #    region = conn.auth_region_name
-                #    self.logger.warn(
+                #    self.logger.warning(
                 #        "bucket %s wrong location -> location "
                 #        "updated for connection: %s", bucket.name, region)
                 #else:
                 # See https://github.com/boto/boto/issues/2741
-                self.logger.warn("get_location() crashed for %s, "
+                self.logger.warning("get_location() crashed for %s, "
                                  "skipping", bucket.name)
             elif exc.status == 404:
                 # This can happen due to race conditions (bucket being deleted
                 # just now).
                 # Also, local testing showed the curious case of a deleted
                 # bucket that was still listed in four regions.
-                self.logger.warn(
+                self.logger.warning(
                     "Bucket '%s' was found by get_all_buckets(), but "
                     "get_location() failed with 404 Not Found", bucket.name)
             else:
@@ -98,7 +98,7 @@ class Bucket(Handler):
             return
         except ssl.CertificateError as exc:
             # Bucket is in a SIGV4 Region but connection is not SIGV4
-            self.logger.warn('ssl.CertificateError for bucket %s with '
+            self.logger.warning('ssl.CertificateError for bucket %s with '
                              'connected host %s', bucket.name,
                              conn.host)
             return
