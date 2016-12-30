@@ -51,7 +51,8 @@ def apply_default_config(config):
             "rds2.Instance",
             "rds2.Snapshot",
             "dynamodb.Table",
-            "s3.Bucket"],
+            "s3.Bucket",
+            "acm.Certificate"],
         "ignored_resources": {"cloudformation": ["cloudtrail-logging"]},
         "ignored_regions": ["cn-north-1", "us-gov-west-1"],
         "allowed_regions_prefixes": ["eu"]

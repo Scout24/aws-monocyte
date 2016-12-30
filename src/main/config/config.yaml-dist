@@ -22,6 +22,7 @@ handler_names:
   - rds2.Snapshot
   - dynamodb.Table
   - s3.Bucket
+  - acm.Certificate
 
 # Which CloudWatch target to use for logging. Valid log levels are "debug",
 # "info", "warning", and "error".

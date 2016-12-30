@@ -15,6 +15,7 @@
 from __future__ import print_function, absolute_import, division
 
 import logging
+import monocyte.handler.acm
 import monocyte.handler.cloudformation
 import monocyte.handler.dynamodb
 import monocyte.handler.ec2
@@ -155,6 +156,7 @@ class Monocyte(object):
             monocyte.handler.rds2.Instance,
             monocyte.handler.rds2.Snapshot,
             monocyte.handler.s3.Bucket,
+            monocyte.handler.acm.Certificate,
         ]
         handler_classes = {}
         for hc in handler_classes_list:
