@@ -61,7 +61,7 @@ class MonocyteTest(TestCase):
         handler.to_string.return_value = "test handler"
         self.monocyte.handle_service(handler)
 
-        self.logger_mock.getLogger.return_value.warn.assert_called_with(REGION_NOT_ALLOWED)
+        self.logger_mock.getLogger.return_value.warning.assert_called_with(REGION_NOT_ALLOWED)
 
     @patch("monocyte.Monocyte.get_all_handler_classes")
     def test_search_and_destroy_unwanted_resources_dry_run(self, fetch_mock):
