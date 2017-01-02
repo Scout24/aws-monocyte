@@ -1,4 +1,3 @@
-from __future__ import absolute_import, print_function, division
 """Check for ACM certificates that will expire soon
 
 ACM is the "AWS Certificate Manager" that usually renews your certificates
@@ -10,6 +9,7 @@ fine print at
 which means it is not 100% guaranteed to work. And once we are at it, we
 can also check imported certificates (which cannot be renewed by ACM).
 """
+from __future__ import absolute_import, print_function, division
 
 import datetime
 import boto3
@@ -41,7 +41,6 @@ class Certificate(Handler):
 
         limit = datetime.datetime.now() + datetime.timedelta(days=MIN_VALID_DAYS)
 
-        expired_certificates = []
         for certificate_arn in certificate_arns:
             response = client.describe_certificate(CertificateArn=certificate_arn)
             certificate = response['Certificate']
@@ -59,11 +58,9 @@ class Certificate(Handler):
                 creation_date=certificate.get('CreatedAt', certificate.get('ImportedAt')),
                 region="global",
                 reason="will expired soon")
-            self.logger.error("YIELD")
             yield resource_wrapper
 
     def to_string(self, resource):
-        table = resource.wrapped
         return "{summary} with ARN {arn}, created at {creation_date} will expire soon.".format(
             summary=resource.wrapped, arn=resource.resource_id,
             creation_date=resource.creation_date)
