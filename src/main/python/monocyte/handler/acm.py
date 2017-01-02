@@ -15,6 +15,9 @@ import datetime
 import boto3
 from monocyte.handler import Resource, Handler
 
+# ACM attempts to renew SSL certificates 60 before expiration. If it
+# is still not renewed 55 days before expiration, something is wrong.
+MIN_VALID_DAYS = 55
 
 class Certificate(Handler):
     def fetch_regions(self):
@@ -27,10 +30,7 @@ class Certificate(Handler):
         response = client.list_certificates(CertificateStatuses=['ISSUED'])
         certificate_arns = [summary['CertificateArn'] for summary in response['CertificateSummaryList']]
 
-        # ACM attempts to renew SSL certificates 60 before expiration. If it
-        # is still not renewed 55 days before expiration, something is wrong.
-        min_valid_days = 55
-        limit = datetime.datetime.now() + datetime.timedelta(days=min_valid_days)
+        limit = datetime.datetime.now() + datetime.timedelta(days=MIN_VALID_DAYS)
 
         expired_certificates = []
         for certificate_arn in certificate_arns:
