@@ -103,11 +103,11 @@ class ArgumentsToConfigTest(TestCase):
 
     def test_get_config_path(self):
         config_path = cli.get_config_path_from_args({'--config-path':'/any/path'})
-        self.assertEquals(config_path, '/any/path')
+        self.assertEqual(config_path, '/any/path')
 
     def test_get_whitelist_from_args(self):
         whitelist = cli.get_whitelist_from_args({'--whitelist':'any_whitelist_resource'})
-        self.assertEquals(whitelist, 'any_whitelist_resource')
+        self.assertEqual(whitelist, 'any_whitelist_resource')
 
 
     def test_basic_translation(self):
@@ -145,8 +145,8 @@ class WhitelistLoadTest(TestCase):
 
     def test_load_from_s3_bucket(self):
         whitelist = cli.load_whitelist('s3://any_bucket/any_key/test')
-        self.assertEquals(self.expected_whitelist, whitelist)
+        self.assertEqual(self.expected_whitelist, whitelist)
 
     def test_returns_empty_whitelist_if_uri_is_none(self):
         whitelist = cli.load_whitelist(None)
-        self.assertEquals(whitelist, {})
+        self.assertEqual(whitelist, {})
