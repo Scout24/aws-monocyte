@@ -21,12 +21,21 @@ MIN_VALID_DAYS = 55
 
 class Certificate(Handler):
     def fetch_regions(self):
-        from boto import ec2
-        return ec2.regions()
-        return ['global']
+        # Since we want to check all regions, regardless of what's allowed or
+        # not, we handle multi-region stuff ourselves.
+        return []
 
     def fetch_unwanted_resources(self):
-        client = boto3.client('acm')
+        session = boto3.session.Session()
+        region_names = session.get_available_regions('acm')
+        unwanted_resources = []
+
+        for region_name in region_names:
+            unwanted_resources.extend(list(self._fetch_unwanted_resources(region_name)))
+        return unwanted_resources
+
+    def _fetch_unwanted_resources(self, region_name):
+        client = boto3.client('acm', region_name=region_name)
         response = client.list_certificates(CertificateStatuses=['ISSUED'])
         certificate_arns = [summary['CertificateArn'] for summary in response['CertificateSummaryList']]
 
