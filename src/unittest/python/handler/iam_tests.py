@@ -156,9 +156,9 @@ class PolicyTests(unittest2.TestCase):
         self.assertFalse(self.policy_handler.is_arn_in_whitelist('somearn'))
 
     def test_is_arn_in_whitelist_with_filled_whitelist(self):
-        self.policy_handler.get_account_id = lambda x:'123698745'
+        self.policy_handler.get_account_id = lambda x: '123698745'
         self.policy_handler.get_whitelist = lambda : {'Arns': [{'Arn': 'arn:to:whitelist'}]}
-        self.policy_handler.whitelist = {'123698745':{'Arns': [{'Arn': 'arn:to:whitelist'}]}}
+        self.policy_handler.whitelist = {'123698745': {'Arns': [{'Arn': 'arn:to:whitelist'}]}}
         self.assertFalse(self.policy_handler.is_arn_in_whitelist({'Arn': 'no:arn:to:whitelist'}))
         self.assertTrue(self.policy_handler.is_arn_in_whitelist({'Arn': 'arn:to:whitelist'}))
 
@@ -186,7 +186,7 @@ class IamPolicyTest(PolicyTests):
 
     def test_fetch_unwanted_resources_returns_true_if_forbidden_action(self):
         iam_policy = 'iam.IamPolicy'
-        policyVersionMock = MagicMock(document={'Statement': [{'Action': ['s3:test3', '*:*'],'Resource': 'aws:s2222'}]})
+        policyVersionMock = MagicMock(document={'Statement': [{'Action': ['s3:test3', '*:*'], 'Resource': 'aws:s2222'}]})
         self.iamResourceMock.PolicyVersion.return_value = policyVersionMock
         policy = {'IsTruncated': False,
                   'Policies': [{'Arn': 'arn:aws:iam:123456789', 'DefaultVersionId': 'v1', 'CreateDate': '2012-06-12'}]}
@@ -194,7 +194,7 @@ class IamPolicyTest(PolicyTests):
                                           resource_type=iam_policy,
                                           resource_id=policy['Policies'][0]['Arn'],
                                           creation_date=policy['Policies'][0]['CreateDate'],
-                                          region='global', reason = self.reason)
+                                          region='global', reason=self.reason)
 
         self.iamClientMock.list_policies.return_value = policy
         unwanted_resource = self.policy_handler.fetch_unwanted_resources()

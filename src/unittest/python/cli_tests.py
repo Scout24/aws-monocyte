@@ -102,13 +102,12 @@ class ArgumentsToConfigTest(TestCase):
         }
 
     def test_get_config_path(self):
-        config_path = cli.get_config_path_from_args({'--config-path':'/any/path'})
+        config_path = cli.get_config_path_from_args({'--config-path': '/any/path'})
         self.assertEqual(config_path, '/any/path')
 
     def test_get_whitelist_from_args(self):
-        whitelist = cli.get_whitelist_from_args({'--whitelist':'any_whitelist_resource'})
+        whitelist = cli.get_whitelist_from_args({'--whitelist': 'any_whitelist_resource'})
         self.assertEqual(whitelist, 'any_whitelist_resource')
-
 
     def test_basic_translation(self):
         config = cli.convert_arguments_to_config(self.arguments)
@@ -128,7 +127,7 @@ class ArgumentsToConfigTest(TestCase):
 
 class WhitelistLoadTest(TestCase):
     def setUp(self):
-        self.expected_whitelist = {'foo':'bar'}
+        self.expected_whitelist = {'foo': 'bar'}
         self.boto3_mock = patch('monocyte.cli.boto3').start()
         self.body_mock = MagicMock()
         self.body_mock.read.return_value = "foo: bar"
