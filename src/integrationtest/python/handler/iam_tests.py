@@ -88,9 +88,7 @@ class IamInlinePolicyTests(unittest2.TestCase):
         )
 
     def _delete_role(self):
-        self.client.delete_role(
-           RoleName='integrationtest_role'
-       )
+        self.client.delete_role(RoleName='integrationtest_role')
 
     def tearDown(self):
         self._delete_inline_role_policy()
@@ -123,7 +121,6 @@ class IamInlinePolicyTests(unittest2.TestCase):
         self._put_inline_role_policy(inline_policy)
         unwanted_resource = self.iam_handler.fetch_unwanted_resources()
         self.assertEqual(['integrationtest_role'], self._uniq(unwanted_resource))
-
 
     def test_no_wildcard_in_inline_policy(self):
         self._create_role()
@@ -180,7 +177,6 @@ class IamInlinePolicyTests(unittest2.TestCase):
         self.assertEqual(['integrationtest_role'], self._uniq(unwanted_resource))
 
 
-
 class IamAPolicyTests(unittest2.TestCase):
     def setUp(self):
         self.arn = ''
@@ -193,7 +189,9 @@ class IamAPolicyTests(unittest2.TestCase):
 
     def _create_policy(self, policy):
         iam = boto3.client('iam')
-        policy_response = iam.create_policy(PolicyName='monocyteIntegrationTest', PolicyDocument=json.dumps(policy))
+        policy_response = iam.create_policy(
+            PolicyName='monocyteIntegrationTest',
+            PolicyDocument=json.dumps(policy))
         return policy_response['Policy']['Arn']
 
     def _delete_policy(self, arn):
