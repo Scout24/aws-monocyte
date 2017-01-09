@@ -37,8 +37,8 @@ def set_properties(project):
     project.depends_on("python-cloudwatchlogs-logging")
     project.depends_on("yamlreader")
     project.depends_on("pils")
+    project.depends_on("mock")
 
-    project.build_depends_on("mock")
     project.build_depends_on("unittest2>=0.7")
     project.build_depends_on("moto")
 

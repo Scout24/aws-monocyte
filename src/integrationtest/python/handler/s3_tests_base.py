@@ -1,11 +1,17 @@
 from __future__ import print_function, absolute_import, division
 
+import boto3
 import unittest2
 import random
 from functools import wraps
 
 from monocyte.handler import s3 as s3_handler
-from monocyte.handler import Resource
+
+
+def region_filter(region_name):
+    if region_name in ['cn-north-1', 'us-gov-west-1']:
+        return False
+    return True
 
 
 class S3TestsBase(unittest2.TestCase):
@@ -17,55 +23,59 @@ class S3TestsBase(unittest2.TestCase):
 
         def my_filter(old_function):
             @wraps(old_function)
-            def new_function(*args):
-                conn, bucket, checked_buckets = args
-                if not bucket.name.startswith(self.prefix):
-                    # print("skipping bucket {0}".format(bucket.name))
-                    return
-                else:
-                    print("processing {0}".format(bucket.name))
-                checked_buckets = []
-                return old_function(conn, bucket, checked_buckets)
+            def new_function():
+                return [resource for resource in old_function()
+                        if resource.resource_id in self.our_buckets]
 
             return new_function
 
-        self.s3_handler.check_if_unwanted_resource = my_filter(
-            self.s3_handler.check_if_unwanted_resource
+        self.s3_handler.fetch_unwanted_resources = my_filter(
+            self.s3_handler.fetch_unwanted_resources
         )
 
     def tearDown(self):
-        for resource in self.our_buckets:
-            print("to be deleted {0}".format(resource.wrapped.name))
+        for bucket_name in self.our_buckets:
             self.s3_handler.dry_run = False
-            self.s3_handler.delete(resource)
+            self.s3_handler.delete(bucket_name)
+
+    def connect_to_region(self, region_name):
+        return boto3.client('s3', region_name=region_name)
 
     def _create_bucket(self, bucket_name, region_name, create_key=False):
-        conn = self.s3_handler.connect_to_region(region_name)
+        bucket_name = self.prefix + bucket_name
+        client = self.connect_to_region(region_name)
+
         if region_name == 'us-east-1':
-            bucket = conn.create_bucket(self.prefix + bucket_name)
+            client.create_bucket(Bucket=bucket_name)
         else:
-            bucket = conn.create_bucket(self.prefix + bucket_name,
-                                        location=region_name)
-        resource = Resource(resource=bucket,
-                            resource_type='s3.Bucket',
-                            resource_id='42',
-                            creation_date='2015-11-23',
-                            region=self.s3_handler.map_location(
-                                region_name))
-        self.our_buckets.append(resource)
+            client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration={'LocationConstraint': region_name})
+        self.our_buckets.append(bucket_name)
+
         if create_key:
-            key = bucket.new_key(key_name='mytestkey')
-            key.set_contents_from_string('test')
-        return bucket
+            client.put_object(Bucket=bucket_name, Key='foobar')
 
-    def _uniq(self, resources):
-        found_names = []
-        uniq_resources = []
-        for resource in resources:
-            name = resource.wrapped.name
-            if name in found_names:
-                continue
-            uniq_resources.append(resource)
-            found_names.append(name)
+    def run_single_test(self, bucket_name, region_name, create_key, dry_run):
+        self.s3_handler.dry_run = dry_run
+        self._create_bucket(bucket_name, region_name, create_key=create_key)
 
-        return uniq_resources
+        resources = self.s3_handler.fetch_unwanted_resources()
+        self.assertEqual(len(resources), 1)
+        resource = resources[0]
+        self.assertIn(bucket_name, resource.resource_id)
+        self.assertIn(bucket_name, str(resource))
+        self.assertIn(region_name, str(resource))
+
+        self.s3_handler.delete(resources[0])
+
+        resources = self.s3_handler.fetch_unwanted_resources()
+
+        if dry_run:
+            # In dry run, resources must not be deleted. So we should find the
+            # same bucket again.
+            self.assertEqual(len(resources), 1)
+            self.assertIn(bucket_name, resources[0].resource_id)
+        else:
+            self.assertEqual(len(resources), 0)
+            # Prevent self.tearDown() from failing with "404 Not Found".
+            self.our_buckets = []
+            return

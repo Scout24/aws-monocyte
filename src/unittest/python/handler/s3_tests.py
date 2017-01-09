@@ -16,9 +16,9 @@
 import boto.s3
 import boto.s3.bucket
 import boto.s3.key
-from boto.s3.connection import OrdinaryCallingFormat, SubdomainCallingFormat
 import boto.exception
 import boto.regioninfo
+import boto3
 from moto import mock_s3
 from mock import patch, Mock, MagicMock
 from monocyte.handler import s3, Resource
@@ -149,37 +149,6 @@ class S3BucketNewTest(unittest2.TestCase):
         patch.stopall()
 
     @mock_s3
-    def test_connect_to_region_non_sigv4_regions(self):
-        for region in ['eu-west-1']:
-            conn = self.s3_handler.connect_to_region(region)
-            self.assertIn(region, conn.host)
-            self.assertIsInstance(conn.calling_format, SubdomainCallingFormat)
-            self.assertEqual(conn.get_all_buckets(), [])
-
-    @mock_s3
-    def test_connect_to_region_sigv4_region_eu_central_1(self):
-        conn = self.s3_handler.connect_to_region('eu-central-1')
-        self.assertIn('eu-central-1', conn.host)
-        self.assertIsInstance(conn.calling_format, SubdomainCallingFormat)
-        self.assertEqual(conn.get_all_buckets(), [])
-
-    @mock_s3
-    def test_connect_to_region_non_sigv4_regions_with_bucket_name(self):
-        bucket_name = 'test.foo.bar'
-        for region in ['eu-west-1']:
-            conn = self.s3_handler.connect_to_region(region, bucket_name)
-            self.assertIn(region, conn.host)
-            self.assertIsInstance(conn.calling_format, OrdinaryCallingFormat)
-            self.assertEqual(conn.get_all_buckets(), [])
-
-    @mock_s3
-    def test_connect_to_region_sigv4_region_eu_central_1_with_bucket_name(self):
-        conn = self.s3_handler.connect_to_region('eu-central-1', 'test.foo.bar')
-        self.assertIsInstance(conn.calling_format, OrdinaryCallingFormat)
-        self.assertIn('eu-central-1', conn.host)
-        self.assertEqual(conn.get_all_buckets(), [])
-
-    @mock_s3
     def test_fetch_unwanted_resources_no_resources(self):
         # self.bucket_mock = self._given_bucket_mock()
         resources = list(self.s3_handler.fetch_unwanted_resources())
@@ -187,10 +156,10 @@ class S3BucketNewTest(unittest2.TestCase):
 
     @mock_s3
     def test_fetch_unwanted_resources_one_resource(self):
-        bucket_mock = self._given_bucket_mock('test-bucket', 'eu-west-1')
+        self._given_bucket_mock('test-bucket', 'eu-west-1')
         resources = list(self.s3_handler.fetch_unwanted_resources())
         self.assertEqual(len(resources), 1)
-        self.assertEqual(resources[0].wrapped.name, bucket_mock.name)
+        self.assertEqual(resources[0].resource_id, 'test-bucket')
 
     @mock_s3
     def test_fetch_unwanted_resources_two_resources(self):
@@ -199,7 +168,7 @@ class S3BucketNewTest(unittest2.TestCase):
         resources = list(self.s3_handler.fetch_unwanted_resources())
         self.assertEqual(len(resources), 2)
         bucket_names_in = set(['bucket-eu', 'test-bucket'])
-        bucket_names_out = set([resource.wrapped.name for resource in
+        bucket_names_out = set([resource.resource_id for resource in
                                 resources])
         self.assertEqual(bucket_names_out, bucket_names_in)
 
@@ -211,7 +180,7 @@ class S3BucketNewTest(unittest2.TestCase):
         resources = list(self.s3_handler.fetch_unwanted_resources())
         self.assertEqual(len(resources), 3)
         bucket_names_in = set(['bucket.eu', 'test.bucket', 'test.ap-bucket'])
-        bucket_names_out = set([resource.wrapped.name for resource in
+        bucket_names_out = set([resource.resource_id for resource in
                                 resources])
         self.assertEqual(bucket_names_out, bucket_names_in)
 
@@ -234,6 +203,7 @@ class S3BucketNewTest(unittest2.TestCase):
         resources = list(self.s3_handler.fetch_unwanted_resources())
         self.assertEqual(len(resources), 1)
 
+    @unittest2.skip("https://github.com/spulec/moto/issues/734")
     @mock_s3
     def test_bucket_delete_no_dry_run(self):
         self._given_bucket_mock('test-bucket', 'eu-west-1')
@@ -245,5 +215,5 @@ class S3BucketNewTest(unittest2.TestCase):
         self.assertEqual(len(resources), 0)
 
     def _given_bucket_mock(self, bucket_name, region_name):
-        conn = self.s3_handler.connect_to_region(region_name)
-        return conn.create_bucket(bucket_name, location=region_name)
+        client = boto3.client('s3', region_name=region_name)
+        client.create_bucket(Bucket=bucket_name)

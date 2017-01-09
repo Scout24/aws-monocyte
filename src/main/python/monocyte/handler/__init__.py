@@ -38,6 +38,20 @@ class Resource(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def __str__(self):
+        return ("{class_name}({resource}, {resource_type}, {resource_id}, "
+                "{creation_date}, region={region}, reason={reason})").format(
+                class_name=self.__class__.__name__,
+                resource=self.wrapped,
+                resource_type=self.resource_type,
+                resource_id=self.resource_id,
+                creation_date=self.creation_date,
+                region=self.region,
+                reason=self.reason)
+
+    def __repr__(self):
+        return str(self)
+
 
 HANDLER_PREFIX = "monocyte.handler."
 
