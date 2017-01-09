@@ -1,7 +1,9 @@
 language: python
 python:
-  - "pypy"
-  - "2.6"
+# Pypy and Python2.6 on Travis CI fail with
+#   InsecurePlatformWarning: A true SSLContext object is not available.
+#  - "pypy"
+#  - "2.6"
   - "2.7"
   - "3.4"
   - "3.5"
