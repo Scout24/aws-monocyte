@@ -17,6 +17,7 @@ import boto3
 from moto import mock_s3
 from mock import patch
 from monocyte.handler import s3
+import os
 import unittest2
 
 BUCKET_NAME = "test_bucket"
@@ -27,6 +28,7 @@ KEY = "'test.txt'"
 INITIATING_DELITION = "Initiating deletion sequence for %s."
 
 
+@unittest2.skipIf('http_proxy' in os.environ, 'HTTP proxies confuse moto/boto')
 class S3BucketNewTest(unittest2.TestCase):
 
     def setUp(self):
