@@ -27,10 +27,10 @@ handler_names:
 # Which CloudWatch target to use for logging. Valid log levels are "debug",
 # "info", "warning", and "error".
 # Remove this section to disable logging to CloudWatch.
-cloudwatchlogs:
-  region: eu-west-1
-  log_level: info
-  groupname: monocytelogs
+#cloudwatchlogs:
+#  region: eu-west-1
+#  log_level: info
+#  groupname: monocytelogs
 
 # Regions that are totally ignored by Monocyte. This means Monocyte does not
 # even attempt to connect there. Currently, these are the Chinese and US
