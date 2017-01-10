@@ -132,8 +132,8 @@ class InlinePolicy(Policy):
         for role in self.get_all_iam_roles_in_account():
             if self.is_arn_in_whitelist(role):
                 continue
-            policy_names = self.get_all_inline_policies_for_role(role['RoleName'])
-            for policy in policy_names:
+            policies = self.get_all_inline_policies_for_role(role['RoleName'])
+            for policy in policies:
                 actions = self.gather_actions(policy.policy_document)
                 if self.check_policy_action_for_forbidden_string(
                         actions):
