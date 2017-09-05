@@ -1,6 +1,6 @@
 from __future__ import print_function, absolute_import, division
 
-import boto
+import boto3
 import os
 from mock import Mock, patch
 from monocyte.handler import Resource
@@ -175,16 +175,14 @@ class StatusMailPluginTest(TestCase):
     def test_send_mail_ok(self, mock_get_account_alias):
         mock_get_account_alias.return_value = "test-account"
 
-        conn = boto.connect_ses('the_key', 'the_secret')
-        conn.verify_email_identity(self.test_sender)
+        conn = boto3.client('ses')
+        conn.verify_email_identity(EmailAddress=self.test_sender)
 
         self.test_status_mail_plugin.run()
 
         send_quota = conn.get_send_quota()
-        sent_count = int(
-                send_quota['GetSendQuotaResponse']['GetSendQuotaResult'][
-                    'SentLast24Hours'])
-        self.assertEqual(sent_count, 2)
+        sent_count = int(send_quota['SentLast24Hours'])
+        self.assertEqual(sent_count, 1)
 
     @mock_ses
     @patch('monocyte.plugins.status_mail_plugin.StatusMailPlugin._get_account_alias')
@@ -265,7 +263,7 @@ class UsofaStatusMailPluginTest(TestCase):
 
     @mock_s3
     def test_get_usofa_data__ok(self):
-        conn = boto.s3.connect_to_region(self.test_region)
+        conn = boto3.client('s3', region_name=self.test_region)
         conn.create_bucket(self.usofa_bucket_name)
         bucket = conn.get_bucket(self.usofa_bucket_name)
         key = boto.s3.key.Key(bucket)

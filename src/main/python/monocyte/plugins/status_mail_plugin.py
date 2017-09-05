@@ -9,7 +9,7 @@ from .ses_plugin import AwsSesPlugin
 class StatusMailPlugin(AwsSesPlugin):
     def __init__(self, unwanted_resources, problematic_resources, dry_run, **kwargs):
         self.subject = 'AWS Compliance Checker - Your action is required'
-        super(StatusMailPlugin, self).__init__(unwanted_resources, problematic_resources, dry_run, **kwargs)
+        super(StatusMailPlugin, self).__init__(unwanted_resources, problematic_resources, dry_run, subject=self.subject, **kwargs)
 
     @property
     def body(self):
