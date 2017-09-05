@@ -1,6 +1,6 @@
 from __future__ import print_function, absolute_import, division
 
-import boto.sqs.message
+import boto3
 import json
 import logging
 
@@ -18,17 +18,10 @@ class AwsSQSPlugin(object):
 
         self.logger = logging.getLogger(__name__)
 
-    def _connect_to_queue(self):
-        conn = boto.sqs.connect_to_region(self.queue_region)
-        self.queue = conn.get_queue(self.queue_name, owner_acct_id=self.queue_account)
-        if self.queue is None:
-            raise "No queue '{0}' found in account '{1}', region '{2}'".format(
-                  self.queue_name, self.queue_account, self.queue_region)
-
     def _get_account_alias(self):
-        iam = boto.connect_iam()
-        response = iam.get_account_alias()['list_account_aliases_response']
-        return response['list_account_aliases_result']['account_aliases'][0]
+        iam = boto3.client('iam')
+        response = iam.list_account_aliases()
+        return response['AccountAliases'][0]
 
     def monocyte_status(self):
         if self.unwanted_resources or self.problematic_resources:
@@ -45,10 +38,9 @@ class AwsSQSPlugin(object):
         return json.dumps(body)
 
     def send_message(self, body):
-        self._connect_to_queue()
-        message = boto.sqs.message.RawMessage()
-        message.set_body(body)
-        self.queue.write(message)
+        sqs = boto3.client('sqs', region_name=self.queue_region)
+        response = sqs.get_queue_url(QueueName=self.queue_name, QueueOwnerAWSAccountId=self.queue_account)
+        sqs.send_message(QueueUrl=response['QueueUrl'], MessageBody=body)
 
     def run(self):
         try:

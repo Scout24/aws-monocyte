@@ -4,7 +4,7 @@ import logging
 import os
 from unittest2 import TestCase
 from moto import mock_sqs
-import boto
+import boto3
 from mock import patch
 from monocyte.plugins.sqs_plugin import AwsSQSPlugin
 
@@ -16,22 +16,23 @@ os.environ['no_proxy'] = ''
 class AwsSQSPluginTest(TestCase):
     def setUp(self):
         self.queue_region = "eu-west-1"
-        self.queue_account = "123"
+        self.queue_account = "123456789012"
         self.queue_name = "monocyte"
 
     def _create_sqs_queue(self):
-        conn = boto.sqs.connect_to_region(self.queue_region)
-        conn.create_queue(self.queue_name)
+        conn = boto3.client('sqs', region_name=self.queue_region)
+        conn.create_queue(QueueName=self.queue_name)
 
     def _get_plugin(self):
         return AwsSQSPlugin([], [], True,
-                            queue_account=None,
+                            queue_account=self.queue_account,
                             queue_name=self.queue_name,
                             queue_region=self.queue_region)
 
-    def _get_queue(self):
-        conn = boto.sqs.connect_to_region(self.queue_region)
-        return conn.get_queue(self.queue_name, owner_acct_id=self.queue_account)
+    def _get_queue_url(self):
+        sqs = boto3.client('sqs', region_name=self.queue_region)
+        response = sqs.get_queue_url(QueueName=self.queue_name, QueueOwnerAWSAccountId=self.queue_account)
+        return (sqs, response['QueueUrl'])
 
     @mock_sqs
     def test_plugin_send_message(self):
@@ -39,12 +40,11 @@ class AwsSQSPluginTest(TestCase):
         plugin = self._get_plugin()
         plugin.send_message("the body")
 
-        queue = self._get_queue()
-        messages = queue.get_messages()
+        (sqs, queue_url) = self._get_queue_url()
+        messages = sqs.receive_message(QueueUrl=queue_url)['Messages']
         self.assertEqual(len(messages), 1)
 
-        message = messages[0]
-        body = message.get_body()
+        body = messages[0]['Body']
         self.assertEqual(body, "the body")
 
     def test_monocyte_status_no_issues(self):
