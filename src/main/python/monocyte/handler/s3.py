@@ -58,7 +58,7 @@ class Bucket(Handler):
                                       bucket_name)
                 continue
             region_name = self.map_location(response['LocationConstraint'])
-            if region_name not in region_names:
+            if region_name not in region_names or self.is_on_whitelist(bucket_name):
                 self.logger.debug("Bucket %s in region %s is OK.",
                                   bucket_name, region_name)
                 continue
@@ -76,6 +76,15 @@ class Bucket(Handler):
     def to_string(self, resource):
         return "s3 bucket found in {0}, with name {1}, created {2}".format(
             resource.region, resource.resource_id, resource.creation_date)
+
+    def is_on_whitelist(self, bucket_name):
+        bucket_arn = "arn:aws:s3:::%s" % bucket_name
+        whitelist_arns = self.get_whitelist().get('Arns', [])
+        for arn_with_reason in whitelist_arns:
+            if bucket_arn == arn_with_reason['Arn']:
+                return True
+
+        return False
 
     def delete(self, resource):
         if self.dry_run:
