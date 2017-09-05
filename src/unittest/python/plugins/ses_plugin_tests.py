@@ -2,7 +2,8 @@ from __future__ import print_function, absolute_import, division
 import os
 from unittest import TestCase
 from moto import mock_ses
-import boto
+import boto3
+from botocore.exceptions import ClientError
 
 from monocyte.plugins.ses_plugin import AwsSesPlugin
 
@@ -35,15 +36,13 @@ class AwsSesPluginTest(TestCase):
 
     @mock_ses
     def test_send_mail_ok(self):
-        conn = boto.connect_ses('the_key', 'the_secret')
-        conn.verify_email_identity(self.sender)
+        conn = boto3.client('ses')
+        conn.verify_email_identity(EmailAddress=self.sender)
 
         self.aws_ses_plugin.send_email()
 
         send_quota = conn.get_send_quota()
-        sent_count = int(
-            send_quota['GetSendQuotaResponse']['GetSendQuotaResult'][
-                'SentLast24Hours'])
+        sent_count = int(send_quota['SentLast24Hours'])
         self.assertEqual(sent_count, 1)
 
     @mock_ses
@@ -54,7 +53,7 @@ class AwsSesPluginTest(TestCase):
                                       self.dry_run, self.region,
                                       non_verified_sender, self.subject,
                                       self.recipients, self.body)
-        self.assertRaises(boto.exception.BotoServerError,
+        self.assertRaises(ClientError,
                           aws_ses_plugin.send_email)
 
     @mock_ses
@@ -64,5 +63,5 @@ class AwsSesPluginTest(TestCase):
                                       self.dry_run, self.region,
                                       "sender@test.invalid", self.subject,
                                       self.recipients, self.body)
-        self.assertRaises(boto.exception.BotoServerError,
+        self.assertRaises(ClientError,
                           aws_ses_plugin.send_email)

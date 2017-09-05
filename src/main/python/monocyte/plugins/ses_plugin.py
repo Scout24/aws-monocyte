@@ -1,6 +1,6 @@
 from __future__ import print_function, absolute_import, division
 
-from boto import ses
+import boto3
 import logging
 
 
@@ -31,15 +31,23 @@ class AwsSesPlugin(object):
         return self.mail_body
 
     def send_email(self):
-        conn = ses.connect_to_region(region_name=self.region)
+        conn = boto3.client('ses', region_name=self.region)
 
         self.logger.info("Sending Email to %s", ", ".join(self.recipients))
 
         conn.send_email(
-            source=self.sender,
-            subject=self.subject,
-            body=self.body,
-            to_addresses=self.recipients)
+            Source=self.sender,
+            Destination={'ToAddresses': [self.sender]},
+            Message={
+                'Subject': {
+                    'Data': self.subject
+                },
+                'Body': {
+                    'Text': {
+                        'Data': self.body
+                    }
+                }
+            })
 
     def run(self):
         self.send_email()
