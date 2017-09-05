@@ -36,7 +36,7 @@ class AwsSesPluginTest(TestCase):
 
     @mock_ses
     def test_send_mail_ok(self):
-        conn = boto3.client('ses')
+        conn = boto3.client('ses', region_name='eu-west-1')
         conn.verify_email_identity(EmailAddress=self.sender)
 
         self.aws_ses_plugin.send_email()

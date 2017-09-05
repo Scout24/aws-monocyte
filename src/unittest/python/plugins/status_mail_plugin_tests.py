@@ -175,7 +175,7 @@ class StatusMailPluginTest(TestCase):
     def test_send_mail_ok(self, mock_get_account_alias):
         mock_get_account_alias.return_value = "test-account"
 
-        conn = boto3.client('ses')
+        conn = boto3.client('ses', region_name=self.test_region)
         conn.verify_email_identity(EmailAddress=self.test_sender)
 
         self.test_status_mail_plugin.run()
