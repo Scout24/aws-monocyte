@@ -1,6 +1,6 @@
 from __future__ import print_function, absolute_import, division
 
-import boto
+import boto3
 import json
 
 from .ses_plugin import AwsSesPlugin
@@ -57,9 +57,9 @@ Account: {1}\n'''.format(unwanted_resources_info, self._get_account_alias())
         return return_text or "\tNone\n"
 
     def _get_account_alias(self):
-        iam = boto.connect_iam()
-        response = iam.get_account_alias()['list_account_aliases_response']
-        return response['list_account_aliases_result']['account_aliases'][0]
+        iam = boto3.client('iam')
+        response = iam.list_account_aliases()
+        return response['AccountAliases'][0]
 
     def run(self):
         if self.unwanted_resources or self.problematic_resources:
@@ -73,10 +73,9 @@ class UsofaStatusMailPlugin(StatusMailPlugin):
         self.usofa_bucket_name = usofa_bucket_name
 
     def _get_usofa_data(self):
-        self.conn = boto.s3.connect_to_region(self.region)
-        bucket = self.conn.get_bucket(self.usofa_bucket_name)
-        key = bucket.get_key('accounts.json')
-        account_data = json.loads(key.get_contents_as_string().decode('utf-8'))
+        s3 = boto3.client('s3', region_name=self.region)
+        response = s3.get_object(Bucket=self.usofa_bucket_name, Key='accounts.json')
+        account_data = json.loads(response['Body'].read().decode('utf-8'))
         return account_data
 
     @property

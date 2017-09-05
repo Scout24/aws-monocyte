@@ -264,11 +264,8 @@ class UsofaStatusMailPluginTest(TestCase):
     @mock_s3
     def test_get_usofa_data__ok(self):
         conn = boto3.client('s3', region_name=self.test_region)
-        conn.create_bucket(self.usofa_bucket_name)
-        bucket = conn.get_bucket(self.usofa_bucket_name)
-        key = boto.s3.key.Key(bucket)
-        key.key = "accounts.json"
-        key.set_contents_from_string('"This is a test of USofA"')
+        conn.create_bucket(Bucket=self.usofa_bucket_name)
+        conn.put_object(Bucket=self.usofa_bucket_name, Key="accounts.json", Body='"This is a test of USofA"')
 
         usofa_data = self.test_status_mail_plugin._get_usofa_data()
         self.assertEqual(usofa_data, "This is a test of USofA")
