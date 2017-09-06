@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import boto3
-from moto import mock_s3
+from moto import mock_s3, mock_sts
 from mock import patch
 from monocyte.handler import s3
 import os
@@ -33,18 +33,23 @@ class S3BucketNewTest(unittest2.TestCase):
 
     def setUp(self):
         self.logger_mock = patch("monocyte.handler.logging").start()
+        whitelist = {'123456789012': {'Arns': [{'Arn': 'arn:aws:s3:::whitelisted-bucket', 'Reason': 'whitelisted test'},
+                                               {'Arn': 'arn:aws:s3:::whitelisted-bucket-not-matching',
+                                                'Reason': 'should never match any resource'}]}}
         self.s3_handler = s3.Bucket(lambda region_name: region_name not in [
-            'cn-north-1', 'us-gov-west-1'])
+            'cn-north-1', 'us-gov-west-1'], whitelist=whitelist)
 
     def tearDown(self):
         patch.stopall()
 
     @mock_s3
+    @mock_sts
     def test_fetch_unwanted_resources_no_resources(self):
         resources = list(self.s3_handler.fetch_unwanted_resources())
         self.assertEqual(resources, [])
 
     @mock_s3
+    @mock_sts
     def test_fetch_unwanted_resources_one_resource(self):
         self._given_bucket_mock('test-bucket', 'eu-west-1')
         resources = list(self.s3_handler.fetch_unwanted_resources())
@@ -52,6 +57,7 @@ class S3BucketNewTest(unittest2.TestCase):
         self.assertEqual(resources[0].resource_id, 'test-bucket')
 
     @mock_s3
+    @mock_sts
     def test_fetch_unwanted_resources_two_resources(self):
         self._given_bucket_mock('test-bucket', 'eu-west-1')
         self._given_bucket_mock('bucket-eu', 'eu-central-1')
@@ -63,6 +69,7 @@ class S3BucketNewTest(unittest2.TestCase):
         self.assertEqual(bucket_names_out, bucket_names_in)
 
     @mock_s3
+    @mock_sts
     def test_fetch_unwanted_resources_three_resources(self):
         self._given_bucket_mock('test.ap-bucket', 'ap-southeast-1')
         self._given_bucket_mock('test.bucket', 'us-east-1')
@@ -75,6 +82,18 @@ class S3BucketNewTest(unittest2.TestCase):
         self.assertEqual(bucket_names_out, bucket_names_in)
 
     @mock_s3
+    @mock_sts
+    def test_dont_fetch_whitelisted_resources(self):
+        self._given_bucket_mock('test-bucket', 'eu-west-1')
+        self._given_bucket_mock('whitelisted-bucket', 'us-east-1')
+        resources = list(self.s3_handler.fetch_unwanted_resources())
+        bucket_names_in = set(['test-bucket'])
+        bucket_names_out = set([resource.resource_id for resource in
+                                resources])
+        self.assertEqual(bucket_names_out, bucket_names_in)
+
+    @mock_s3
+    @mock_sts
     def test_bucket_to_string(self):
         self._given_bucket_mock('test-bucket', 'eu-central-1')
         resources = list(self.s3_handler.fetch_unwanted_resources())
@@ -84,6 +103,7 @@ class S3BucketNewTest(unittest2.TestCase):
         self.assertIn('test-bucket', bucket_str)
 
     @mock_s3
+    @mock_sts
     def test_bucket_delete_dry_run(self):
         self._given_bucket_mock('test-bucket', 'eu-west-1')
         self.s3_handler.dry_run = True
@@ -95,6 +115,7 @@ class S3BucketNewTest(unittest2.TestCase):
 
     @unittest2.skip("https://github.com/spulec/moto/issues/734")
     @mock_s3
+    @mock_sts
     def test_bucket_delete_no_dry_run(self):
         self._given_bucket_mock('test-bucket', 'eu-west-1')
         self.s3_handler.dry_run = False
