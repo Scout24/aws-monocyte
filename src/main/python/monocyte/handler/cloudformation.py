@@ -22,12 +22,12 @@ class Stack(Handler):
 
     VALID_TARGET_STATES = ["DELETE_COMPLETE", "DELETE_IN_PROGRESS"]
 
-    def fetch_regions(self):
-        return cloudformation.regions()
+    def fetch_region_names(self):
+        return [region.name for region in cloudformation.regions()]
 
     def fetch_unwanted_resources(self):
-        for region in self.regions:
-            connection = cloudformation.connect_to_region(region.name)
+        for region_name in self.region_names:
+            connection = cloudformation.connect_to_region(region_name)
             unwanted_states = set(connection.valid_states)
             unwanted_states.remove("DELETE_COMPLETE")
             resources = connection.list_stacks(stack_status_filters=list(unwanted_states)) or []
@@ -36,7 +36,7 @@ class Stack(Handler):
                                             resource_type=self.resource_type,
                                             resource_id=resource.stack_id,
                                             creation_date=resource.creation_time,
-                                            region=region.name)
+                                            region=region_name)
                 if resource.stack_name in self.ignored_resources:
                     self.logger.info('IGNORE ' + self.to_string(resource_wrapper))
                     continue

@@ -19,12 +19,12 @@ from monocyte.handler import Resource, Handler
 
 
 class Table(Handler):
-    def fetch_regions(self):
-        return dynamodb2.regions()
+    def fetch_region_names(self):
+        return [region.name for region in dynamodb2.regions()]
 
     def fetch_unwanted_resources(self):
-        for region in self.regions:
-            connection = dynamodb2.connect_to_region(region.name)
+        for region_name in self.region_names:
+            connection = dynamodb2.connect_to_region(region_name)
             names = connection.list_tables(limit=100) or {}
             for name in names.get("TableNames"):
                 resource = connection.describe_table(name)
@@ -32,7 +32,7 @@ class Table(Handler):
                                             resource_type=self.resource_type,
                                             resource_id=resource["Table"]["TableName"],
                                             creation_date=resource["Table"]["CreationDateTime"],
-                                            region=region.name)
+                                            region=region_name)
                 if name in self.ignored_resources:
                     self.logger.info('IGNORE ' + self.to_string(resource_wrapper))
                     continue

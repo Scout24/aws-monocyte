@@ -29,19 +29,19 @@ DELETION_STATUS = "deleting"
 
 class Instance(Handler):
 
-    def fetch_regions(self):
-        return rds2.regions()
+    def fetch_region_names(self):
+        return [region.name for region in rds2.regions()]
 
     def fetch_unwanted_resources(self):
-        for region in self.regions:
-            connection = rds2.connect_to_region(region.name)
+        for region_name in self.region_names:
+            connection = rds2.connect_to_region(region_name)
             resources = connection.describe_db_instances() or []
             for resource in resources["DescribeDBInstancesResponse"]["DescribeDBInstancesResult"]["DBInstances"]:
                 resource_wrapper = Resource(resource=resource,
                                             resource_type=self.resource_type,
                                             resource_id=resource["DBInstanceIdentifier"],
                                             creation_date=resource["InstanceCreateTime"],
-                                            region=region.name)
+                                            region=region_name)
                 if resource['DBInstanceIdentifier'] in self.ignored_resources:
                     self.logger.info('IGNORE ' + self.to_string(resource_wrapper))
                     continue
@@ -63,19 +63,19 @@ class Instance(Handler):
 
 class Snapshot(Handler):
 
-    def fetch_regions(self):
-        return rds2.regions()
+    def fetch_region_names(self):
+        return [region.name for region in rds2.regions()]
 
     def fetch_unwanted_resources(self):
-        for region in self.regions:
-            connection = rds2.connect_to_region(region.name)
+        for region_name in self.region_names:
+            connection = rds2.connect_to_region(region_name)
             resources = connection.describe_db_snapshots() or []
             for resource in resources["DescribeDBSnapshotsResponse"]["DescribeDBSnapshotsResult"]["DBSnapshots"]:
                 resource_wrapper = Resource(resource=resource,
                                             resource_type=self.resource_type,
                                             resource_id=resource["DBSnapshotIdentifier"],
                                             creation_date=resource["SnapshotCreateTime"],
-                                            region=region.name)
+                                            region=region_name)
                 if resource['DBSnapshotIdentifier'] in self.ignored_resources:
                     self.logger.info('IGNORE ' + self.to_string(resource_wrapper))
                     continue
