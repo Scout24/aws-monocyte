@@ -6,8 +6,8 @@ from monocyte.handler import Resource, Handler
 
 
 class User(Handler):
-    def fetch_regions(self):
-        return iam.regions()
+    def fetch_region_names(self):
+        return [region.name for region in iam.regions()]
 
     def get_users(self):
         iam = boto3.client('iam')
@@ -51,8 +51,8 @@ class User(Handler):
 
 
 class Policy(Handler):
-    def fetch_regions(self):
-        return iam.regions()
+    def fetch_region_names(self):
+        return [region.name for region in iam.regions()]
 
     def gather_actions(self, policy_document):
         statement = policy_document['Statement']

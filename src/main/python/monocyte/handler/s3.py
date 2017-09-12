@@ -28,25 +28,15 @@ class Bucket(Handler):
     def get_client(self):
         return boto3.client('s3', region_name='eu-central-1')
 
-    def fetch_regions(self):
+    def fetch_region_names(self):
         session = boto3.session.Session()
-        region_names = session.get_available_regions('s3')
-
-        # FIXME: Update parent class so we can just return the names
-        regions = []
-        from mock import Mock
-        for region_name in region_names:
-            region = Mock()
-            region.name = region_name
-            regions.append(region)
-        return regions
+        return session.get_available_regions('s3')
 
     def fetch_unwanted_resources(self):
         client = self.get_client()
         response = client.list_buckets()
         buckets = [(bucket['Name'], bucket['CreationDate'])
                    for bucket in response['Buckets']]
-        region_names = [region.name for region in self.regions]
 
         for bucket_name, creation_date in buckets:
             try:
@@ -58,7 +48,7 @@ class Bucket(Handler):
                                       bucket_name)
                 continue
             region_name = self.map_location(response['LocationConstraint'])
-            if region_name not in region_names or self.is_on_whitelist(bucket_name):
+            if region_name not in self.region_names or self.is_on_whitelist(bucket_name):
                 self.logger.debug("Bucket %s in region %s is OK.",
                                   bucket_name, region_name)
                 continue

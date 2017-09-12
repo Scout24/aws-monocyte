@@ -37,5 +37,5 @@ class HandlerTest(unittest2.TestCase):
 
 
 class TestHandler(Handler):
-    def fetch_regions(self):
-        return {}
+    def fetch_region_names(self):
+        return []

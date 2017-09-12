@@ -60,7 +60,7 @@ class Handler(object):
     def __init__(self, region_filter, dry_run=True, logger=None, ignored_resources=None, whitelist=None):
         warnings.filterwarnings('error')
         self.region_filter = region_filter
-        self.regions = [region for region in self.fetch_regions() if self.region_filter(region.name)]
+        self.region_names = [region_name for region_name in self.fetch_region_names() if self.region_filter(region_name)]
         self.dry_run = dry_run
         self.ignored_resources = ignored_resources or []
         self.whitelist = whitelist or {}
@@ -82,7 +82,7 @@ class Handler(object):
     def get_whitelist(self):
         return self.whitelist.get(self.get_account_id(), {})
 
-    def fetch_regions(self):
+    def fetch_region_names(self):
         raise NotImplementedError("Should have implemented this")
 
     def fetch_unwanted_resources(self):

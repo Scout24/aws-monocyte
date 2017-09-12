@@ -22,19 +22,19 @@ from monocyte.handler import Resource, Handler
 class Instance(Handler):
     VALID_TARGET_STATES = ["terminated", "shutting-down"]
 
-    def fetch_regions(self):
-        return ec2.regions()
+    def fetch_region_names(self):
+        return [region.name for region in ec2.regions()]
 
     def fetch_unwanted_resources(self):
-        for region in self.regions:
-            connection = ec2.connect_to_region(region.name)
+        for region_name in self.region_names:
+            connection = ec2.connect_to_region(region_name)
             resources = connection.get_only_instances() or []
             for resource in resources:
                 resource_wrapper = Resource(resource=resource,
                                             resource_type=self.resource_type,
                                             resource_id=resource.id,
                                             creation_date=resource.launch_time,
-                                            region=region.name)
+                                            region=region_name)
                 if resource.id in self.ignored_resources:
                     self.logger.info('IGNORE ' + self.to_string(resource_wrapper))
                     continue
@@ -65,19 +65,19 @@ class Instance(Handler):
 
 class Volume(Handler):
 
-    def fetch_regions(self):
-        return ec2.regions()
+    def fetch_region_names(self):
+        return [region.name for region in ec2.regions()]
 
     def fetch_unwanted_resources(self):
-        for region in self.regions:
-            connection = ec2.connect_to_region(region.name)
+        for region_name in self.region_names:
+            connection = ec2.connect_to_region(region_name)
             resources = connection.get_all_volumes() or []
             for resource in resources:
                 resource_wrapper = Resource(resource=resource,
                                             resource_type=self.resource_type,
                                             resource_id=resource.id,
                                             creation_date=resource.create_time,
-                                            region=region.name)
+                                            region=region_name)
                 if resource.id in self.ignored_resources:
                     self.logger.info('IGNORE ' + self.to_string(resource_wrapper))
                     continue

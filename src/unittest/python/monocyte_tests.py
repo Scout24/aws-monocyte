@@ -90,10 +90,8 @@ class DummyHandler(Handler):
         return [Resource(Mock(), "ec2 instance", "123456789", datetime.datetime.now(), "us"),
                 Resource(Mock(), "ec2 volume", "33123456789", datetime.datetime.now(), "us")]
 
-    def fetch_regions(self):
-        mock = Mock(RegionInfo)
-        mock.name = "us"
-        return [mock]
+    def fetch_region_names(self):
+        return "us"
 
     def to_string(self, resource):
         pass

@@ -20,7 +20,7 @@ from monocyte.handler import Resource, Handler
 MIN_VALID_DAYS = 55
 
 class Certificate(Handler):
-    def fetch_regions(self):
+    def fetch_region_names(self):
         # Since we want to check all regions, regardless of what's allowed or
         # not, we handle multi-region stuff ourselves.
         return []
