@@ -1,4 +1,6 @@
 # AWS Monocyte
+# This project is DEPRECATED and not any longer supported
+
 [![Build Status](https://api.travis-ci.org/ImmobilienScout24/aws-monocyte.svg?branch=master)](https://travis-ci.org/ImmobilienScout24/aws-monocyte)
 [![Coverage Status](https://coveralls.io/repos/ImmobilienScout24/aws-monocyte/badge.svg)](https://coveralls.io/r/ImmobilienScout24/aws-monocyte)
 [![Codacy Badge](https://www.codacy.com/project/badge/ab632d7511e14a7ebfd47a797ced7b62)](https://www.codacy.com/public/jan_1691/aws-monocyte_2)
